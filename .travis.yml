@@ -1,3 +1,5 @@
+language: C
+
 addons:
   apt:
     packages:
@@ -26,8 +28,11 @@ before_install:
   - sudo ln -s /usr/local/miniconda3/bin/python /usr/local/bin/python
   - export PATH=/usr/local/bin:${PATH}
   - mkdir -p ${HOME}/.config/matplotlib
-  - cp script/dependencies/matplotlibrc ${HOME}/.config/matplotlib
+  - pwd
+  - cp nubhlight/script/dependencies/matplotlibrc ${HOME}/.config/matplotlib
 
 script:
+  - pwd
   - cd test
+  - python tracers1d.py -fast
   - python test_all.py -fast
