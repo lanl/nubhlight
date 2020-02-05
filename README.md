@@ -49,7 +49,7 @@ For realistic problems, nubhlight relies on tabulated nuclear
 equations of state and opacities and emissivities.
 - A native reader exists for the opacities released on
 [stellarcollapse.org](https://stellarcollapse.org/).
-- A FORTRAN reader exists for opacities developed by the Adam Burrow's group.
+- A FORTRAN reader exists for opacities developed by the Adam Burrows' group.
 - An HDF5 reader exists for opacities defined in `nubhlight`
   format. See `core/opac_emis_hdf.c` for the reader and for
   information for how to define your own such table.
