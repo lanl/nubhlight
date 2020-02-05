@@ -28,7 +28,7 @@ fflags_base = '-fopenmp'
 
 def matches_host():
   host = os.uname()[1]
-  keywords = ['runner','project','concurrent']
+  keywords = ['travis','job']
   kinh = [k in host for k in keywords]
   return any(kinh) and all(kinh)
 
