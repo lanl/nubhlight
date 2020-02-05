@@ -1,11 +1,15 @@
 language: C
 compiler: gcc
 os: linux
+dist: bionic
 
 addons:
   apt:
     packages:
-      - apt-utils wget git build-essential
+      - apt-utils
+      - wget
+      - git
+      - build-essential
       - gfortran
       - mpich
       - libmpich-dev
@@ -34,7 +38,5 @@ before_install:
   - cp script/dependencies/matplotlibrc ${HOME}/.config/matplotlib
 
 script:
-  - pwd
   - cd test
-  - python tracers1d.py -fast
   - python test_all.py -fast
