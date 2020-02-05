@@ -12,9 +12,13 @@ and is based on [ebhlight](https://github.com/AFD-Illinois/ebhlight), first pres
 
 - [Ryan, B. R., Dolence, J. C., & Gammie, C. F. 2015, ApJ, 807:31](https://doi.org/10.1088/0004-637X/807/1/31)
 
-All academic work derived from this software should reference these publications.
+The above picture is from nubhlight's first application, modeling the 2017 neutron star merger event:
 
-Questions, comments, and bug reports should be filed as github issues.
+- [Miller, J. M. et al. 2019, PRD, 100:2](https://doi.org/10.1103/PhysRevD.100.023008)
+
+All academic work derived from this software should reference these
+publications. Questions, comments, and bug reports should be filed as
+github issues.
 
 # NUMERICAL SCHEME
 
