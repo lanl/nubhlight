@@ -1,4 +1,6 @@
 language: C
+compiler: gcc
+os: linux
 
 addons:
   apt:
@@ -11,6 +13,7 @@ addons:
       - libgsl0-dev
 
 before_install:
+  - test -n $CC && unset CC
   - sudo mkdir -p /usr/local/hdf5-parallel
   - wget --quiet https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz
   - tar -xzf hdf5-1.8.21.tar.gz
