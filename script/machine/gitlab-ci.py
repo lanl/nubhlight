@@ -15,7 +15,7 @@
 ################################################################################
 
 ################################################################################
-# This machine file is for continuous integration servers running on gitlab    #
+# This machine file is for continuous integration servers running on CI        #
 ################################################################################
 
 import util
@@ -28,7 +28,7 @@ fflags_base = '-fopenmp'
 
 def matches_host():
   host = os.uname()[1]
-  keywords = ['runner','project','concurrent']
+  keywords = ['runner','project','concurrent','travis']
   kinh = [k in host for k in keywords]
   return any(kinh) and all(kinh)
 
