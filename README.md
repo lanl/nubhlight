@@ -18,7 +18,7 @@ The above picture is from nubhlight's first application, modeling the 2017 neutr
 
 All academic work derived from this software should reference these
 publications. Questions, comments, and bug reports should be filed as
-github issues.
+github issues. Pull requests are welcome.
 
 # NUMERICAL SCHEME
 
