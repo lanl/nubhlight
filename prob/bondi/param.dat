@@ -1,0 +1,21 @@
+### RUNTIME PARAMETERS ###
+
+# COORDINATES
+[dbl] tf = 100.0000
+[dbl] dt = 1.000000e-06
+[dbl] Rout = 2.000000e+01
+
+# FLUID
+[dbl] gam = 1.666667e+00
+[dbl] cour = 4.000000e-01
+
+# OUTPUT
+[dbl] DTd = 1.
+[dbl] DTl = 5.000000e-01
+[int] DTr = 10000
+[int] DTp = 10
+[str] outputdir = ./
+
+# PROBLEM
+[dbl] a = 0.000000e+00
+[dbl] hslope = 3.000000e-01

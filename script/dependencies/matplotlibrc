@@ -1,0 +1,3 @@
+# Matplotlib RC file for CI
+
+backend : Agg

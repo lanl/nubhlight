@@ -1,0 +1,40 @@
+### RUNTIME PARAMETERS ###
+
+# COORDINATES
+[dbl] tf = 5.120000e+03
+[dbl] dt = 5.120000e-03
+[dbl] x1Min = 0.000000e+00
+[dbl] x1Max = 1.000000e+00
+[dbl] x2Min = 0.000000e+00
+[dbl] x2Max = 1.000000e+00
+[dbl] x3Min = 0.000000e+00
+[dbl] x3Max = 1.000000e+00
+
+# UNITS
+[dbl] L_unit = 5.855320e+07
+[dbl] M_unit = 2.014660e+15
+
+# FLUID
+[dbl] gam = 1.666667e+00
+[dbl] cour = 4.000000e-01
+
+# RADIATION
+[dbl] tp_over_te = 1.000000e+00
+[dbl] numin = 1.000000e+08
+[dbl] numax = 1.000000e+20
+[dbl] tune_emiss = 1.000000e-06
+[dbl] tune_scatt = 1.000000e+00
+[dbl] thetae_max = 1.000000e+03
+[dbl] sigma_max = 1.000000e+00
+[dbl] kdotk_tol = 1.000000e-08
+
+# OUTPUT
+[dbl] DTd = 5.000000e+00
+[dbl] DTl = 5.000000e+02
+[int] DTr = 500000
+[int] DTp = 10
+[str] outputdir = ./
+
+# PROBLEM
+[dbl] ne = 6.000000e+15
+[dbl] T0 = 1.000000e+06

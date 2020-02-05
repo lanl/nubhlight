@@ -1,0 +1,35 @@
+### RUNTIME PARAMETERS ###
+
+# COORDINATES
+[dbl] tf = 5.000000e+02
+[dbl] dt = 1.000000e-06
+[dbl] Rout = 5.000000e+01
+
+# FLUID
+[dbl] gam = 1.333333e+00
+[dbl] cour = 9.000000e-01
+
+# OUTPUT
+[dbl] DTd = 5.000000e+00
+[dbl] DTl = 5.000000e-01
+[dbl] DTr = 1.000000e+03
+[int] DNr = 1000
+[int] DTp = 100
+[str] outputdir = ./
+
+# PROBLEM
+[dbl] mbh = 1.000000e+08
+[dbl] hslope = 3.000000e-01
+[dbl] tune_emiss = 1.000000e+00
+[int] DTf = 1
+[dbl] M_unit = 8.000000e+23
+[dbl] DTw = 1.000000e+00
+[dbl] poly_xt = 8.200000e-01
+[dbl] poly_alpha = 1.400000e+01
+[str] init_from_grmhd = No
+[dbl] Rout_rad = 4.000000e+01
+[dbl] a = 9.375000e-01
+[dbl] mks_smooth = 5.000000e-01
+[int] MAD = 0
+[dbl] BHflux = 0.000000e+00
+[dbl] tune_scatt = 1.000000e-01
