@@ -11,8 +11,7 @@ and is based on [ebhlight](https://github.com/AFD-Illinois/ebhlight), first pres
 
 - [Ryan, B. R., Dolence, J. C., & Gammie, C. F. 2015, ApJ, 807:31](https://doi.org/10.1088/0004-637X/807/1/31)
 
-As described in the LICENSE, all academic work derived from this software should
-reference this publication.
+All academic work derived from this software should reference these publications.
 
 Questions, comments, and bug reports should be filed as github issues.
 
