@@ -1,0 +1,72 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Python
+*.pyc
+.ipynb_checkpoints
+Untitled.ipynb
+Untitled*.ipynb
+
+# Vim
+*.swp
+
+# Images
+*.png
+*.mp4
+*.gif
+test/*.pdf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+bhlight
+
+# Output files
+dumps
+restarts
+generate_all_plots.txt
+test_all.txt
+*.out
+*.err
+sc_eos_gamma_*.h5
+hotcross.dat
+test/data.p
+
+# Build system
+TMP
+SRC
+build
+log_run
+log_build
+run.py
+param_template.dat
+
+# Debug files
+*.dSYM/
+*.su
+
+# editing detritus
+*.bak

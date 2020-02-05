@@ -1,0 +1,81 @@
+image: ubuntu:18.04
+
+before_script:
+  - apt-get update -qq &> /dev/null
+  - apt-get install -qq -y apt-utils wget git build-essential &> /dev/null
+  - dpkg --configure -a &> /dev/null
+  - apt-get -f install -qq -y &> /dev/null
+  - apt-get install -qq -y gfortran &> /dev/null
+  - apt-get install -qq -y mpich libmpich-dev &> /dev/null
+  - apt-get install -qq -y libgsl0-dbg libgsl0-dev &> /dev/null
+  - mkdir -p /usr/local/hdf5-parallel
+  - wget --quiet https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz
+  - tar -xzf hdf5-1.8.21.tar.gz
+  - cd hdf5-1.8.21
+  - FC=mpif90 CC=mpicc ./configure --enable-parallel --enable-fortran --prefix=/usr/local/hdf5-parallel > /dev/null
+  - make -sj &> /dev/null
+  - make -s install &> /dev/null
+  - cd ..
+  - export CC=/usr/local/hdf5-parallel/bin/h5pcc
+  - export FC=/usr/local/hdf5-parallel/bin/h5pfc
+  - wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  - bash Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda3 &> /dev/null
+  - /usr/local/miniconda3/bin/conda install --yes --quiet numpy scipy h5py matplotlib pip psutil &> /dev/null
+  - mkdir -p /usr/local/bin
+  - ln -s /usr/local/miniconda3/bin/python /usr/local/bin/python
+  - export PATH=/usr/local/bin:${PATH}
+  - mkdir -p ${HOME}/.config/matplotlib
+  - cp script/dependencies/matplotlibrc ${HOME}/.config/matplotlib
+
+test_env:
+  only:
+    - schedules
+  script:
+    - whoami
+    - pwd
+    - echo "Testing environment"
+    - echo "Python version"
+    - python --version
+    - python -c "import h5py; print(h5py.__version__)"
+    - python -c "import numpy; print(numpy.__version__)"
+    - python -c "import scipy; print(scipy.__version__)"
+    - python -c "import psutil; print(psutil.__version__)"
+    - echo "OS version"
+    - uname -a
+    - echo "RAM"
+    - free -mh
+    - echo "Number of processors"
+    - grep -c ^processor /proc/cpuinfo
+    - echo "Compiler"
+    - gcc --version
+    - echo "GSL"
+    - gsl-config --version
+    - gsl-config --libs
+    - echo "MPI"
+    - mpirun -np 2 echo "hello world"
+    - mpicc -show
+    - mpif90 -show
+    - which mpirun
+    - echo "HDF5"
+    - echo ${CC}
+    - ${CC} -show
+    - echo ${FC}
+    - ${FC} -show
+    - echo "Current directory"
+    - pwd
+    - echo "directory contains"
+    - ls -a
+
+test_fast:
+  except:
+    - schedules
+  script:
+    - cd test
+    - python test_all.py -fast
+
+test_full:
+  only:
+    - schedules
+  script:
+    - cd test
+    - python test_all.py
