@@ -369,13 +369,17 @@ void set_points() {
   stopx_rad[3]  = startx_rad[3] + N3TOT * dx[3];
 #endif
 #elif METRIC == MKS
-  // Set Rin such that we have 5 zones completely inside the event horizon
+  // Calculate some radii determined by the geometry
   Reh = 1. + sqrt(1. - a * a);
   double z1 =
       1 + pow(1 - a * a, 1. / 3.) * (pow(1 + a, 1. / 3.) + pow(1 - a, 1. / 3.));
   double z2 = sqrt(3 * a * a + z1 * z1);
   Risco     = 3 + z2 - sqrt((3 - z1) * (3 + z1 + 2 * z2));
-  Rin       = exp((N1TOT * log(Reh) / 5.5 - log(Rout)) / (1. + N1TOT / 5.5));
+
+  // Set Rin such that we have 5 zones completely inside the event horizon
+  // If xeh = log(Reh), xin = log(Rin), and xout = log(Rout),
+  // then we want xeh = xin + 5.5 * (xout - xin) / N1TOT, or solving/replacing:
+  Rin = exp((N1TOT * log(Reh) / 5.5 - log(Rout)) / (-1. + N1TOT / 5.5));
 
   startx[1]     = log(Rin);
   startx[2]     = 0.;
