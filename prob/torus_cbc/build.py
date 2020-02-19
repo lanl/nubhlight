@@ -37,6 +37,7 @@ DIAGNOSTIC = '-diag' in sys.argv
 NOTRACE = '-notrace' in sys.argv
 SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
+HDF = '-hdf' in sys.argv
 
 LIMIT_RAD = '-limit' in sys.argv
 MORE_RAD = '-morenu' in sys.argv
@@ -58,7 +59,7 @@ NPH_FROM_CLI  = '-nph' in sys.argv
 EMISS = not NOEMISS
 SCATT = not (NOSCATT or KILL)
 ABS = not (NOABS or KILL)
-FORTRAN = NEUTRINOS
+FORTRAN = NEUTRINOS and not HDF
 TRACERS = not NOTRACE
 
 USE_TABLE = GAMTABLE or RELTABLE
@@ -89,10 +90,14 @@ TABLEPATH = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
 #TABLEPATH = "HShenEOS_rho220_temp180_ye65_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+TABLEPATH
 
-OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
+if FORTRAN:
+    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
+else:
+    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
 OPACPARAM = "opacbin.LS220.evan.param"
 OPACPATH = "../../data/"+OPACPATH
 OPACPARAM = "../../data/"+OPACPARAM
+
 
 # Parameters from
 # arXiv 1409.4426
@@ -351,6 +356,7 @@ bhl.config.set_cparm('SCATTERING', SCATT)
 if KILL:
     bhl.config.set_cparm('KILL_ALL_PACKETS', True)
 bhl.config.set_cparm('BURROWS_OPACITIES', FORTRAN)
+bhl.config.set_cparm('HDF5_OPACITIES', HDF)
 bhl.config.set_cparm('NU_BINS', 200)
 bhl.config.set_cparm('ESTIMATE_THETAE', False)
 bhl.config.set_cparm('GRAYABSORPTION',  False)
@@ -417,9 +423,11 @@ if USE_GAMMA or GAMMA_FALLBACK:
     bhl.config.set_rparm("kappa", "double", default = KAPPA)
 
 # Opacities
+if FORTRAN or HDF:
+    bhl.config.set_rparm('opac_file', 'string', default = OPACPATH)
 if FORTRAN:
     bhl.config.set_rparm('opac_param_file', 'string', default = OPACPARAM)
-    bhl.config.set_rparm('opac_file', 'string', default = OPACPATH)
+
 
                          ### CONFIGURE AND COMPILE  ###
 

@@ -211,7 +211,11 @@ def build(PROBLEM, PATHS):
     util.warn("Debug compiler options not set! Using normal compiler flags.")
     host['DEBUG_FLAGS'] = host['COMPILER_FLAGS']
 
-  C_FLAGS = '-std=c99 -mcmodel=medium '
+  C_FLAGS = '-std=c99 '
+  if 'MEM_MODEL' in host:
+    C_FLAGS += "-mcmodel=" + host['MEM_MODEL'] + ' '
+  else:
+    C_FLAGS += "-mcmodel=medium "
   if DEBUG:
     C_FLAGS += host['DEBUG_FLAGS']
   else:
