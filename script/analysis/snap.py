@@ -48,7 +48,7 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
     sys.exit()
 
   import matplotlib
-  if savefig is not None:
+  if savefig is not None and savefig:
     matplotlib.use('Agg')
   import matplotlib.pyplot as plt
   import plot as bplt

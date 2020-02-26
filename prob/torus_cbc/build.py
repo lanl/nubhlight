@@ -23,6 +23,7 @@ GAMTABLE = '-gamtable' in sys.argv # fake table
 RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
 NOB = '-nob' in sys.argv # or INITIAL # no B fields
+TOROIDALB = "-toroidalb" in sys.argv
 RENORM = '-renorm' in sys.argv
 NORENORM = '-norenorm' in sys.argv or (not RENORM)
 CLASSIC = '-classic' in sys.argv
@@ -64,9 +65,15 @@ TRACERS = not NOTRACE
 
 USE_TABLE = GAMTABLE or RELTABLE
 USE_GAMMA = GAMTABLE or not USE_TABLE
-BFIELD = not NOB
 RENORM = not NORENORM
 TWOD = not THREED
+
+if NOB:
+    BFIELD = "none"
+elif TOROIDALB:
+    BFIELD = "toroidal"
+else:
+    BFIELD = "classic"
 
 if RELTABLE:
     bhl.report_var('EOS','RELTABLE')
@@ -397,7 +404,7 @@ bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt)
 bhl.config.set_rparm('a', 'double', default = ABH)
 bhl.config.set_rparm('mbh', 'double', default = MBH)
 bhl.config.set_rparm('M_unit', 'double', default = M_UNIT)
-bhl.config.set_rparm("bfield", 'int', default = int(BFIELD))
+bhl.config.set_rparm("bfield", 'string', default = BFIELD)
 bhl.config.set_rparm("rin", "double", default = Rin)
 bhl.config.set_rparm("rmax", "double", default = Rmax)
 bhl.config.set_rparm("beta", "double", default = BETA)
