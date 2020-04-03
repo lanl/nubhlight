@@ -1,4 +1,4 @@
-nubhlight eidr description
+nubhlight open-sourcing description
 ===
 
 # Description
