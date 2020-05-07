@@ -10,9 +10,10 @@
 #include "constants.h"
 #include "decs.h"
 #include <hdf5.h>
-#include <hdf5_hl.h>
 
 #if RADIATION == RADTYPE_NEUTRINOS && BURROWS_OPACITIES
+
+#include <hdf5_hl.h>
 
 #ifdef __INTEL_COMPILER
 #define FORT_OPAC_CALL(name) opacity_table_module_mp_##name##_
