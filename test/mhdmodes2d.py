@@ -44,7 +44,7 @@ copyfile('build.py', TMP_BUILD)
 for n in range(len(RES)):
   util.change_cparm('N1TOT', RES[n], TMP_BUILD)
   util.change_cparm('N2TOT', RES[n], TMP_BUILD)
-  args = ['python', TMP_BUILD, '-dir', TMP_DIR]
+  args = [sys.executable, TMP_BUILD, '-dir', TMP_DIR]
   if TABLE:
     args.append('-table')
   call(args)

@@ -29,7 +29,7 @@ PROBLEM = 'entropy'
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-call(['python', 'build.py', '-dir', TMP_DIR])
+call([sys.executable, 'build.py', '-dir', TMP_DIR])
 os.chdir('../../test')
 call(['mv', '../prob/' + PROBLEM + '/' + TMP_DIR, './'])
 

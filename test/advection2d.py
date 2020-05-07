@@ -71,7 +71,7 @@ for n,res in enumerate(RES):
     if MPI:
         for d in [1,2]:
             util.change_cparm('N{}CPU'.format(d), 2, TMP_BUILD)
-    call(['python', TMP_BUILD, '-dir', TMP_DIR])
+    call([sys.executable, TMP_BUILD, '-dir', TMP_DIR])
     parm_src = os.path.join(os.getcwd(), TMP_DIR, 'param_template.dat')
     parm_dest = '../../test/' +  TMP_DIR + '/param.dat'
     call(['cp', os.path.join(os.getcwd(), TMP_DIR, 'bhlight'),

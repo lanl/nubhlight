@@ -37,7 +37,7 @@ except ImportError:
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-args = ['python', 'build.py', '-dir', TMP_DIR]
+args = [sys.executable, 'build.py', '-dir', TMP_DIR]
 if MPI:
   args += ['-mpi']
 if NOREBALANCE:

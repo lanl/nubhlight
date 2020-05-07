@@ -39,7 +39,7 @@ except ImportError:
 os.chdir('../prob/' + 'thermalization')
 
 # COMPILE CODE
-call(['python', 'build_mpi.py', '-dir', TMP_DIR])
+call([sys.executable, 'build_mpi.py', '-dir', TMP_DIR])
 os.chdir('../../test')
 call(['mv', '../prob/' + 'thermalization' + '/' + TMP_DIR, './'])
 
