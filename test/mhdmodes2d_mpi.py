@@ -41,7 +41,7 @@ copyfile('build_mpi.py', TMP_BUILD)
 for n in range(len(RES)):
   util.change_cparm('N1TOT', RES[n], TMP_BUILD)
   util.change_cparm('N2TOT', RES[n], TMP_BUILD)
-  call(['python', TMP_BUILD, '-dir', TMP_DIR])
+  call([sys.executable, TMP_BUILD, '-dir', TMP_DIR])
   call(['cp', os.path.join(os.getcwd(), TMP_DIR, 'bhlight'),
         '../../test/' + TMP_DIR + '/bhlight_' + str(RES[n])])
 copyfile(os.path.join(os.getcwd(), TMP_DIR, 'param_template.dat'), '../../test/' + 

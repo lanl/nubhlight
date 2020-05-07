@@ -24,7 +24,7 @@ gam = 1.4
 
 os.chdir('../prob/' + PROBLEM)
 # COMPILE CODE
-args = ['python', 'build.py', '-dir', TMP_DIR]
+args = [sys.executable, 'build.py', '-dir', TMP_DIR]
 call(args)
 call(['mv', 'sc_eos_gamma_{}.h5'.format(str(gam).replace('.','p')), TMP_DIR])
 os.chdir('../../test/')

@@ -48,7 +48,7 @@ print '  COMMIT:  ' + HASH + '\n'
 
 for TEST in TESTS:
     print '  ' + util.color.BOLD + TEST + util.color.NORMAL
-    args = ['python', TEST]
+    args = [sys.executable, TEST]
     if TABLE:
         args += ['-table']
     popen = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE,

@@ -36,7 +36,7 @@ else:
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-args = ['python', 'build.py', '-dir', TMP_DIR]
+args = [sys.executable, 'build.py', '-dir', TMP_DIR]
 if TABLE:
   args.append('-table')
 if FORCE:

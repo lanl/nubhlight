@@ -40,7 +40,7 @@ copyfile('build.py', TMP_BUILD)
 for n in range(len(RES)):
   util.change_cparm('N{}TOT'.format(IDIM), RES[n], TMP_BUILD)
   #util.change_cparm('RECONSTRUCTION', 'PARA', TMP_BUILD)
-  args = ['python', TMP_BUILD, '-dir', TMP_DIR, '-idim', str(IDIM)]
+  args = [sys.executable, TMP_BUILD, '-dir', TMP_DIR, '-idim', str(IDIM)]
   if TABLE:
     args += ['-table']
   call(args)
