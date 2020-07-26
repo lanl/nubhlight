@@ -431,10 +431,10 @@ def load_sadw(fname):
   sph = {}
   zoh = {}
   with h5py.File(fname,'r') as f:
-    t = f['t'].value
+    t = f['t'][()]
     for d,n in zip([sadw,sph,zoh],['sadw','sph_avg','zoh']):
       for k,v in f[n].items():
-        d[k] = v.value
+        d[k] = v[()]
   return t,sadw,sph,zoh
 
 def load_diag(path, hdr = None, nulegacy = False, timers = True):
@@ -737,10 +737,10 @@ class TracerDataBase(object):
     with h5py.File(tracer_file,'r') as f:
       grp = f['units']
       for k in grp.keys():
-        units[k] = grp[k].value
+        units[k] = grp[k][()]
       grp = f['data']
       for k in grp.keys():
-        data[k] = grp[k].value
+        data[k] = grp[k][()]
 
     if ids is not None:
       mask = np.in1d(data['id'],ids)
@@ -880,9 +880,10 @@ class TracerData(TracerDataBase):
     mask = self.data['id'] == t_id
     trace_data = self.filter(mask)
     trace_data = self.sort_trace(trace_data,'time')
-    while np.abs(trace_data['time'][-1] - trace_data['time'][-2]) <= 1e-13:
-      for k,v in trace_data.items():
-        trace_data[k] = v[:-1]
+    # Can't remember why this is here... doesn't seem reasonable...?
+    # while np.abs(trace_data['time'][-1] - trace_data['time'][-2]) <= 1e-13:
+    #   for k,v in trace_data.items():
+    #     trace_data[k] = v[:-1]
     return Trace(self.units,trace_data)
 
   def remove_trace(self,t_id):
@@ -993,9 +994,9 @@ def load_tracer(tracer_file,ids=None):
       out_units[u] = f[u][0]
     for d in data:
       if 'Step#0' in f.keys():
-        out_data[d] = f['Step#0/{}'.format(d)].value
+        out_data[d] = f['Step#0/{}'.format(d)][()]
       else:
-        out_data[d] = f[d].value
+        out_data[d] = f[d][()]
 
   if ids is not None:
     mask = np.in1d(out_data['id'],ids)
