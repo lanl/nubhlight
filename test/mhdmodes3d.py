@@ -54,7 +54,7 @@ for n in range(len(RES)):
   util.change_cparm('N2CPU', nxcpu,  TMP_BUILD)
   util.change_cparm('N3CPU', nxcpu,  TMP_BUILD)
   util.change_cparm('OPENMP', 'True', TMP_BUILD)
-  args = ['python', TMP_BUILD, '-dir', TMP_DIR]
+  args = [sys.executable, TMP_BUILD, '-dir', TMP_DIR]
   if TABLE:
     args.append('-table')
   call(args)

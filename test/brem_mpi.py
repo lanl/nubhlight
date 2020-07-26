@@ -28,7 +28,7 @@ for arg in sys.argv:
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-call(['python', 'build_mpi.py', '-dir', TMP_DIR])
+call([sys.executable, 'build_mpi.py', '-dir', TMP_DIR])
 os.chdir('../../test/')
 call(['mv', '../prob/' + PROBLEM + '/' + TMP_DIR, './'])
 

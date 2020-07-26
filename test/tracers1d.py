@@ -39,7 +39,7 @@ cadv = 0.5
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-call(['python', 'build.py', '-dir', TMP_DIR, '-idim',
+call([sys.executable, 'build.py', '-dir', TMP_DIR, '-idim',
       str(IDIM),'-ntot',str(RES),'-tracers'])
 os.chdir('../../test/')
 call(['mv', '../prob/' + PROBLEM + '/' + TMP_DIR, './'])

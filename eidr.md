@@ -1,4 +1,4 @@
-nubhlight eidr description
+nubhlight open-sourcing description
 ===
 
 # Description
@@ -72,14 +72,7 @@ neutron star mergers. The nubhlight code aids in open astrophysics
 work performed by the code author.  This work supports an LDRD grant
 on this fundamental research topic, as well as research for an Office
 of Science SciDAC grant. The original SciDAC program plan can be found
-here: https://www.scidac.gov/documents/SciDAC.pdf. I have attached a
-copy of the SciDAC proposal for this research, where it is clearly
-stated that software developed under this grant is expected to be
-publicly released.
-
-## Is this a new version of a previously disclosed software?
-
-- Yes
+here: https://www.scidac.gov/documents/SciDAC.pdf.
 
 ## Further detail
 

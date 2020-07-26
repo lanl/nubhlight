@@ -148,7 +148,7 @@ for TEST in TESTS:
   args = name_to_args(TEST)
   TESTNAME = args[0][:-3] if len(args) == 1 else TEST
   print('  ' + util.color.BOLD + TESTNAME + util.color.NORMAL)
-  args = ['python'] + args + ['-auto']
+  args = [sys.executable] + args + ['-auto']
   if TABLE:
     args += ['-table']
   if FAST:
