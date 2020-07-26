@@ -5,6 +5,7 @@ from hdf5_to_dict import TracerData,Trace
 import numpy as np
 import os, gc
 from argparse import ArgumentParser
+from partition_traces import partition
 
 def get_trace_paths(trace_path_dir,partitioned=True):
   from functools import reduce
@@ -33,7 +34,7 @@ def make_if_needed(path):
 def split_ids(ndirs,tids):
     if ndirs >= 2:
         np.random.shuffle(tids)
-        tid_lists = np.array_split(tids,args.ndirs)
+        tid_lists = np.array_split(tids,ndirs)
     else:
         tid_lists = [tids]
     return tid_lists
