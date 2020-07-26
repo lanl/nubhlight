@@ -5,7 +5,6 @@ from hdf5_to_dict import TracerData,Trace
 import numpy as np
 import os, gc
 from argparse import ArgumentParser
-from partition_traces import partition
 
 def get_trace_paths(trace_path_dir,partitioned=True):
   from functools import reduce
