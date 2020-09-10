@@ -41,7 +41,7 @@ except ImportError:
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-compile_args = ['python','build.py','-dir',TMP_DIR]
+compile_args = [sys.executable,'build.py','-dir',TMP_DIR]
 if MPI:
     compile_args += ['-mpi']
 if EQUIL:

@@ -32,7 +32,7 @@ else:
 os.chdir('../prob/' + PROBLEM)
 
 # COMPILE CODE
-args = ['python', 'build.py', '-dir', TMP_DIR, '-idim', str(IDIM)]
+args = [sys.executable, 'build.py', '-dir', TMP_DIR, '-idim', str(IDIM)]
 if MPI:
   args += ['-mpi']
 call(args)

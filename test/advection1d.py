@@ -49,7 +49,7 @@ copyfile('build.py', TMP_BUILD)
 # COMPILE CODE AT MULTIPLE RESOLUTIONS USING SEPARATE BUILD FILE
 for n,res in enumerate(RES):
   util.change_cparm('N{}TOT'.format(IDIM), res, TMP_BUILD)
-  call(['python', TMP_BUILD, '-dir', TMP_DIR, '-idim', str(IDIM)])
+  call([sys.executable, TMP_BUILD, '-dir', TMP_DIR, '-idim', str(IDIM)])
   call(['cp', os.path.join(os.getcwd(), TMP_DIR, 'bhlight'),
         '../../test/' + TMP_DIR + '/bhlight_' + str(res)])
 copyfile(os.path.join(os.getcwd(), TMP_DIR, 'param_template.dat'), '../../test/' + 
