@@ -47,7 +47,7 @@ class WeakEquilibriumFinder:
     def __init__(self,opacfile):
         self.opac = Opacity(opacfile)
 
-    def find_Ye(lT,lRho):
+    def find_Ye(self.lT,lRho):
         from scipy.optimize import brentq
         Ye = self.opac.Ye
         def objective(ye):
