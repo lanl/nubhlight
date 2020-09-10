@@ -51,7 +51,7 @@ class WeakEquilibriumFinder:
         from scipy.optimize import brentq
         Ye = self.opac.Ye
         def objective(ye):
-            p = (ye,lT,lrho)
+            p = (ye,lT,lRho)
             return self.opac.nue_interp(p) - self.opac.nubar_interp(p)
         try:
             sol = brentq(objective,Ye.min(),Ye.max())
