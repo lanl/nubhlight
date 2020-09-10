@@ -82,6 +82,8 @@ class YeStatistics:
 
     def get_time_series(self,dump_names,geom,nprocs=None):
         from multiprocessing import Pool
+        def worker(name):
+            return self.get_from_name(name,geom)
         with Pool(nprocs) as p:
-            data = p.map(self.get_from_name,dump_names)
+            data = p.map(worker,dump_names)
         return np.array(data)
