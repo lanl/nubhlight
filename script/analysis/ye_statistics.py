@@ -79,11 +79,3 @@ class YeStatistics:
             return t,mean,std,equil,equil_std,diff
         else:
             return t,mean,std
-
-    def get_time_series(self,dump_names,hdr,geom,nprocs=None):
-        from multiprocessing import Pool
-        def worker(name):
-            return self.get_from_name(name,hdr,geom)
-        with Pool(nprocs) as p:
-            data = p.map(worker,dump_names)
-        return np.array(data)
