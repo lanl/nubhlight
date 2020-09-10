@@ -46,7 +46,7 @@ class YeStatistics:
         std = np.sqrt(num/(den+SMALL))
     
         if self.finder is not None:
-            Ye_equil = self.finder.get_Ye_eq_dmp(dump)
+            Ye_equil = self.finder.get_Ye_eq_dmp(dump,hdr)
             integrand_num = dump['RHO']*Ye_equil*geom['gdet'][:,:,np.newaxis]
             num = integrate_3d(integrand_num,hdr,geom)
             equil = num/(den+SMALL)
