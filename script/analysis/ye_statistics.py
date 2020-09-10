@@ -64,7 +64,7 @@ class YeStatistics:
         else:
             return mean,std
 
-    def get_from_name(name):
+    def get_from_name(name,geom):
         dump = io.load_dump(name,geom=geom)
         t = dump['t']
         print("t = ",t)
@@ -80,7 +80,7 @@ class YeStatistics:
         else:
             return t,mean,std
 
-    def get_time_series(self,dump_names,nprocs=None):
+    def get_time_series(self,dump_names,geom,nprocs=None):
         from multiprocessing import Pool
         with Pool(nprocs) as p:
             data = p.map(self.get_from_name,dump_names)
