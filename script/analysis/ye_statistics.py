@@ -64,7 +64,7 @@ class YeStatistics:
         else:
             return mean,std
 
-    def get_from_name(name,geom):
+    def get_from_name(self,name,geom):
         dump = io.load_dump(name,geom=geom)
         t = dump['t']
         print("t = ",t)
