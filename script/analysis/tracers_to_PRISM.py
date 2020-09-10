@@ -528,7 +528,7 @@ if __name__ == "__main__":
     if args.frdm is not None:
         if not os.path.exists(args.frdm):
             raise IOError("frdm path does not exist")
-        if not os.path.isdir(args.frdm)):
+        if not os.path.isdir(args.frdm):
             raise IOError("frdm path should be directory containing frdm")
 
     if not args.single:
