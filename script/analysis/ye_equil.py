@@ -6,10 +6,12 @@
 
 import h5py
 import numpy as np
+from units import cgs
 
 class Opacity:
     def __init__(self,opacfile):
         from scipy.interpolate import RegularGridInterpolator
+        from scipy.integrate import trapz
         with h5py.File(opacfile) as f:
             self.Ye = f['Ye'][()]
             self.lT = f['lT'][()]
@@ -18,18 +20,28 @@ class Opacity:
             self.opac = f['opac'][()]
             self.emis = f['emis'][()]
             self.dim = f['dimensions']
-            self.n_rho = dim.attrs['numRho']
-            self.n_T = dim.attrs['numT']
-            self.n_Ye = dim.attrs['numYe']
-            self.n_tp = dim.attrs['numRadTypes']
-            self.n_nu = dim.attrs['numNu']
-            self.iord = dim.attrs['index order']
-            self.nue_interp = RegularGridInterpolator((Ye,lT,lrho),
-                                                      np.log10(emis_nue_lep_tot),
-                                                      bounds_error=False)
-            self.nubar_interp = RegularGridInterpolator((Ye,lT,lrho),
-                                                        np.log10(emis_nubar_lep_tot),
-                                                        bounds_error=False)
+            self.n_rho = self.dim.attrs['numRho']
+            self.n_T = self.dim.attrs['numT']
+            self.n_Ye = self.dim.attrs['numYe']
+            self.n_tp = self.dim.attrs['numRadTypes']
+            self.n_nu = self.dim.attrs['numNu']
+            self.iord = self.dim.attrs['index order']
+            self.emis_nue = self.emis[...,0,:]
+            self.emis_nubar = self.emis[...,1,:]
+            self.emis_nue_lep_tot = 4*np.pi*trapz(
+                self.emis_nue/cgs['HPL'],
+                x=self.lnu,axis=-1)
+            self.emis_nubar_lep_tot = 4*np.pi*trapz(
+                self.emis_nubar/cgs['HPL'],
+                x=self.lnu,axis=-1)
+            self.nue_interp = RegularGridInterpolator(
+                (self.Ye,self.lT,self.lrho),
+                np.log10(self.emis_nue_lep_tot),
+                bounds_error=False)
+            self.nubar_interp = RegularGridInterpolator(
+                (self.Ye,self.lT,self.lrho),
+                np.log10(self.emis_nubar_lep_tot),
+                bounds_error=False)
 
 class WeakEquilibriumFinder:
     def __init__(self,opacfile):
