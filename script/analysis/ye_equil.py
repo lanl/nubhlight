@@ -12,7 +12,7 @@ class Opacity:
     def __init__(self,opacfile):
         from scipy.interpolate import RegularGridInterpolator
         from scipy.integrate import trapz
-        with h5py.File(opacfile) as f:
+        with h5py.File(opacfile,'r') as f:
             self.Ye = f['Ye'][()]
             self.lT = f['lT'][()]
             self.lnu = f['lnu'][()]
