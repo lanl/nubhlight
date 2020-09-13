@@ -22,14 +22,14 @@ def get_luminosity_from_dump(dump,hdr):
     rate_tot = integrate.trapz(rate,
                                      x=lnu,
                                      axis=1)
-    return rate_tot,luminosity_tot
+    return nu, rate_tot, luminosity_tot
 
 def get_luminosity_from_fnam(fnam,hdr,geom):
     print(fnam)
     dump = io.load_dump(fnam,geom=geom)
     t = dump['t']
-    rate,lum = get_luminosity_from_dump(dump,hdr)
-    return t,rate,lum
+    nu,rate,lum = get_luminosity_from_dump(dump,hdr)
+    return t,nu,rate,lum
 
 class LuminosityGetter:
     def __init__(self,hdr,geom):
