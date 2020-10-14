@@ -119,11 +119,17 @@ def make_table_temp(rho_min, rho_max, n_rho,
     LE = np.log10(EPS)
     # compositions and mass fractions
     # assume ionized hydrogen
+    # Xa: mass fraction of alpha particles
     Xa = np.zeros_like(P)
+    # Xh: mass fraction of heavy nuclei
     Xh = np.zeros_like(P)
+    # Xp: mass fraction of protons
     Xp = YE
+    # Xn: mass fraction of neutrons
     Xn = 1 - Xp
+    # Abar: average atomic mass
     Abar = np.ones_like(P)
+    # Zbar: average atomic number
     Zbar = np.ones_like(P)
 
     # make the hdf5 file
