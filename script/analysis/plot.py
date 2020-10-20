@@ -123,7 +123,8 @@ def plot_X1X3(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   if not show_axes:
       ax.set_xticklabels([]); ax.set_yticklabels([])
 
-def plot_xz(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True, 
+
+def plot_xz(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
             label=None, ticks=None, shading='gouraud',
             l_scale = None,
             reverse_x = False,
@@ -172,7 +173,6 @@ def plot_xz(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   ax.set_aspect('equal')
   ax.set_xlabel('x/M'); ax.set_ylabel('z/M')
   return mesh
-  #ax.grid(True, linestyle=':', color='k', alpha=0.5, linewidth=0.5)
 
 def contour_xz(ax, geom, var, dump,
                levels = None,
@@ -329,29 +329,39 @@ def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
   linecolor='k'):
   from scipy.integrate import trapz
   hdr = dump['hdr']
-  N1 = hdr['N1']; N2 = hdr['N2']
-  x = flatten_xz(geom['x'], hdr).transpose()
-  z = flatten_xz(geom['z'], hdr).transpose()
+  N1 = hdr['N1']//2; N2 = hdr['N2']
+  x = geom['x']
+  y = geom['y']
+  z = geom['z']
+  if dump['hdr']['N3'] > 1. and dump['hdr']['stopx'][3] >= np.pi:
+    x = flatten_xz(x, dump['hdr'], flip=True)
+    y = flatten_xz(y, dump['hdr'], flip=True)
+    z = flatten_xz(z, dump['hdr'])
+    rcyl = np.sqrt(x**2 + y**2)
+    rcyl[np.where(x<0)] *= -1
+  else:
+    x = x[:,:,0]
+    y = y[:,:,0]
+    z = z[:,:,0]
+    rcyl = np.sqrt(x**2 + y**2)
   A_phi = np.zeros([N2, 2*N1])
   gdet = geom['gdet'].transpose()
   B1 = dump['B1'].mean(axis=-1).transpose()
   B2 = dump['B2'].mean(axis=-1).transpose()
-  print(gdet.shape)
   for j in range(N2):
     for i in range(N1):
-      A_phi[j,N1-1-i] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) - 
+      A_phi[j,N1-1-i] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) -
                          trapz(gdet[:j, i]*B1[:j, i], dx=hdr['dx'][2]))
-      A_phi[j,i+N1] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) - 
+      A_phi[j,i+N1] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) -
                          trapz(gdet[:j, i]*B1[:j, i], dx=hdr['dx'][2]))
   A_phi -= (A_phi[N2//2-1,-1] + A_phi[N2//2,-1])/2.
   Apm = np.fabs(A_phi).max()
   if np.fabs(A_phi.min()) > A_phi.max():
     A_phi *= -1.
-  #NLEV = 20
-  levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1], 
+  levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1],
                            np.linspace(0,Apm,NLEV)[1:]))
-  ax.contour(x, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
-    linewidths=linewidth)
+  ax.contour(rcyl, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
+             linewidths=linewidth, zorder=10)
 
 def plot_xy(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   label=None, ticks=None, shading='gouraud', fix_bounds=True):
