@@ -361,7 +361,7 @@ def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
   levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1],
                            np.linspace(0,Apm,NLEV)[1:]))
   ax.contour(rcyl, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
-             linewidths=linewidth, zorder=10)
+             linewidths=linewidth, zorder=2)
 
 def plot_xy(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   label=None, ticks=None, shading='gouraud', fix_bounds=True):
