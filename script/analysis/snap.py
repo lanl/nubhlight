@@ -43,7 +43,7 @@ parser.add_argument('--linecolor',
                     type=str, default='k',
                     help='Linecolor of A-contours. Needed only if using --A-contours')
 parser.add_argument('--zorder',
-                    type=str, default='k',
+                    type=int, default=2,
                     help='zorder for A-contours. Needed only if using --A-contours')
 parser.add_argument('--save',
                     type=str,default=None,
