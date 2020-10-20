@@ -42,6 +42,9 @@ parser.add_argument('--linewidth',
 parser.add_argument('--linecolor',
                     type=str, default='k',
                     help='Linecolor of A-contours. Needed only if using --A-contours')
+parser.add_argument('--zorder',
+                    type=str, default='k',
+                    help='zorder for A-contours. Needed only if using --A-contours')
 parser.add_argument('--save',
                     type=str,default=None,
                     help='Figure filename if you want to save the figure')
@@ -119,7 +122,7 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
     if args.A_contours:
       bplt.overlay_field(ax, geom, dump, NLEV=args.nlev,
                          linestyle=args.linestyle, linewidth=args.linewidth,
-                         linecolor=args.linecolor)
+                         linecolor=args.linecolor, zorder=args.zorder)
     ax = a1
     if coords == 'mks':
       bplt.plot_X1X3(ax, geom, var, dump, cmap=cmap, vmin=vmin, vmax=vmax, 
@@ -142,7 +145,7 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
     if args.A_contours:
       bplt.overlay_field(ax, geom, dump, NLEV=args.nlev,
                          linestyle=args.linestyle, linewidth=args.linewidth,
-                         linecolor=args.linecolor)
+                         linecolor=args.linecolor, zorder=args.zorder)
 
   if savefig == False:
     plt.show()

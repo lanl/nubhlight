@@ -326,7 +326,7 @@ def quiver_xy(ax, geom, dump, varx, vary, C=None,
                           coordinates='figure')
 
 def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
-  linecolor='k'):
+  linecolor='k', zorder=2):
   from scipy.integrate import trapz
   hdr = dump['hdr']
   N1 = hdr['N1']//2; N2 = hdr['N2']
@@ -361,7 +361,7 @@ def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
   levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1],
                            np.linspace(0,Apm,NLEV)[1:]))
   ax.contour(rcyl, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
-             linewidths=linewidth, zorder=2)
+             linewidths=linewidth, zorder=zorder)
 
 def plot_xy(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   label=None, ticks=None, shading='gouraud', fix_bounds=True):
