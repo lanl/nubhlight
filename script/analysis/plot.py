@@ -325,43 +325,68 @@ def quiver_xy(ax, geom, dump, varx, vary, C=None,
                           qk, labelpos=qkloc,
                           coordinates='figure')
 
-def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
-  linecolor='k', zorder=2):
+def overlay_field_2d(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
+                  linecolor='k', zorder=2):
+    from scipy.integrate import trapz
+    hdr = dump['hdr']
+    N1 = hdr['N1']; N2 = hdr['N2']
+    x = geom['x'][:,:,0]
+    y = geom['y'][:,:,0]
+    z = geom['z'][:,:,0]
+    rcyl = np.sqrt(x**2 + y**2)
+    A_phi = np.zeros([N1,N2])
+    gdet = geom['gdet']
+    B1 = dump['B1'][:,:,0]
+    B2 = dump['B2'][:,:,0]
+    for i in range(N1):
+        for j in range(N2):
+            A_phi[i,j] = (trapz(gdet[:i,j]*B2[:i,j], dx=hdr['dx'][1]) - 
+                          trapz(gdet[i,:j]*B1[i,:j], dx=hdr['dx'][2]))
+    Apm = np.fabs(A_phi).max()
+    if np.fabs(A_phi.min()) > A_phi.max():
+        A_phi *= -1.
+    levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1], 
+                             np.linspace(0,Apm,NLEV)[1:]))
+    ax.contour(rcyl, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
+               linewidths=linewidth, zorder=zorder)
+    return
+
+def overlay_field_3d(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
+                     linecolor='k', zorder=2):
   from scipy.integrate import trapz
   hdr = dump['hdr']
-  N1 = hdr['N1']//2; N2 = hdr['N2']
-  x = geom['x']
-  y = geom['y']
-  z = geom['z']
-  if dump['hdr']['N3'] > 1. and dump['hdr']['stopx'][3] >= np.pi:
-    x = flatten_xz(x, dump['hdr'], flip=True)
-    y = flatten_xz(y, dump['hdr'], flip=True)
-    z = flatten_xz(z, dump['hdr'])
-    rcyl = np.sqrt(x**2 + y**2)
-    rcyl[np.where(x<0)] *= -1
-  else:
-    x = x[:,:,0]
-    y = y[:,:,0]
-    z = z[:,:,0]
-    rcyl = np.sqrt(x**2 + y**2)
+  N1 = hdr['N1']; N2 = hdr['N2']
+  x = flatten_xz(geom['x'], hdr, True).transpose()
+  y = flatten_xz(geom['x'], hdr, True).transpose()
+  z = flatten_xz(geom['z'], hdr).transpose()
+  rcyl = np.sqrt(x**2 + y**2)
   A_phi = np.zeros([N2, 2*N1])
   gdet = geom['gdet'].transpose()
   B1 = dump['B1'].mean(axis=-1).transpose()
   B2 = dump['B2'].mean(axis=-1).transpose()
   for j in range(N2):
     for i in range(N1):
-      A_phi[j,N1-1-i] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) -
+      A_phi[j,N1-1-i] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) - 
                          trapz(gdet[:j, i]*B1[:j, i], dx=hdr['dx'][2]))
-      A_phi[j,i+N1] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) -
+      A_phi[j,i+N1] = (trapz(gdet[j,:i]*B2[j,:i], dx=hdr['dx'][1]) - 
                          trapz(gdet[:j, i]*B1[:j, i], dx=hdr['dx'][2]))
   A_phi -= (A_phi[N2//2-1,-1] + A_phi[N2//2,-1])/2.
   Apm = np.fabs(A_phi).max()
   if np.fabs(A_phi.min()) > A_phi.max():
     A_phi *= -1.
-  levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1],
+  #NLEV = 20
+  levels = np.concatenate((np.linspace(-Apm,0,NLEV)[:-1], 
                            np.linspace(0,Apm,NLEV)[1:]))
   ax.contour(rcyl, z, A_phi, levels=levels, colors=linecolor, linestyles=linestyle,
              linewidths=linewidth, zorder=zorder)
+  return
+
+def overlay_field(ax, geom, dump, NLEV=20, linestyle='-', linewidth=1,
+                  linecolor='k', zorder=2):
+    if dump['hdr']['N3'] > 1. and dump['hdr']['stopx'][3] >= np.pi:
+        return overlay_field_3d(ax,geom,dump,NLEV,linestyle,linewidth,linecolor,zorder)
+    else:
+        return overlay_field_2d(ax,geom,dump,NLEV,linestyle,linewidth,linecolor,zorder)
 
 def plot_xy(ax, geom, var, dump, cmap='jet', vmin=None, vmax=None, cbar=True,
   label=None, ticks=None, shading='gouraud', fix_bounds=True):

@@ -33,18 +33,6 @@ parser.add_argument('--A-contours', action="store_true",
 parser.add_argument('--nlev',
                     type=int, default=20,
                     help='Number of positive/negative A-contour levels. Needed only if using --A-contours')
-parser.add_argument('--linestyle',
-                    type=str, default='-',
-                    help='Linestyle of A-contours. Needed only if using --A-contours')
-parser.add_argument('--linewidth', 
-                    type=int, default=1,
-                    help='Linewidth of A-contours. Needed only if using --A-contours')
-parser.add_argument('--linecolor',
-                    type=str, default='k',
-                    help='Linecolor of A-contours. Needed only if using --A-contours')
-parser.add_argument('--zorder',
-                    type=int, default=2,
-                    help='zorder for A-contours. Needed only if using --A-contours')
 parser.add_argument('--save',
                     type=str,default=None,
                     help='Figure filename if you want to save the figure')
@@ -59,7 +47,9 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
               savefig,label,
               vmin,vmax,
               index=None,
-              geom=None):
+              geom=None,
+              A_contours=False,
+              nlevels=None):
 
   if not os.path.exists(dfnam):
     print('ERROR File ' + dfnam + ' does not exist!')
@@ -119,10 +109,8 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
       bplt.plot_xz(ax, geom, var, dump, cmap=cmap, vmin=vmin, vmax=vmax,
         cbar=False, label=label, ticks=None, shading='gouraud')
       ax.set_xlim([-size,size]); ax.set_ylim([-size,size])
-    if args.A_contours:
-      bplt.overlay_field(ax, geom, dump, NLEV=args.nlev,
-                         linestyle=args.linestyle, linewidth=args.linewidth,
-                         linecolor=args.linecolor, zorder=args.zorder)
+    if A_contours:
+      bplt.overlay_field(ax, geom, dump, NLEV=nlevels)
     ax = a1
     if coords == 'mks':
       bplt.plot_X1X3(ax, geom, var, dump, cmap=cmap, vmin=vmin, vmax=vmax, 
@@ -142,10 +130,8 @@ def make_snap(dfnam,vnam,coords,size,cmap,logplot,
       bplt.plot_xz(ax, geom, var, dump, cmap=cmap, vmin=vmin, vmax=vmax,
         cbar=True, label=label, ticks=None, shading='gouraud')
       ax.set_xlim([0,size]); ax.set_ylim([-size,size])
-    if args.A_contours:
-      bplt.overlay_field(ax, geom, dump, NLEV=args.nlev,
-                         linestyle=args.linestyle, linewidth=args.linewidth,
-                         linecolor=args.linecolor, zorder=args.zorder)
+    if A_contours:
+      bplt.overlay_field(ax, geom, dump, NLEV=nlevels)
 
   if savefig == False:
     plt.show()
@@ -171,4 +157,6 @@ if __name__ == "__main__":
 
   make_snap(dfnam,vnam,coords,size,cmap,
             logplot,savefig,label,vmin,vmax,
-            index=index)
+            index=index,
+            A_contours=args.A_contours,
+            nlevels=args.nlev)
