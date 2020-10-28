@@ -39,6 +39,8 @@ NOTRACE = '-notrace' in sys.argv
 SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 HDF = '-hdf' in sys.argv
+N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
+N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
 
 LIMIT_RAD = '-limit' in sys.argv
 MORE_RAD = '-morenu' in sys.argv
@@ -56,6 +58,13 @@ ABH_FROM_CLI  = '-a' in sys.argv
 YE_FROM_CLI   = '-Ye' in sys.argv
 BETA_FROM_CLI = '-beta' in sys.argv
 NPH_FROM_CLI  = '-nph' in sys.argv
+TFINAL_FROM_CLI = '-tfinal' in sys.argv
+N1CPU_FROM_CLI = '-n1cpu' in sys.argv
+N2CPU_FROM_CLI = '-n2cpu' in sys.argv
+N3CPU_FROM_CLI = '-n3cpu' in sys.argv
+N1TOT_FROM_CLI = '-n1tot' in sys.argv
+N2TOT_FROM_CLI = '-n2tot' in sys.argv
+N3TOT_FROM_CLI = '-n3tot' in sys.argv
 
 EMISS = not NOEMISS
 SCATT = not (NOSCATT or KILL)
@@ -67,6 +76,11 @@ USE_TABLE = GAMTABLE or RELTABLE
 USE_GAMMA = GAMTABLE or not USE_TABLE
 RENORM = not NORENORM
 TWOD = not THREED
+
+if any([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]) and not N1N2N3CPU_FROM_CLI:
+    raise ValueError("Must turn on the -n1n2n3cpu flag if inputting -n1cpu, -n2cpu, -n3cpu")
+if any([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]) and not N1N2N3TOT_FROM_CLI:
+    raise ValueError("Must turn on the -n1n2n3tot flag if inputting -n1tot, -n2tot, -n3tot")
 
 if NOB:
     BFIELD = "none"
@@ -202,7 +216,9 @@ L_unit = cgs['GNEWT']*cgs['MSOLAR']*MBH/(cgs['CL']**2)
 M_UNIT = RHO_unit*(L_unit**3)
 
 # final time
-if NOB and not INITIAL:
+if TFINAL_FROM_CLI:
+    TFINAL = float(sys.argv[sys.argv.index('-tfinal') + 1])
+elif NOB and not INITIAL:
     TFINAL = 500.
 elif INITIAL:
     TFINAL = 1.e-2
@@ -227,42 +243,63 @@ DTl = 1.e-2 if INITIAL else 5.e-1
 DTr = 100
 DNr = 1000 # if THREED else 1e10
 
-if TRACERTEST:
-    N1TOT = 36
-    N2TOT = 36
-    N3TOT = 24
-    N1CPU = 1
-    N2CPU = 1
-    N3CPU = 4
-elif FAKETHREED:
-    N1TOT = 96 if SMALL else 192 # 192
-    N2TOT = 96 if SMALL else 128 # 192
-    N3TOT = 1
-    N1CPU = 1 if RADIATION else 2
-    N2CPU = 1 if RADIATION and not HPC else 2
-    N3CPU = 1
-elif THREED: # 3D
-    if QUAD:
+if N1N2N3TOT_FROM_CLI:
+    if not all([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]):
+        raise ValueError("If using -n1n2n3tot flag, should input -n1tot -n2tot -n3tot")
+    N1TOT = float(sys.argv[sys.argv.index('-n1tot') + 1])
+    N2TOT = float(sys.argv[sys.argv.index('-n2tot') + 1])
+    N3TOT = float(sys.argv[sys.argv.index('-n3tot') + 1])
+else:
+    if TRACERTEST:
+        N1TOT = 36
+        N2TOT = 36
+        N3TOT = 24
+    elif FAKETHREED:
         N1TOT = 96 if SMALL else 192 # 192
         N2TOT = 96 if SMALL else 128 # 192
-        N3TOT = 16
+        N3TOT = 1
+    elif THREED: # 3D
+        if QUAD:
+            N1TOT = 96 if SMALL else 192 # 192
+            N2TOT = 96 if SMALL else 128 # 192
+            N3TOT = 16
+        else:
+            N1TOT = 96 if SMALL else 192 # 192
+            N2TOT = 96 if SMALL else 128 # 192
+            N3TOT = 64 if SMALL else 66  # 96
+    else: # 2D
+        N1TOT = 112 if SMALL else 256
+        N2TOT = 112 if SMALL else 256
+        N3TOT = 1
+
+if N1N2N3CPU_FROM_CLI:
+    if not all([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]):
+        raise ValueError("If using -n1n2n3cpu flag, should input -n1cpu -n2cpu -n3cpu")
+    N1CPU = float(sys.argv[sys.argv.index('-n1cpu') + 1])
+    N2CPU = float(sys.argv[sys.argv.index('-n2cpu') + 1])
+    N3CPU = float(sys.argv[sys.argv.index('-n3cpu') + 1])
+else:
+    if TRACERTEST:
         N1CPU = 1
-        N2CPU = 2
-        N3CPU = 2
-    else:
-        N1TOT = 96 if SMALL else 192 # 192
-        N2TOT = 96 if SMALL else 128 # 192
-        N3TOT = 64 if SMALL else 66  # 96
-        N1CPU = 1
-        N2CPU = 2  # 2
-        N3CPU = 11 # 16
-else: # 2D
-    N1TOT = 112 if SMALL else 256
-    N2TOT = 112 if SMALL else 256
-    N3TOT = 1
-    N1CPU = 1 if RADIATION else 2
-    N2CPU = 1 if RADIATION and not HPC else 2
-    N3CPU = 1
+        N2CPU = 1
+        N3CPU = 4
+    elif FAKETHREED:
+        N1CPU = 1 if RADIATION else 2
+        N2CPU = 1 if RADIATION and not HPC else 2
+        N3CPU = 1
+    elif THREED: # 3D
+        if QUAD:
+            N1CPU = 1
+            N2CPU = 2
+            N3CPU = 2
+        else:
+            N1CPU = 1
+            N2CPU = 2  # 2
+            N3CPU = 11 # 16
+    else: # 2D
+        N1CPU = 1 if RADIATION else 2
+        N2CPU = 1 if RADIATION and not HPC else 2
+        N3CPU = 1
 
 NCPU_TOT     = N1CPU*N2CPU*N3CPU
 NCELL_TOT    = N1TOT*N2TOT*N3TOT
