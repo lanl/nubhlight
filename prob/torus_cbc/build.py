@@ -246,9 +246,9 @@ DNr = 1000 # if THREED else 1e10
 if N1N2N3TOT_FROM_CLI:
     if not all([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]):
         raise ValueError("If using -n1n2n3tot flag, should input -n1tot -n2tot -n3tot")
-    N1TOT = float(sys.argv[sys.argv.index('-n1tot') + 1])
-    N2TOT = float(sys.argv[sys.argv.index('-n2tot') + 1])
-    N3TOT = float(sys.argv[sys.argv.index('-n3tot') + 1])
+    N1TOT = int(sys.argv[sys.argv.index('-n1tot') + 1])
+    N2TOT = int(sys.argv[sys.argv.index('-n2tot') + 1])
+    N3TOT = int(sys.argv[sys.argv.index('-n3tot') + 1])
 else:
     if TRACERTEST:
         N1TOT = 36
@@ -275,9 +275,9 @@ else:
 if N1N2N3CPU_FROM_CLI:
     if not all([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]):
         raise ValueError("If using -n1n2n3cpu flag, should input -n1cpu -n2cpu -n3cpu")
-    N1CPU = float(sys.argv[sys.argv.index('-n1cpu') + 1])
-    N2CPU = float(sys.argv[sys.argv.index('-n2cpu') + 1])
-    N3CPU = float(sys.argv[sys.argv.index('-n3cpu') + 1])
+    N1CPU = int(sys.argv[sys.argv.index('-n1cpu') + 1])
+    N2CPU = int(sys.argv[sys.argv.index('-n2cpu') + 1])
+    N3CPU = int(sys.argv[sys.argv.index('-n3cpu') + 1])
 else:
     if TRACERTEST:
         N1CPU = 1
