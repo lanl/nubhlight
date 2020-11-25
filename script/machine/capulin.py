@@ -35,6 +35,9 @@ import re
 # Some warnings:
 # 1. Cray is a weird beast. Use cc, not the wrappers.
 # 2. -O2 and higher cuase problems. Don't use them.
+# 3. -fPIC is required to make the cray linker behave. Static linking only. No dynamic linking.
+# 4. -fQunused-arguments is a clang nicety and makes some warnings go away.
+# 5. Use system libraries when possible. I found it difficult to roll my own, e.g., HDF5.
 
 flags_base = '-fdiagnostics-color -Qunused-arguments -fopenmp -fPIC'
 fflags_base = ''
