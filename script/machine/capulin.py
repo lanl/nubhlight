@@ -32,6 +32,10 @@ import re
 # DO NOT use fortran with this machine.
 # It will fail.
 
+# Some warnings:
+# 1. Cray is a weird beast. Use cc, not the wrappers.
+# 2. -O2 and higher cuase problems. Don't use them.
+
 flags_base = '-fdiagnostics-color -fopenmp -fPIC'
 fflags_base = ''
 
