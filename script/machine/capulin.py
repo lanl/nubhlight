@@ -36,7 +36,7 @@ import re
 # 1. Cray is a weird beast. Use cc, not the wrappers.
 # 2. -O2 and higher cuase problems. Don't use them.
 
-flags_base = '-fdiagnostics-color -fopenmp -fPIC'
+flags_base = '-fdiagnostics-color -Qunused-arguments -fopenmp -fPIC'
 fflags_base = ''
 
 GSL_NAME='local-cray-mpich'
