@@ -266,7 +266,7 @@ else:
         else:
             N1TOT = 96 if SMALL else 192 # 192
             N2TOT = 96 if SMALL else 128 # 192
-            N3TOT = 64 if SMALL else 96  # 96
+            N3TOT = 64 if SMALL else 66  # 96
     else: # 2D
         N1TOT = 112 if SMALL else 256
         N2TOT = 112 if SMALL else 256
