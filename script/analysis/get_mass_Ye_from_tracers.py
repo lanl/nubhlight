@@ -60,7 +60,7 @@ class OutflowProperties:
         self.Ye = (tracers['mass']*tracers['Ye'])/self.mass
 
     def __str__(self):
-        return "{:.5e} {.5e}".format(self.mass, self.Ye)
+        return "{:.5e} {:.5e}".format(self.mass, self.Ye)
 
 def make_table(MBH, a, Md, Ye, s, sphere_files, nse_files):
     """Make formatted (ascii) table and return it as a string
