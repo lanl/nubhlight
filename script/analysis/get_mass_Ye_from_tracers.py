@@ -144,5 +144,5 @@ if __name__ == "__main__":
     parser.add_argument("--nse",type=str,nargs="+",required=True,
                         help="files with tracer data when tracers fall below 5GK")
     args = parser.parse_args()
-    table = make_table(args.mbh,args.spin,args.mdisk,args.ye,args.entropy,args.tracers)
+    table = make_table(args.mbh,args.spin,args.mdisk,args.ye,args.entropy,args.tracers,args.nse)
     print(table)
