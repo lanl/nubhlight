@@ -44,6 +44,11 @@ def get_bernoulli(tracers):
     Be = -tracers['ucov'][:,0]*h - 1
     return Be
 
+def get_intersection(tracers,tracers_ref):
+    "Returns particles in tracers that also have ids in tracers_ref"
+    mask = np.in1d(tracers['id'],tracers_ref['id'])
+    return tracers.filter(mask)
+
 class OutflowProperties:
     "Container class containing outflow mass and Ye"
     def __init__(self, tracers):
@@ -57,7 +62,7 @@ class OutflowProperties:
     def __str__(self):
         return "{:.5e} {.5e}".format(mass, Ye)
 
-def make_table(MBH, a, Md, Ye, s, filenames):
+def make_table(MBH, a, Md, Ye, s, sphere_files, nse_files):
     """Make formatted (ascii) table and return it as a string
     for each simulation with:
     - Black hole mass MBH in solar masses
@@ -69,9 +74,12 @@ def make_table(MBH, a, Md, Ye, s, filenames):
     Note some additional parameters that would be good to add:
     - Magnetic field strength
     - Magnetic field topology
+    sphere_files are files of tracers extracted at a radius of 250 rg
+    nse_files are files of tracers extracted when they drop below 5GK
     """
     from hdf5_to_dict import TracerData
-    assert len(MBH) == len(a) == len(Md) == len(Ye) == len(s) == len(filenames)
+    assert len(sphere_files) == len(nse_files)
+    assert len(MBH) == len(a) == len(Md) == len(Ye) == len(s) == len(nse_files)
 
     out = """# Columns:
 # [0]:  Mass of black hole (solar masses)
@@ -87,8 +95,8 @@ def make_table(MBH, a, Md, Ye, s, filenames):
 # [10]: Mass-averaged Ye in equatorial region
 # Note that polar + equatorial != total!
 """
-    for i,f in enumerate(filenames):
-        tracers = TracerData.fromfile(f) # load tracer data
+    for i,(f_sph,f_nse) in enumerate(zip(sphere_files,nse_files)):
+        tracers = TracerData.fromfile(f_sph) # load tracer data
         # ensure we only look at unbound material
         tracers = tracers.filter(get_bernoulli(tracers) > 0)
 
@@ -96,10 +104,16 @@ def make_table(MBH, a, Md, Ye, s, filenames):
         equatorial = filter_angle(tracers,0,15)
         polar = filter_angle(tracers,50,90)
 
+        # get the nse versions
+        tracers_nse = TracerData.fromfile(f_nse)
+        tracers_nse = get_intersection(tracers_nse,tracers)
+        equatorial_nse = get_intersection(tracers_nse,equatorial)
+        polar_nse = get_intersection(tracers_nse, polar)
+
         # Get outflow properties
-        prop_tot = OutflowProperties(tracers)
-        prop_pol = OutflowProperties(polar)
-        prop_equ = OutflowProperties(equatorial)
+        prop_tot = OutflowProperties(tracers_nse)
+        prop_pol = OutflowProperties(polar_nse)
+        prop_equ = OutflowProperties(equatorial_nse)
         
         out += "{:.4e} {:.4e} {:.4e} {:.3e} {:.2e} {} {} {}".format(MBH[i],a[i],
                                                                     Md[i],Ye[i],
@@ -125,8 +139,10 @@ if __name__ == "__main__":
                         help="initial Ye for each simulation (unitless)")
     parser.add_argument("-s","--entropy",type=float,nargs='+',required=True,
                         help="initial entropy for each simulation (k_b/baryon)")
-    parser.add_argument("-t","--tracers",type=str,nargs="+",required=True,
-                        help="files with tracer data")
+    parser.add_argument("--tracers",type=str,nargs="+",required=True,
+                        help="files with tracer data when tracers pass through extraction sphere")
+    parser.add_argument("--nse",type=str,nargs="+",required=True,
+                        help="files with tracer data when tracers fall below 5GK")
     args = parser.parse_args()
     table = make_table(args.mbh,args.spin,args.mdisk,args.ye,args.entropy,args.tracers)
     print(table)
