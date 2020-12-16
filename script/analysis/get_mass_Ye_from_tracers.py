@@ -54,10 +54,11 @@ class OutflowProperties:
     def __init__(self, tracers):
         from units import cgs
         # Mass in solar masses
+        mass = tracers['mass'].sum()
         code2msolar = tracers.units['M_unit']/cgs['MSOLAR']
-        self.mass = tracers['mass'].sum()*code2msolar
+        self.mass = mass*code2msolar
         # Mass-averaged Ye
-        self.Ye = (tracers['mass']*tracers['Ye']).sum()/self.mass
+        self.Ye = (tracers['mass']*tracers['Ye']).sum()/mass
 
     def __str__(self):
         return "{:.5e} {:.5e}".format(self.mass, self.Ye)
@@ -115,7 +116,7 @@ def make_table(MBH, a, Md, Ye, s, sphere_files, nse_files):
         prop_pol = OutflowProperties(polar_nse)
         prop_equ = OutflowProperties(equatorial_nse)
         
-        out += "{:.4e} {:.4e} {:.4e} {:.3e} {:.2e} {} {} {}\n".format(MBH[i],a[i],
+        out += "{:.3e} {:.3e} {:.3e} {:.2e} {:.2e} {} {} {}\n".format(MBH[i],a[i],
                                                                       Md[i],Ye[i],
                                                                       s[i],
                                                                       prop_tot,
