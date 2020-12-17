@@ -152,8 +152,8 @@ void jac_harm_to_bl(
     double thG = thG_of_X(X);
     double y, thJ;
     thJ_of_X(X, &y, &thJ);
-    double dydX2 = 2.;
-    double dthJdy = poly_norm*(1 + pow(y/poly_xt,poly_alpha));
+    double dydX2   = 2.;
+    double dthJdy  = poly_norm * (1 + pow(y / poly_xt, poly_alpha));
     double dthJdX2 = dthJdy * dydX2;
     dthdX1 = -mks_smooth * (thJ - thG) * exp(mks_smooth * (startx[1] - X[1]));
     dthdX2 =
@@ -261,6 +261,10 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
     dxdX[mu][mu] = 1.;
   }
 #elif METRIC == MKS
+  double Jcov[NDIM][NDIM];
+  jac_harm_to_bl(X, Jcov, dxdX);
+  /*
+  // This is the old formula, less readable than the new one
   dxdX[0][0] = 1.;
   dxdX[1][1] = exp(X[1]);
 #if DEREFINE_POLES
@@ -284,8 +288,8 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
   dxdX[2][2] = M_PI - (hslope - 1.) * M_PI * cos(2. * M_PI * X[2]);
 #endif // derefine_poles
   dxdX[3][3] = 1.;
-
   // debug
+  // Use this to check that the old and new formulae agree
   double Jcov[NDIM][NDIM];
   double Jcon[NDIM][NDIM];
   jac_harm_to_bl(X, Jcov, Jcon);
@@ -297,6 +301,7 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
       exit(1);
     }
   }
+  */
 #endif // metric
 }
 
@@ -405,7 +410,7 @@ void set_points() {
 #if QUADRANT_SYMMETRY
   dx[3]         = (M_PI / 2.) / N3TOT;
 #else
-  dx[3]      = 2. * M_PI / N3TOT;
+  dx[3] = 2. * M_PI / N3TOT;
 #endif // QUADRANT_SYMMETRY
 
 #if RADIATION
