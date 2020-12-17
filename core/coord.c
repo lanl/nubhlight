@@ -153,11 +153,11 @@ void jac_harm_to_bl(
     double y, thJ;
     thJ_of_X(X, &y, &thJ);
     double dydX2   = 2.;
-    double dthJdy  = poly_norm * (1. + pow(y / poly_xt, poly_alpha));
+    double dthJdy  = poly_norm * (pow(y / poly_xt, poly_alpha) + 1./(1. + poly_alpha));
     double dthJdX2 = dthJdy * dydX2;
-    dthdX1 = -mks_smooth * (thG - thJ) * exp(mks_smooth * (startx[1] - X[1]));
+    dthdX1 = -mks_smooth * (thJ - thG) * exp(mks_smooth * (startx[1] - X[1]));
     dthdX2 =
-        dthGdX2 + exp(mks_smooth * (startx[1] - X[1])) * (dthGdX2 - dthJdX2);
+        dthGdX2 + exp(mks_smooth * (startx[1] - X[1])) * (dthJdX2 - dthGdX2);
   }
 #else
   {
@@ -252,6 +252,8 @@ void jac_harm_to_cart(
 #endif // METRIC
 }
 
+// TODO: This is redundant with jac_harm_to_bl.
+// We should reduce duplicate code.
 void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
   memset(dxdX, 0, NDIM * NDIM * sizeof(double));
 #if METRIC == MINKOWSKI
@@ -280,9 +282,20 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
                        (1. - hslope) * M_PI * cos(2. * M_PI * X[2]));
 #else
   dxdX[2][2] = M_PI - (hslope - 1.) * M_PI * cos(2. * M_PI * X[2]);
-#endif
+#endif // derefine_poles
   dxdX[3][3] = 1.;
-#endif
+
+  // debug
+  double Jcov[NDIM][NDIM];
+  double Jcon[NDIM][NDIM];
+  jac_harm_to_bl(X, Jcov, Jcon);
+  DLOOP2 {
+    if (fabs(Jcon[mu][nu] - dxdX[mu][nu]) >= 1e-8) {
+      printf("BAD Jcon! %d %d\n",mu,nu);
+      exit(1);
+    }
+  }
+#endif // metric
 }
 
 // Insert metric here
