@@ -17,7 +17,7 @@ def get_m_accreted(path):
     diag = io.load_diag(path,hdr,timers=False)
 
     m_accreted = integrate.trapz(diag['mdot'],x=diag['t'])
-    return m_accreted*hdr['M_unit']/cgs['MSOLAR']
+    return np.abs(m_accreted*hdr['M_unit']/cgs['MSOLAR'])
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
