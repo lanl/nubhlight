@@ -152,8 +152,9 @@ void jac_harm_to_bl(
     double thG = thG_of_X(X);
     double y, thJ;
     thJ_of_X(X, &y, &thJ);
-    double dydX2   = 2.;
-    double dthJdy  = poly_norm * (pow(y / poly_xt, poly_alpha) + 1./(1. + poly_alpha));
+    double dydX2 = 2.;
+    double dthJdy =
+        poly_norm * (pow(y / poly_xt, poly_alpha) + 1. / (1. + poly_alpha));
     double dthJdX2 = dthJdy * dydX2;
     dthdX1 = -mks_smooth * (thJ - thG) * exp(mks_smooth * (startx[1] - X[1]));
     dthdX2 =
@@ -290,8 +291,9 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
   double Jcon[NDIM][NDIM];
   jac_harm_to_bl(X, Jcov, Jcon);
   DLOOP2 {
-    if (fabs(Jcon[mu][nu] - dxdX[mu][nu]) >= 1e-8*0.5*fabs(Jcon[mu][nu] - dxdX[mu][nu])) {
-      printf("BAD Jcon! %d %d, %e %e\n",mu,nu,Jcon[mu][nu],dxdX[mu][nu]);
+    if (fabs(Jcon[mu][nu] - dxdX[mu][nu]) >=
+        1e-8 * 0.5 * (fabs(Jcon[mu][nu]) + fabs(dxdX[mu][nu]))) {
+      printf("BAD Jcon! %d %d, %e %e\n", mu, nu, Jcon[mu][nu], dxdX[mu][nu]);
       exit(1);
     }
   }
