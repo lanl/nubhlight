@@ -63,7 +63,7 @@ class Jacobians:
             mks_smooth = self.mks_smooth
             startx = self.startx
             y,thJ = self.get_thJ(X1,X2,X3)
-            return thG + np.exp(mks_smooth*(startx[1] - X1))(thJ - thG)
+            return thG + np.exp(mks_smooth*(startx[1] - X1))*(thJ - thG)
         return thG
 
     def get_h2bl(self,X1,X2,X3):
