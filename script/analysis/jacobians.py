@@ -42,14 +42,14 @@ class Jacobians:
                    hdr['hslope'],hdr['poly_alpha'],hdr['poly_xt'],
                    hdr['DEREFINE_POLES'])
 
-    def get_r(X1,X2,X3):
+    def get_r(self,X1,X2,X3):
         return np.exp(X1)
 
-    def get_thG(X1,X2,X3):
+    def get_thG(self,X1,X2,X3):
         hslope = self.hslope
         return np.pi*X2 + ((1. - hslope)/2.)*np.sin(2.*np.pi*X2)
 
-    def get_thJ(X1,X2,X3):
+    def get_thJ(self,X1,X2,X3):
         poly_norm = self.poly_norm
         poly_xt = self.poly_xt
         poly_alpha = self.poly_alpha
@@ -57,7 +57,7 @@ class Jacobians:
         thJ = poly_norm*y*(1+((y/poly_xt)**poly_alpha)/(poly_alpha+1.)) + 0.5*np.pi
         return y,thJ
 
-    def get_th(X1,X2,X3):
+    def get_th(self,X1,X2,X3):
         thG = self.get_thG(X1,X2,X3)
         if self.derefine_poles:
             mks_smooth = self.mks_smooth
@@ -66,7 +66,7 @@ class Jacobians:
             return thG + np.exp(mks_smooth*(startx[1] - X1))(thJ - thG)
         return thG
 
-    def get_h2bl(X1,X2,X3):
+    def get_h2bl(self,X1,X2,X3):
         hslope = self.hslope
         poly_norm = self.poly_norm
         poly_alpha = self.poly_alpha
@@ -105,7 +105,7 @@ class Jacobians:
 
         return Jcov, Jcon
 
-    def get_bl2cart(X1,X2,X3):
+    def get_bl2cart(self,X1,X2,X3):
         from numpy import sin,cos
         r = self.get_r(X1,X2,X3)
         th = self.get_th(X1,X2,X3)
@@ -140,7 +140,7 @@ class Jacobians:
 
         return Jcov, Jcon
 
-    def get_h2cart(X1,X2,X3):
+    def get_h2cart(self,X1,X2,X3):
         J_h2bl_cov,J_h2bl_con = self.get_h2bl(X1,X2,X3)
         J_bl2c_cov,J_bl2c_con = self.get_h2cart(X1,X2,X3)
 
