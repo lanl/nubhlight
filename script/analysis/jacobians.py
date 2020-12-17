@@ -54,7 +54,7 @@ class Jacobians:
         poly_xt = self.poly_xt
         poly_alpha = self.poly_alpha
         y = 2.*X2 - 1.
-        thJ = poly_norm*y*(1+((y/poly_xt)**poly_alpha)/(poly_alpha+1.)) + 0.5*np.pi
+        thJ = poly_norm*y*(1. + np.pow(y/poly_xt, poly_alpha) / (poly_alpha + 1.)) + 0.5*np.pi
         return y,thJ
 
     def get_th(self,X1,X2,X3):
@@ -84,7 +84,7 @@ class Jacobians:
             y,thJ = self.get_thJ(X1,X2,X3)
             dydX2 = 2.
             dthJdy = poly_norm*(1+(y/poly_xt)**poly_alpha)
-            dthJdX2 = dydX2*dydX2
+            dthJdX2 = dthJdy*dydX2
             dthdX1 = -mks_smooth*(thJ-thG)*np.exp(mks_smooth*(startx[1]-X1))
             dthdX2 = dthGdX2 + np.exp(mks_smooth*(startx[1]-X1))*(dthJdX2-dthGdX2)
         else:
