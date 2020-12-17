@@ -1,3 +1,18 @@
+# ======================================================================
+# copyright 2020. Triad National Security, LLC. All rights
+# reserved. This program was produced under U.S. Government contract
+# 89233218CNA000001 for Los Alamos National Laboratory (LANL), which
+# is operated by Triad National Security, LLC for the U.S. Department
+# of Energy/National Nuclear Security Administration. All rights in
+# the program are reserved by Triad National Security, LLC, and the
+# U.S. Department of Energy/National Nuclear Security
+# Administration. The Government is granted for itself and others
+# acting on its behalf a nonexclusive, paid-up, irrevocable worldwide
+# license in this material to reproduce, prepare derivative works,
+# distribute copies to the public, perform publicly and display
+# publicly, and to permit others to do so.
+# ======================================================================
+
 # Authors: Jonah Miller (jonahm@lanl.gov) and Ben Ryan (brryan@lanl.gov)
 # PURPOSE:
 # Provides interface to read tracer and dump files fron bhlight/nubhlight
@@ -151,7 +166,7 @@ def load_hdr(fname):
   return hdr
 
 def load_geom(hdr,
-              recalc=True,
+              recalc=False,
               use_3d_metrics=False):
   # IF RAD, CALCULATE DOMEGA!
 
@@ -216,10 +231,26 @@ def load_geom(hdr,
     geom['rcyl'][:,0,:] = 0.
     geom['rcyl'][:,-1,:] = 0.
 
-    geom['Lambda_h2bl_con'] = np.array(dfile['Lambda_h2bl_con'])
-    geom['Lambda_h2bl_cov'] = np.array(dfile['Lambda_h2bl_cov'])
-    geom['Lambda_bl2cart_con'] = np.array(dfile['Lambda_bl2cart_con'])
-    geom['Lambda_bl2cart_cov'] = np.array(dfile['Lambda_bl2cart_cov'])
+    if recalc:
+      from jacobians import Jacobians
+      jac = Jacobians.fromhdr(hdr)
+      geom['Lambda_h2bl_con'] = np.empty((hdr['N1'],hdr['N2'],hdr['N3'],4,4))
+      geom['Lambda_h2bl_cov'] = np.zeros_like(geom['Lambda_h2bl_con'])
+      geom['Lambda_bl2cart_con'] = np.zeros_like(geom['Lambda_h2bl_con'])
+      geom['Lambda_bl2cart_cov'] = np.zeros_like(geom['Lambda_h2bl_con'])
+      for i in range(hdr['N1']):
+        for j in range(hdr['N2']):
+          for k in range(hdr['N3']):
+            X1 = geom['X1'][i,j,k]
+            X2 = geom['X2'][i,j,k]
+            X3 = geom['X3'][i,j,k]
+            geom['Lambda_h2bl_cov'][i,j,k],geom['Lambda_h2bl_con'][i,j,k] = jac.get_h2bl(X1,X2,X3)
+            geom['Lambda_bl2cart_cov'][i,j,k],geom['Lambda_bl2cart_con'][i,j,k] = jac.get_bl2cart(X1,X2,X3)
+    else:
+      geom['Lambda_h2bl_con'] = np.array(dfile['Lambda_h2bl_con'])
+      geom['Lambda_h2bl_cov'] = np.array(dfile['Lambda_h2bl_cov'])
+      geom['Lambda_bl2cart_con'] = np.array(dfile['Lambda_bl2cart_con'])
+      geom['Lambda_bl2cart_cov'] = np.array(dfile['Lambda_bl2cart_cov'])
     geom['Lambda_h2bl_con_3d'] = geom['Lambda_h2bl_con'].copy()
     geom['Lambda_h2bl_cov_3d'] = geom['Lambda_h2bl_cov'].copy()
     if force_2d:
