@@ -290,7 +290,7 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]) {
   double Jcon[NDIM][NDIM];
   jac_harm_to_bl(X, Jcov, Jcon);
   DLOOP2 {
-    if ((Jcon[mu][nu] > 0 || dxdX[mu][nu] > 0) &&
+    if ((fabs(Jcon[mu][nu]) > 1e-10 || fabs(dxdX[mu][nu]) > 1e-10) &&
         (fabs(Jcon[mu][nu] - dxdX[mu][nu]) >=
             1e-8 * 0.5 * (fabs(Jcon[mu][nu]) + fabs(dxdX[mu][nu])))) {
       printf("BAD Jcon! %d %d, %e %e\n", mu, nu, Jcon[mu][nu], dxdX[mu][nu]);
