@@ -153,8 +153,7 @@ void jac_harm_to_bl(
     double y, thJ;
     thJ_of_X(X, &y, &thJ);
     double dydX2 = 2.;
-    double dthJdy =
-        poly_norm * (pow(y / poly_xt, poly_alpha) + 1. / (1. + poly_alpha));
+    double dthJdy = poly_norm*(1 + pow(y/poly_xt,poly))
     double dthJdX2 = dthJdy * dydX2;
     dthdX1 = -mks_smooth * (thJ - thG) * exp(mks_smooth * (startx[1] - X[1]));
     dthdX2 =
