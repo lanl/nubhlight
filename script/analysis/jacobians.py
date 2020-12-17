@@ -85,7 +85,7 @@ class Jacobians:
             dydX2 = 2.
             dthJdy = poly_norm*(1+(y/poly_xt)**poly_alpha)
             dthJdX2 = y*dydX2
-            dthdX1 = -mks_smooth*(thJ-thG)*np.exp(mks_smooth*(xtartx[1]-X1))
+            dthdX1 = -mks_smooth*(thJ-thG)*np.exp(mks_smooth*(startx[1]-X1))
             dthdX2 = dthGdX2 + np.exp(mks_smooth*(startx[1]-X1))*(dthJdX2-dthGdX2)
         else:
             dthdX1 = 0.0
