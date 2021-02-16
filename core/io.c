@@ -1501,6 +1501,9 @@ void restart_read(char *fname) {
   do {
     sprintf(dsetnam, "photons_%08d", ++num_datasets);
   } while (H5Lexists(file_id, dsetnam, H5P_DEFAULT));
+  if (mpi_myrank() == 0) {
+    printf("Number of particle datasets = %d\n", num_datasets);
+  }
   // Compute how much space to allocate
   hsize_t dims[1];
   size_t  nph_in     = 0;
@@ -1512,7 +1515,7 @@ void restart_read(char *fname) {
     hid_t space = H5Dget_space(ph_dsets[n]);
     H5Sget_simple_extent_dims(space, dims, NULL);
     if (n == mpi_myrank() ||
-        (n > 0 && mpi_myrank() > 0 && n % mpi_myrank() == 0)) {
+        (n > 0 && mpi_myrank() > 1 && n % mpi_myrank() == 0)) {
       dset_sizes[n] = dims[0];
       nph_in += dset_sizes[n];
     }
@@ -1523,11 +1526,16 @@ void restart_read(char *fname) {
   struct of_photon *rdata = safe_malloc(nph_in * sizeof(struct of_photon));
   if (nph_in > 0) {
     int noffset = 0;
-    for (int n = 0; n < num_datasets++; n++) {
+    for (int n = 0; n < num_datasets; n++) {
+      herr_t status = 1;
       if (n == mpi_myrank() ||
-          (n > 0 && mpi_myrank() > 0 && n % mpi_myrank() == 0)) {
-        H5Dread(ph_dsets[mpi_myrank()], phmemtype, H5S_ALL, H5S_ALL,
-            H5P_DEFAULT, rdata + noffset);
+          (n > 0 && mpi_myrank() > 1 && n % mpi_myrank() == 0)) {
+        status = H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            &rdata[noffset]);
+        if (status < 0) {
+          printf("HDF5 error!\n");
+          exit(1);
+        }
         noffset += dset_sizes[n];
       }
     }
@@ -1552,6 +1560,8 @@ void restart_read(char *fname) {
       ph_in_tmp = ph_in_tmp->next;
     }
 
+    printf("[%d]\tdividing datasets\n", mpi_myrank()); // debug
+
     // Divide linked list among openmp processes equitably
     int thread_start = (int)(get_rand() * nthreads);
     // int ph_per_thread = nph_in/nthreads;
@@ -1572,7 +1582,7 @@ void restart_read(char *fname) {
   }
 
   free(rdata);
-  for (int n = 0; n < mpi_nprocs(); n++) {
+  for (int n = 0; n < num_datasets; n++) {
     H5Dclose(ph_dsets[n]);
   }
   free(ph_dsets);
@@ -1722,7 +1732,7 @@ int restart_init() {
       }
       int max_comm_steps = 2 * N1CPU * N2CPU * N3CPU; // VERY conservative.
       for (int comm_steps = 0; comm_steps <= max_comm_steps; ++comm_steps) {
-        bound_superphotons(P, t, dt);
+        bound_superphotons(P, t, 0);
       }
     }
 #endif // RADIATION

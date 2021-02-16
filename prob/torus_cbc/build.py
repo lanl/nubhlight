@@ -38,7 +38,7 @@ DIAGNOSTIC = '-diag' in sys.argv
 NOTRACE = '-notrace' in sys.argv
 SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
-RESTARTTEST = '-restartest' in sys.argv
+RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
@@ -241,8 +241,8 @@ else:
 # output
 DTd = 1.e-2 if INITIAL else 5.
 DTl = 1.e-2 if INITIAL else 5.e-1
-DTr = 1 if RESTARTTEST else 100
-DNr = 1000 # if THREED else 1e10
+DTr = 100
+DNr = 50 if RESTARTTEST else 1000
 
 if N1N2N3TOT_FROM_CLI:
     if not all([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]):
