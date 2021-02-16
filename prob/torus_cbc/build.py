@@ -38,6 +38,7 @@ DIAGNOSTIC = '-diag' in sys.argv
 NOTRACE = '-notrace' in sys.argv
 SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
+RESTARTTEST = '-restartest' in sys.argv
 HDF = '-hdf' in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
@@ -200,7 +201,7 @@ LRHO_GUESS = log10(RHO_unit)
 # Rmax = Rmax_cm*(cgs['CL']**2)/(cgs['GNEWT']*cgs['MSOLAR']*MBH)
 
 # derived parameters
-if TRACERTEST:
+if TRACERTEST or RESTARTTEST:
     Rout = 250.0
 elif THREED or FAKETHREED:
     Rout = 1000.
@@ -240,7 +241,7 @@ else:
 # output
 DTd = 1.e-2 if INITIAL else 5.
 DTl = 1.e-2 if INITIAL else 5.e-1
-DTr = 100
+DTr = 1 if RESTARTTEST else 100
 DNr = 1000 # if THREED else 1e10
 
 if N1N2N3TOT_FROM_CLI:
@@ -250,7 +251,7 @@ if N1N2N3TOT_FROM_CLI:
     N2TOT = int(sys.argv[sys.argv.index('-n2tot') + 1])
     N3TOT = int(sys.argv[sys.argv.index('-n3tot') + 1])
 else:
-    if TRACERTEST:
+    if TRACERTEST or RESTARTTEST:
         N1TOT = 36
         N2TOT = 36
         N3TOT = 24
@@ -306,7 +307,8 @@ NCELL_TOT    = N1TOT*N2TOT*N3TOT
 NPH_TOT      = NCELL_TOT*NPH_PER_CELL
 NPH_PER_PROC = NPH_TOT / NCPU_TOT
 
-NTCR_TOT     = max(32000,NCELL_TOT)
+#NTCR_TOT     = max(32000,NCELL_TOT)
+NTCR_TOT     = max(2000000,NCELL_TOT)
 if TRACERS:
     bhl.report_var("NTCR_TOT",NTCR_TOT)
 if not NEUTRINOS:

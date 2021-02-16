@@ -34,6 +34,18 @@ void bound_prim(grid_prim_type prim) {
             prim[i][j][k][B1] *= rescale_fac;
             prim[i][j][k][B2] *= rescale_fac;
             prim[i][j][k][B3] *= rescale_fac;
+#elif X1L_GAS_BOUND == BC_REFLECTING
+            int iactive = NG;
+            PLOOP {
+              // assume only B and U are reflected.
+              double reflect    = (ip == U1 || ip == B1) ? -1.0 : 1.0;
+              prim[i][j][k][ip] = reflect * prim[2 * iactive - i - 1][j][k][ip];
+              double rescale_fac =
+                  ggeom[2 * iactive - i - 1][j][CENT].g / geom[i][j][CENT].g;
+              prim[i][j][k][B1] *= rescale_fac;
+              prim[i][j][k][B2] *= rescale_fac;
+              prim[i][j][k][B3] *= rescale_fac;
+            }
 #elif X1L_GAS_BOUND == BC_PROB
             bound_gas_prob_x1l(i, j, k, prim);
 #elif X1L_GAS_BOUND != BC_PERIODIC
