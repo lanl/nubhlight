@@ -75,7 +75,7 @@ bhl.config.set_cparm('OPENMP', False)
 bhl.config.set_cparm('METRIC', 'MINKOWSKI')
 
 # FLUID
-bhl.config.set_cparm('RECONSTRUCTION', 'LINEAR')
+bhl.config.set_cparm('RECONSTRUCTION', 'WENO')
 bhl.config.set_cparm('X1L_GAS_BOUND', 'BC_OUTFLOW')
 bhl.config.set_cparm('X1R_GAS_BOUND', 'BC_OUTFLOW')
 bhl.config.set_cparm('X2L_GAS_BOUND', 'BC_OUTFLOW')
