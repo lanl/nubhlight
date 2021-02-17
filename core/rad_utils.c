@@ -803,4 +803,20 @@ void        check_nu_type(const char *location) {
 }
 
 #endif // NEUTRINOS
+
+unsigned long int count_particles_local() {
+  unsigned long int count = 0;
+
+#pragma omp parallel reduction(+ : count)
+  {
+    struct of_photon *ph = photon_lists[omp_get_thread_num()];
+    while (ph != NULL) {
+      if (ph->w > SMALL)
+        count++;
+      ph = ph->next;
+    }
+  }
+  return count;
+}
+
 #endif // RADIATION

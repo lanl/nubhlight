@@ -1514,8 +1514,7 @@ void restart_read(char *fname) {
     ph_dsets[n] = H5Dopen(file_id, dsetnam, H5P_DEFAULT);
     hid_t space = H5Dget_space(ph_dsets[n]);
     H5Sget_simple_extent_dims(space, dims, NULL);
-    if (n == mpi_myrank() ||
-        (n > 0 && mpi_myrank() > 1 && n % mpi_myrank() == 0)) {
+    if (n % mpi_nprocs() == mpi_myrank()) {
       dset_sizes[n] = dims[0];
       nph_in += dset_sizes[n];
     }
@@ -1528,8 +1527,7 @@ void restart_read(char *fname) {
     int noffset = 0;
     for (int n = 0; n < num_datasets; n++) {
       herr_t status = 1;
-      if (n == mpi_myrank() ||
-          (n > 0 && mpi_myrank() > 1 && n % mpi_myrank() == 0)) {
+      if (n % mpi_nprocs() == mpi_myrank()) {
         status = H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             &rdata[noffset]);
         if (status < 0) {
@@ -1730,10 +1728,13 @@ int restart_init() {
       if (mpi_myrank() == 0) {
         printf("Shuffling and load balancing particles\n");
       }
-      int max_comm_steps = 2 * N1CPU * N2CPU * N3CPU; // VERY conservative.
-      for (int comm_steps = 0; comm_steps <= max_comm_steps; ++comm_steps) {
+      // number needed for particle to cross whole domain
+      int max_comm_steps = 2 * (N1CPU + N2CPU + N3CPU);
+      for (int comm_steps = 0; comm_steps < max_comm_steps; ++comm_steps) {
         bound_superphotons(P, t, 0);
       }
+      printf("[%d] nph after balancing = %lu\n", mpi_myrank(),
+          (unsigned long int)count_particles_local());
     }
 #endif // RADIATION
   }
