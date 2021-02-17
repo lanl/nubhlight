@@ -1526,14 +1526,9 @@ void restart_read(char *fname) {
   if (nph_in > 0) {
     int noffset = 0;
     for (int n = 0; n < num_datasets; n++) {
-      herr_t status = 1;
       if (n % mpi_nprocs() == mpi_myrank()) {
-        status = H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+        H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             &rdata[noffset]);
-        if (status < 0) {
-          printf("HDF5 error!\n");
-          exit(1);
-        }
         noffset += dset_sizes[n];
       }
     }
@@ -1557,8 +1552,6 @@ void restart_read(char *fname) {
       len_list++;
       ph_in_tmp = ph_in_tmp->next;
     }
-
-    printf("[%d]\tdividing datasets\n", mpi_myrank()); // debug
 
     // Divide linked list among openmp processes equitably
     int thread_start = (int)(get_rand() * nthreads);
