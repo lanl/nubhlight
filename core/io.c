@@ -8,6 +8,7 @@
 
 #include "decs.h"
 #include <hdf5.h>
+#include <hdf5_hl.h>
 
 #define MAX_GRID_DIM (5)
 
@@ -1494,25 +1495,43 @@ void restart_read(char *fname) {
 #undef RANK
   }
   // Superphoton datasets -- each processor must create all datasets
+  // compute how many datasets are needed
+  char dsetnam[STRLEN];
+  int  num_datasets = -1;
+  do {
+    sprintf(dsetnam, "photons_%08d", ++num_datasets);
+  } while (H5Lexists(file_id, dsetnam, H5P_DEFAULT));
+  if (mpi_myrank() == 0) {
+    printf("Number of particle datasets = %d\n", num_datasets);
+  }
+  // Compute how much space to allocate
   hsize_t dims[1];
-  size_t  nph_in   = 0;
-  hid_t * ph_dsets = safe_malloc((size_t)mpi_nprocs() * sizeof(hid_t));
-  char    dsetnam[STRLEN];
-  for (int n = 0; n < mpi_nprocs(); n++) {
+  size_t  nph_in     = 0;
+  hid_t * ph_dsets   = safe_malloc((size_t)num_datasets * sizeof(hid_t));
+  size_t *dset_sizes = safe_malloc((size_t)num_datasets * sizeof(size_t));
+  for (int n = 0; n < num_datasets; n++) {
     sprintf(dsetnam, "photons_%08d", n);
     ph_dsets[n] = H5Dopen(file_id, dsetnam, H5P_DEFAULT);
     hid_t space = H5Dget_space(ph_dsets[n]);
     H5Sget_simple_extent_dims(space, dims, NULL);
-    if (n == mpi_myrank())
-      nph_in = dims[0];
+    if (n % mpi_nprocs() == mpi_myrank()) {
+      dset_sizes[n] = dims[0];
+      nph_in += dset_sizes[n];
+    }
     H5Sclose(space);
   }
-
   printf("[%i] nph_in = %lu\n", mpi_myrank(), (unsigned long int)nph_in);
+  // Actually read datasets
   struct of_photon *rdata = safe_malloc(nph_in * sizeof(struct of_photon));
   if (nph_in > 0) {
-    H5Dread(ph_dsets[mpi_myrank()], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-        rdata);
+    int noffset = 0;
+    for (int n = 0; n < num_datasets; n++) {
+      if (n % mpi_nprocs() == mpi_myrank()) {
+        H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            &rdata[noffset]);
+        noffset += dset_sizes[n];
+      }
+    }
 
     struct of_photon *tmp = NULL, *ph_in = NULL;
     for (int n = 0; n < nph_in; n++) {
@@ -1554,10 +1573,11 @@ void restart_read(char *fname) {
   }
 
   free(rdata);
-  for (int n = 0; n < mpi_nprocs(); n++) {
+  for (int n = 0; n < num_datasets; n++) {
     H5Dclose(ph_dsets[n]);
   }
   free(ph_dsets);
+  free(dset_sizes);
 #endif // RADIATION
 
   H5Fflush(file_id, H5F_SCOPE_GLOBAL);
@@ -1696,6 +1716,18 @@ int restart_init() {
 #if SCATTERING
       { init_all_hotcross(); }
 #endif
+
+      // Check boundary conditions and put photons where they belong
+      if (mpi_myrank() == 0) {
+        printf("Shuffling and load balancing particles\n");
+      }
+      // number needed for particle to cross whole domain
+      int max_comm_steps = 2 * (N1CPU + N2CPU + N3CPU);
+      for (int comm_steps = 0; comm_steps < max_comm_steps; ++comm_steps) {
+        bound_superphotons(P, t, 0);
+      }
+      printf("[%d] nph after balancing = %lu\n", mpi_myrank(),
+          (unsigned long int)count_particles_local());
     }
 #endif // RADIATION
   }

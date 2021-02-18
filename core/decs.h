@@ -1028,8 +1028,9 @@ void push_superphotons(grid_prim_type P, grid_prim_type Prad, double dt);
 
 // rad_utils.c
 #if RADIATION
-void init_rad(grid_prim_type Prad);
-void init_superphoton_resolution();
+unsigned long int count_particles_local();
+void              init_rad(grid_prim_type Prad);
+void              init_superphoton_resolution();
 void update_superphoton_resolution(grid_prim_type Prad, grid_eosvar_type extra);
 double linear_interp_log(double x, double *table, double lmin, double dl);
 void   list_remove(struct of_photon **ph, struct of_photon **ph_head,
