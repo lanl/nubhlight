@@ -908,13 +908,14 @@ class TracerData(TracerDataBase):
 
   def get_trace(self,t_id):
     import numpy as np
+    # id
     mask = self.data['id'] == t_id
     trace_data = self.filter(mask)
+    # sort
     trace_data = self.sort_trace(trace_data,'time')
-    # Can't remember why this is here... doesn't seem reasonable...?
-    # while np.abs(trace_data['time'][-1] - trace_data['time'][-2]) <= 1e-13:
-    #   for k,v in trace_data.items():
-    #     trace_data[k] = v[:-1]
+    # uniqueness
+    _, mask = np.unique(self.data['time'], return_index=True)
+    trace_data = self.filter(mask)
     return Trace(self.units,trace_data)
 
   def remove_trace(self,t_id):
