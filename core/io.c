@@ -1719,7 +1719,7 @@ int restart_init() {
 
       // Check boundary conditions and put photons where they belong
       if (mpi_myrank() == 0) {
-        printf("Shuffling and load balancing particles\n");
+        printf("Shuffling particles\n");
       }
       // number needed for particle to cross whole domain
       int max_comm_steps = 2 * (N1CPU + N2CPU + N3CPU);
