@@ -25,6 +25,7 @@ import os
 flags_base = '-Wall -Werror -fopenmp'
 fcflags = ''
 fflags_base = '-fopenmp'
+home = os.environ['HOME']
 
 def matches_host():
   host = os.uname()[1]
@@ -36,11 +37,11 @@ def get_options():
   host = {}
 
   host['NAME']           = os.uname()[1]
-  host['COMPILER']       = '/usr/local/hdf5-parallel/bin/h5pcc'
+  host['COMPILER']       = home + '/local/hdf5-parallel/bin/h5pcc'
   host['COMPILER_FLAGS'] = flags_base + ' ' + fcflags + ' ' + '-O2 -march=native'
   host['DEBUG_FLAGS']    = flags_base + ' ' + fcflags + ' ' + '-g -O0'
   host['GSL_DIR']        = ''
-  host['FORTRAN_COMP']   = '/usr/local/hdf5-parallel/bin/h5pfc'
+  host['FORTRAN_COMP']   = home + '/local/hdf5-parallel/bin/h5pfc'
   host['FCFLAGS']        = fflags_base + ' ' + '-cpp -O2'
   host['FORTLINK']       = '-lgfortran -lhdf5_fortran'
   host['FORTLIB']        = ''
