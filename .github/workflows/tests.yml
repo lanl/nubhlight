@@ -26,7 +26,7 @@ jobs:
           env:
             cache-name: hdf5-1.8.21-parallel
           with:
-            path: ${{ home }}/local/hdf5-parallel
+            path: ~/local/hdf5-parallel
             key: ${{ runner.os }}-${{ env.cache-name }}
         - name: Install hdf5
           if: steps.h5cache.outputs.cache-hit != 'true'
@@ -43,7 +43,7 @@ jobs:
           env:
             cache-name: miniconda
           with:
-            path: ${{ home }}/local/miniconda3
+            path: ~/local/miniconda3
             key: ${{ runner.os }}-${{ env.cache-name }}
         - name: Install Python
           if: steps.pycache.outputs.cache-hit != 'true'
