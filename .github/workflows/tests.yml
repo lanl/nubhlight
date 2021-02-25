@@ -64,4 +64,3 @@ jobs:
             export PATH=/usr/local/bin:${PATH}
             cd test
             python tracers1d.py
-            python test_all.py -fast
