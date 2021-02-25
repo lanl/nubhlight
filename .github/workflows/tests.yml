@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+    tests:
+      name: Run Unit and Regression Tests
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: install apt packages
+          run: |
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get install -y --force-yes -qq apt-utils wget git
+            sudo apt-get install -y --force-yes -qq build-essential gfortran mpich
+            sudo apt-get install -y --force-yes -qq libmpich-dev libgsl0-dbg libgsl0-dev
+        - name: Cache HDF5
+          id: h5cache
+          uses: actions/cache@v2
+          env:
+            cache-name: hdf5-1.8.21-parallel
+          with:
+            path: ~/local/hdf5-parallel
+            key: ${{ runner.os }}-${{ env.cache-name }}
+        - name: Install hdf5
+          if: steps.h5cache.outputs.cache-hit != 'true'
+          run: |
+            wget --quiet https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.21/src/hdf5-1.8.21.tar.gz
+            tar -xzf hdf5-1.8.21.tar.gz
+            cd hdf5-1.8.21
+            FC=mpif90 CC=mpicc ./configure --enable-parallel --enable-fortran --prefix=${HOME}/local/hdf5-parallel
+            make -sj
+            make -s install
+        - name: Cache Python
+          id: pycache
+          uses: actions/cache@v2
+          env:
+            cache-name: miniconda
+          with:
+            path: ~/local/miniconda3
+            key: ${{ runner.os }}-${{ env.cache-name }}
+        - name: Install Python
+          if: steps.pycache.outputs.cache-hit != 'true'
+          run: |
+            wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            bash Miniconda3-latest-Linux-x86_64.sh -b -p ${HOME}/local//miniconda3
+            ${HOME}/local/miniconda3/bin/conda install --yes --quiet numpy scipy h5py matplotlib pip psutil
+        - name: Configure local python settings
+          run: |
+            sudo mkdir -p /usr/local/bin
+            sudo ln -s ${HOME}/local/miniconda3/bin/python /usr/local/bin/python
+            mkdir -p ${HOME}/.config/matplotlib
+            cp script/dependencies/matplotlibrc ${HOME}/.config/matplotlib
+        - name: build and run tests
+          run: |
+            export CC=${HOME}/local/hdf5-parallel/bin/h5pcc
+            export FC=${HOME}/local/hdf5-parallel/bin/h5pfc
+            export PATH=/usr/local/bin:${PATH}
+            cd test
+            python tracers1d.py
