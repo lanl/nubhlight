@@ -5,8 +5,6 @@ nubhlight: General Relativistic Neutrino Radiation Magnetohydrodynamics with Mon
 
 ![divergence-rates](data/gw170817-sinh10-divergence-rates-tavg.png)
 
-[![Build Status](https://travis-ci.com/lanl/nubhlight.svg?branch=master)](https://travis-ci.com/lanl/nubhlight)
-
 This software is approved for open-source release under LA-CC number C20019. Nubhlight was first presented in
 
 - [Miller, J. M., Ryan, B. R., Dolence, J. C. 2019, ApJS, 241:2](https://doi.org/10.3847/1538-4365/ab09fc)
