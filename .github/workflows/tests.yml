@@ -51,6 +51,8 @@ jobs:
             wget --quiet https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
             sudo bash Miniconda3-latest-Linux-x86_64.sh -b -p /usr/local/miniconda3
             sudo /usr/local/miniconda3/bin/conda install --yes --quiet numpy scipy h5py matplotlib pip psutil
+        - name: Configure local python settings
+          run: |
             sudo mkdir -p /usr/local/bin
             sudo ln -s /usr/local/miniconda3/bin/python /usr/local/bin/python
             mkdir -p ${HOME}/.config/matplotlib
@@ -61,5 +63,5 @@ jobs:
             export FC=/usr/local/hdf5-parallel/bin/h5pfc
             export PATH=/usr/local/bin:${PATH}
             cd test
+            python tracers1d.py
             python test_all.py -fast
-
