@@ -1,5 +1,8 @@
 nubhlight: General Relativistic Neutrino Radiation Magnetohydrodynamics with Monte Carlo Transport
 ===
+
+![Build Status](https://github.com/LANL/nubhlight/actions/workflows/tests.yml/badge.svg)
+
 ![divergence-rates](data/gw170817-sinh10-divergence-rates-tavg.png)
 
 [![Build Status](https://travis-ci.com/lanl/nubhlight.svg?branch=master)](https://travis-ci.com/lanl/nubhlight)
