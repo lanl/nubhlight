@@ -321,7 +321,7 @@ void init_prob() {
     }
 
     // Only let cells inside the torus (radius greater than rin and non-minimal 
-    //     // enthalpy) contribute to pressmax
+    // enthalpy) contribute to pressmax
     if (r > rin && lnh[i][j][k] >= 0.) {
 #if EOS == EOS_TYPE_TABLE
       EOS_SC_fill(PsaveLocal[i][j][k], extra[i][j][k]);
