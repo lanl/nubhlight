@@ -16,8 +16,8 @@ static char   bfield_type[STRLEN];
 static int    renormalize_densities;
 static double rin;
 static double rmax;
-static double beta;
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+static double beta; // desired minimum ratio of gas to magnetic pressure
+#if EOS == EOS_TYPE_GAMMA_GASPRESS || GAMMA_FALLBACK
 static double kappa_eos;
 #endif
 #if EOS == EOS_TYPE_TABLE
@@ -44,7 +44,7 @@ void set_problem_params() {
   set_param("rmax", &rmax);
   set_param("beta", &beta);
   set_param("renorm_dens", &renormalize_densities);
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA_GASPRESS || GAMMA_FALLBACK
   set_param("kappa_eos", &kappa_eos);
 #endif
 #if EOS == EOS_TYPE_TABLE
@@ -221,7 +221,11 @@ void init_prob() {
       disk_cell[i][j][k] = 1;
 
       hm1 = exp(lnh[i][j][k]) - 1.;
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA_RADPRESS
+      fprintf(stdout, "entropy: %f\n", entropy);
+      rho = (64./3) * (pow(hm1, 3)/pow(entropy, 4)) * (pow((gam - 1.)/gam), 3);
+      u = hm1*rho/gam;
+#elif EOS == EOS_TYPE_GAMMA_GASPRESS || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
       u   = kappa_eos * pow(rho, gam) / (gam - 1.);
 #elif EOS == EOS_TYPE_TABLE
@@ -316,6 +320,8 @@ void init_prob() {
       PsaveLocal[i][j][k][UU] /= rhomax;
     }
 
+    // Only let cells inside the torus (radius greater than rin and non-minimal 
+    //     // enthalpy) contribute to pressmax
     if (r > rin && lnh[i][j][k] >= 0.) {
 #if EOS == EOS_TYPE_TABLE
       EOS_SC_fill(PsaveLocal[i][j][k], extra[i][j][k]);
@@ -376,7 +382,7 @@ void init_prob() {
         mtot, mtot * M_unit, mtot * M_unit / MSUN);
   }
 // debug
-#if EOS == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE || EOS_TYPE_GAMMA_RADPRESS
   if (mpi_io_proc()) {
     fprintf(stdout, "Calculating max entropy:\n");
   }

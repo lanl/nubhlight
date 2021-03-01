@@ -18,9 +18,10 @@ from units import UnitSystem
 from math import log10,ceil
 PROB = 'torus_cbc'
 
-DO_GAMMA = '-gamma' in sys.argv # No table
+DO_GAMMA_RADPRESS = '-gammaradpress' in sys.argv # No table
+DO_GAMMA_GASPRESS = '-gammagaspress' in sys.argv # No table
 GAMTABLE = '-gamtable' in sys.argv # fake table
-RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
+RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA_RADPRESS or DO_GAMMA_GASPRESS or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
 NOB = '-nob' in sys.argv # or INITIAL # no B fields
 TOROIDALB = "-toroidalb" in sys.argv
@@ -51,6 +52,7 @@ QUAD = '-quad' in sys.argv # quadrant symmetry
 KILL = '-kill' in sys.argv # kill all packets
 
 ENT_FROM_CLI  = '-ent' in sys.argv
+KAPPA_FROM_CLI = '-kappa' in sys.argv
 RHO_FROM_CLI  = '-rho' in sys.argv
 RIN_FROM_CLI  = '-rin' in sys.argv
 RMAX_FROM_CLI = '-rmax' in sys.argv
@@ -146,11 +148,30 @@ bhl.report_var('ABH',ABH)
 if USE_TABLE:
     bhl.report_var('Disk Ye',YE)
 
+if USE_TABLE:
+    EOS_TYPE = "EOS_TYPE_TABLE"
+elif DO_GAMMA_RADPRESS:
+    EOS_TYPE = "EOS_TYPE_GAMMA_RADPRESS"
+elif DO_GAMMA_GASPRESS:
+    EOS_TYPE = "EOS_TYPE_GAMMA_GASPRESS"
+
 if ENT_FROM_CLI:
     ENTROPY = float(sys.argv[sys.argv.index('-ent') + 1])
 else:
     ENTROPY = 4
+        if EOS_TYPE == "EOS_TYPE_GAMMA_RADPRESS":
+        print("Using the default initial entropy = 4.", end=' ')
+        print("Entropy is a required parameter in setting up radiation-pressure dominated disks.")
+
 bhl.report_var('ENTROPY',ENTROPY)
+
+if KAPPA_FROM_CLI:
+    KAPPA_EOS = float(sys.argv[sys.argv.index('-kappa') + 1])
+else:
+    KAPPA_EOS = 1.e-3
+    if EOS_TYPE == "EOS_TYPE_GAMMA_GASPRESS":
+        print("Using the default initial kappa = 1.e-3.", end=' ')
+        print("kappa is a required parameter in setting up gas-pressure dominated disks.")
 
 if CLASSIC: # classic harm disk
     # Rmax and rho fixed
@@ -211,8 +232,7 @@ else:
 # use selection instead
 Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
 Rout_vis = Rout
-GAMMA = 13./9.
-KAPPA = 1.e-3
+GAMMA = 4./3.
 L_unit = cgs['GNEWT']*cgs['MSOLAR']*MBH/(cgs['CL']**2)
 M_UNIT = RHO_unit*(L_unit**3)
 
@@ -314,7 +334,6 @@ if TRACERS:
 if not NEUTRINOS:
     NPH_PER_PROC = 0.0
 
-EOS = "EOS_TYPE_TABLE" if USE_TABLE else "EOS_TYPE_GAMMA"
 NVP0 = 3
 NVAR_PASSIVE = NVP0 if USE_TABLE else 0
 #GAMMA_FALLBACK = True
@@ -389,7 +408,7 @@ bhl.config.set_cparm('X3R_INFLOW', False)
 bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
 
 # EOS
-bhl.config.set_cparm("EOS", EOS)
+bhl.config.set_cparm("EOS_TYPE", EOS_TYPE)
 bhl.config.set_cparm('NVAR_PASSIVE', NVAR_PASSIVE)
 bhl.config.set_cparm('GAMMA_FALLBACK', GAMMA_FALLBACK)
 
@@ -466,7 +485,10 @@ if USE_TABLE:
         bhl.config.set_rparm('lrho_guess','double',LRHO_GUESS)
 if USE_GAMMA or GAMMA_FALLBACK:
     bhl.config.set_rparm('gam', 'double', default = GAMMA)
-    bhl.config.set_rparm("kappa", "double", default = KAPPA)
+        if EOS_TYPE == "EOS_TYPE_GAMMA_RADPRESS":
+        bhl.config.set_rparm('entropy','double',ENTROPY)
+    elif EOS_TYPE == "EOS_TYPE_GAMMA_GASPRESS":
+        bhl.config.set_rparm("kappa_eos", "double", default = KAPPA_EOS)
 
 # Opacities
 if FORTRAN or HDF:

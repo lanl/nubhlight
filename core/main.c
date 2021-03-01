@@ -60,6 +60,12 @@ int main(int argc, char *argv[]) {
     #if EOS == EOS_TYPE_GAMMA
     fprintf(stdout, "          *  IDEAL GAS EOS                                           *\n");
     #endif
+    #if EOS == EOS_TYPE_GAMMA_GASPRESS
+    fprintf(stdout, "          *  GAS-PRESSURE DOMINATED EOS                    *\n");
+    #endif
+    #if EOS == EOS_TYPE_GAMMA_RADPRESS
+    fprintf(stdout, "          *  RADIATION-PRESSURE DOMINATED EOS              *\n");
+    #endif
     #if RADIATION == RADTYPE_LIGHT
     fprintf(stdout, "          *  RADIATION: PHOTON TRANSPORT                             *\n");
     #elif RADIATION == RADTYPE_NEUTRINOS

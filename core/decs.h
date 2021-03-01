@@ -196,9 +196,11 @@
 
 // EOS
 #define EOS_TYPE_GAMMA (0)
+#define EOS_TYPE_GAMMA_GASPRESS (0)
+#define EOS_TYPE_GAMMA_RADPRESS (0)
 #define EOS_TYPE_POLYTROPE (1)
 #define EOS_TYPE_TABLE (2)
-#if EOS == EOS_TYPE_GAMMA
+#if EOS == EOS_TYPE_GAMMA || EOS_TYPE_GAMMA_GASPRESS || EOS_TYPE_GAMMA_RADPRESS
 #define EOS_NUM_EXTRA (0)
 #define POLYTROPE_FALLBACK (0)
 #elif EPS == EOS_TYPE_POLYTROPE
@@ -787,7 +789,8 @@ double EOS_Theta_unit();
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 double EOS_Gamma_pressure_rho0_u(double rho, double u);
 double EOS_Gamma_pressure_rho0_w(double rho, double w);
-double EOS_Gamma_entropy_rho0_u(double rho, double u);
+double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u);
+double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u);
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u);
 double EOS_Gamma_adiabatic_constant_rho0_u(double rho, double u);
 double EOS_Gamma_sound_speed_rho0_u(double rho, double u);

@@ -161,7 +161,7 @@ int Utoprim(double U[NVAR], struct of_geom *geom, double prim[NVAR]) {
   // Return without updating non-B primitives
   if (rho0 < 0)
     return (5);
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || EOS_TYPE_GAMMA_GASPRESS || EOS_TYPE_GAMMA_RADPRESS || GAMMA_FALLBACK  
   if (u < 0)
     return (5);
 #endif

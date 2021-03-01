@@ -17,8 +17,12 @@ double EOS_Gamma_pressure_rho0_w(double rho, double w) {
   return ((w - rho) * (gam - 1.) / gam);
 }
 
-double EOS_Gamma_entropy_rho0_u(double rho, double u) {
+double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u) {  
   return (gam - 1.0) * EOS_Gamma_adiabatic_constant_rho0_u(rho, u);
+}
+
+double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u) {
+  return pow((64./3) * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
 }
 
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u) { return rho + u * gam; }

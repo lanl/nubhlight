@@ -98,7 +98,7 @@ char opac_file[STRLEN];
 #endif // neutrinos
 #endif // radiation
 
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || EOS_TYPE_GAMMA_GASPRESS || EOS_TYPE_GAMMA_RADPRESS || GAMMA_FALLBACK
 double gam;
 #endif
 #if EOS == EOS_TYPE_POLYTROPE
