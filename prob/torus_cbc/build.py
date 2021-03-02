@@ -502,9 +502,9 @@ if USE_TABLE:
         bhl.config.set_rparm('lrho_guess','double',LRHO_GUESS)
 if USE_GAMMA or GAMMA_FALLBACK:
     bhl.config.set_rparm('gam', 'double', default = GAMMA)
-    if EOS_TYPE == "EOS_TYPE_GAMMA" and GAMMA_EOS == "RADPRESS":
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "RADPRESS":
         bhl.config.set_rparm('entropy','double',ENTROPY)
-    elif EOS_TYPE == "EOS_TYPE_GAMMA" and GAMMA_EOS == "GASPRESS":
+    elif EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GASPRESS":
         bhl.config.set_rparm("kappa_eos", "double", default = KAPPA_EOS)
 
 # Opacities
