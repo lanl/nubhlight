@@ -18,10 +18,11 @@ from units import UnitSystem
 from math import log10,ceil
 PROB = 'torus_cbc'
 
-DO_GAMMA_RADPRESS = '-gammaradpress' in sys.argv # No table
-DO_GAMMA_GASPRESS = '-gammagaspress' in sys.argv # No table
+DO_GAMMA = '-gamma' in sys.argv # No table
+GAMMA_GASPRESS = '-gammagaspress' in sys.argv # No table
+GAMMA_RADPRESS = '-gammaradpress' in sys.argv # No table
 GAMTABLE = '-gamtable' in sys.argv # fake table
-RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA_RADPRESS or DO_GAMMA_GASPRESS or GAMTABLE)
+RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
 NOB = '-nob' in sys.argv # or INITIAL # no B fields
 TOROIDALB = "-toroidalb" in sys.argv
@@ -84,6 +85,9 @@ if any([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]) and not N1N2N3CPU_FROM_
     raise ValueError("Must turn on the -n1n2n3cpu flag if inputting -n1cpu, -n2cpu, -n3cpu")
 if any([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]) and not N1N2N3TOT_FROM_CLI:
     raise ValueError("Must turn on the -n1n2n3tot flag if inputting -n1tot, -n2tot, -n3tot")
+
+if any([GAMMA_GASPRESS, GAMMA_RADPRESS]) and not DO_GAMMA:
+    raise ValueError("Must turn on the -gamma flag if inputting -gammagaspress or -gammaradpress")
 
 if NOB:
     BFIELD = "none"
@@ -150,16 +154,28 @@ if USE_TABLE:
 
 if USE_TABLE:
     EOS_TYPE = "EOS_TYPE_TABLE"
-elif DO_GAMMA_RADPRESS:
-    EOS_TYPE = "EOS_TYPE_GAMMA_RADPRESS"
-elif DO_GAMMA_GASPRESS:
-    EOS_TYPE = "EOS_TYPE_GAMMA_GASPRESS"
-
+if DO_GAMMA:
+    EOS_TYPE = "EOS_TYPE_GAMMA"
+    if GAMMA_RADPRESS:
+        EOS_GAMMA = "GAMMA_RADPRESS"
+        GAMMA = 4./3.
+    elif GAMMA_GASPRESS:
+        EOS_GAMMA = "GAMMA_GASPRESS"
+        GAMMA = 5./3.
+    else:
+        print("Using the default gas-pressure dominated ideal gas EoS. 
+              You can choose gas-pressure dominated (add flag -gammagaspress),
+              radiation-pressure dominated (add flag -gammaradpress).")
+        EOS_GAMMA = "GAMMA_GASPRESS"
+        GAMMA = 4./3.
+else:
+    raise ValueError("Bad EOS chosen")
+        
 if ENT_FROM_CLI:
     ENTROPY = float(sys.argv[sys.argv.index('-ent') + 1])
 else:
     ENTROPY = 4
-        if EOS_TYPE == "EOS_TYPE_GAMMA_RADPRESS":
+        if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GAMMA_RADPRESS":
         print("Using the default initial entropy = 4.", end=' ')
         print("Entropy is a required parameter in setting up radiation-pressure dominated disks.")
 
@@ -169,7 +185,7 @@ if KAPPA_FROM_CLI:
     KAPPA_EOS = float(sys.argv[sys.argv.index('-kappa') + 1])
 else:
     KAPPA_EOS = 1.e-3
-    if EOS_TYPE == "EOS_TYPE_GAMMA_GASPRESS":
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GAMMA_GASPRESS":
         print("Using the default initial kappa = 1.e-3.", end=' ')
         print("kappa is a required parameter in setting up gas-pressure dominated disks.")
 
@@ -232,7 +248,6 @@ else:
 # use selection instead
 Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
 Rout_vis = Rout
-GAMMA = 4./3.
 L_unit = cgs['GNEWT']*cgs['MSOLAR']*MBH/(cgs['CL']**2)
 M_UNIT = RHO_unit*(L_unit**3)
 
@@ -408,7 +423,9 @@ bhl.config.set_cparm('X3R_INFLOW', False)
 bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
 
 # EOS
-bhl.config.set_cparm("EOS_TYPE", EOS_TYPE)
+bhl.config.set_cparm("EOS", EOS_TYPE)
+if EOS_TYPE == 'EOS_TYPE_GAMMA':
+    bhl.config.set_cparm("EOS_GAMMA", EOS_GAMMA)
 bhl.config.set_cparm('NVAR_PASSIVE', NVAR_PASSIVE)
 bhl.config.set_cparm('GAMMA_FALLBACK', GAMMA_FALLBACK)
 
@@ -485,9 +502,9 @@ if USE_TABLE:
         bhl.config.set_rparm('lrho_guess','double',LRHO_GUESS)
 if USE_GAMMA or GAMMA_FALLBACK:
     bhl.config.set_rparm('gam', 'double', default = GAMMA)
-        if EOS_TYPE == "EOS_TYPE_GAMMA_RADPRESS":
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and GAMMA_EOS == "RADPRESS":
         bhl.config.set_rparm('entropy','double',ENTROPY)
-    elif EOS_TYPE == "EOS_TYPE_GAMMA_GASPRESS":
+    elif EOS_TYPE == "EOS_TYPE_GAMMA" and GAMMA_EOS == "GASPRESS":
         bhl.config.set_rparm("kappa_eos", "double", default = KAPPA_EOS)
 
 # Opacities
