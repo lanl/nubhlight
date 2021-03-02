@@ -157,16 +157,16 @@ if USE_TABLE:
 if DO_GAMMA:
     EOS_TYPE = "EOS_TYPE_GAMMA"
     if GAMMA_RADPRESS:
-        EOS_GAMMA = "GAMMA_RADPRESS"
+        EOS_GAMMA = "RADPRESS"
         GAMMA = 4./3.
     elif GAMMA_GASPRESS:
-        EOS_GAMMA = "GAMMA_GASPRESS"
+        EOS_GAMMA = "GASPRESS"
         GAMMA = 5./3.
     else:
         print("Using the default gas-pressure dominated ideal gas EoS. 
               You can choose gas-pressure dominated (add flag -gammagaspress),
               radiation-pressure dominated (add flag -gammaradpress).")
-        EOS_GAMMA = "GAMMA_GASPRESS"
+        EOS_GAMMA = "GASPRESS"
         GAMMA = 4./3.
 else:
     raise ValueError("Bad EOS chosen")
@@ -175,7 +175,7 @@ if ENT_FROM_CLI:
     ENTROPY = float(sys.argv[sys.argv.index('-ent') + 1])
 else:
     ENTROPY = 4
-        if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GAMMA_RADPRESS":
+        if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "RADPRESS":
         print("Using the default initial entropy = 4.", end=' ')
         print("Entropy is a required parameter in setting up radiation-pressure dominated disks.")
 
@@ -185,7 +185,7 @@ if KAPPA_FROM_CLI:
     KAPPA_EOS = float(sys.argv[sys.argv.index('-kappa') + 1])
 else:
     KAPPA_EOS = 1.e-3
-    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GAMMA_GASPRESS":
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GASPRESS":
         print("Using the default initial kappa = 1.e-3.", end=' ')
         print("kappa is a required parameter in setting up gas-pressure dominated disks.")
 
