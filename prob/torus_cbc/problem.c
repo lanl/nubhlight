@@ -44,10 +44,10 @@ void set_problem_params() {
   set_param("rmax", &rmax);
   set_param("beta", &beta);
   set_param("renorm_dens", &renormalize_densities);
-#if (EOS_TYPE == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
   set_param("kappa_eos", &kappa_eos);
 #endif
-#if EOS_TYPE == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE
   set_param("const_ye", &const_ye);
 #if !GAMMA_FALLBACK
   set_param("entropy", &entropy);
@@ -68,7 +68,7 @@ void init_prob() {
   double SSin, hm1;
 
 // Diagnostics for entropy
-#if EOS_TYPE == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE
   double ent, entmax;
 #endif
 
@@ -82,7 +82,7 @@ void init_prob() {
   double rhomin, umin;
   rhomin = RHOMINLIMIT;
   umin   = UUMINLIMIT;
-#if EOS_TYPE == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE
   umin = EOS_SC_get_minu(rhomin, const_ye, umin);
 #endif
 
@@ -94,7 +94,7 @@ void init_prob() {
   PASSTYPE(PASSIVE_START + 1) = PASSTYPE_NUMBER;
 #endif
 
-#if EOS_TYPE == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE
   double ye, ye_atm;
 #if !GAMMA_FALLBACK
   // guesses. Should be function local.
