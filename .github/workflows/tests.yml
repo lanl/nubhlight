@@ -17,6 +17,7 @@ jobs:
         - name: install apt packages
           run: |
             export DEBIAN_FRONTEND=noninteractive
+            sudo apt update -y --force-yes -qq
             sudo apt-get install -y --force-yes -qq apt-utils wget git
             sudo apt-get install -y --force-yes -qq build-essential gfortran mpich
             sudo apt-get install -y --force-yes -qq libmpich-dev libgsl0-dbg libgsl0-dev
