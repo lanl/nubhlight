@@ -229,7 +229,7 @@ void fixup1zone(
   fixup_passive(i, j, k, pv, pv_prefloor);
 #endif
 
-#if ELECTRONS && EOS == EOS_TYPE_GAMMA_GASPRESS  
+#if ELECTRONS && EOS == EOS_TYPE_GAMMA && GAMMA_EOS == GASPRESS
   // Reset entropy after floors
   pv[KTOT] = EOS_Gamma_Gaspress_entropy_rho0_u(pv[RHO], pv[UU]);
 
@@ -240,6 +240,10 @@ void fixup1zone(
     pv[UU]   = KTOTMAX * pow(pv[RHO], gam) / (gam - 1.);
     pv[KTOT] = KTOTMAX;
   }
+
+#elif ELECTRONS && EOS == EOS_TYPE_GAMMA && GAMMA_EOS == RADPRESS
+  // Reset entropy after floors
+  pv[KTOT] = EOS_Gamma_Radpress_entropy_rho0_u(pv[RHO], pv[UU]);
 #endif // ELECTRONS
 
   // Limit gamma with respect to normal observer
