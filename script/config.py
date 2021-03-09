@@ -349,6 +349,10 @@ def build(PROBLEM, PATHS):
      and CPARMS['EOS'] != 'EOS_TYPE_GAMMA':
     raise ValueError("ELECTRONS only compatible with Gamma law EOS.\n"
                      +"Please set EOS = EOS_TYPE_GAMMA.\n")
+  if CPARMS['EOS'] == 'EOS_TYPE_GAMMA':
+    if not util.parm_is_active(CPARMS, 'EOS_GAMMA'):
+      set_cparm('EOS_GAMMA', "GASPRESS")
+      print_config("Gamma law entropy type", CPARMS["EOS_GAMMA"])
 
   if CPARMS['EOS'] == 'EOS_TYPE_TABLE' and CPARMS['NVAR_PASSIVE'] < 2:
     raise ValueError("Tabulated EOS requires at least two passive scalars\n"
