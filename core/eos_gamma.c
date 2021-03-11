@@ -22,7 +22,8 @@ double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u) {
 }
 
 double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u) {
-  return pow((64./3) * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
+  double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4)/M_unit;
+  return pow((64./3) * a * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
 }
 
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u) { return rho + u * gam; }
@@ -66,8 +67,15 @@ double EOS_Gamma_sound_speed_rho0_u(double rho, double u) {
 double EOS_Gamma_u_press(double press) { return press / (gam - 1.); }
 
 double EOS_Gamma_temp(double rho, double u) {
-  // return TEMP_unit*(gam - 1.)*u/rho;
-  return (gam - 1.) * u / rho;
+  #if EOS_GAMMA == RADPRESS
+    double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4)/M_unit;
+    double press = (gam - 1.) * u;
+    double temp = pow((3 * press)/a, 1./4);
+  #else
+    // return TEMP_unit*(gam - 1.)*u/rho;
+    double temp = (gam - 1.) * u / rho;
+  #endif
+  return temp;
 }
 
 #if RADIATION
