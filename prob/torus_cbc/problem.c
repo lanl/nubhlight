@@ -23,9 +23,11 @@ static double kappa_eos;
 #if EOS == EOS_TYPE_TABLE
 static double const_ye; // if > 0, set ye this way
 #if !GAMMA_FALLBACK
-static double entropy;
 static double lrho_guess;
 #endif
+#endif
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+static double entropy;
 #endif
 #if RADIATION && TRACERS
 static int ntracers;
@@ -68,7 +70,7 @@ void init_prob() {
   double SSin, hm1;
 
 // Diagnostics for entropy
-#if EOS == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
   double ent, entmax;
 #endif
 
@@ -222,8 +224,9 @@ void init_prob() {
 
       hm1 = exp(lnh[i][j][k]) - 1.;
 #if EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS
-      fprintf(stdout, "entropy: %f\n", entropy);
-      rho = (64./3) * (pow(hm1, 3)/pow(entropy, 4)) * (pow((gam - 1.)/gam), 3);
+      a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4)/M_unit;
+      fprintf(stdout, "radiation density constant: %f\n", a);
+      rho = (64./3) * a * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
       u = hm1*rho/gam;
 #elif (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
@@ -391,7 +394,9 @@ void init_prob() {
     coord(i, j, k, CENT, X);
     bl_coord(X, &r, &th);
     if (r > rin && lnh[i][j][k] >= 0.) {
-      EOS_SC_fill(P[i][j][k], extra[i][j][k]);
+      #if EOS == EOS_TYPE_TABLE
+        EOS_SC_fill(P[i][j][k], extra[i][j][k]);
+      #endif
       ent = EOS_entropy_rho0_u(P[i][j][k][RHO], P[i][j][k][UU], extra[i][j][k]);
       if (ent > entmax)
         entmax = ent;

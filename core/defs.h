@@ -114,7 +114,7 @@ double Reh;
 double Risco;
 
 #if NEED_UNITS
-double mbh, Mbh, L_unit, T_unit, M_unit, RHO_unit, U_unit, B_unit;
+double mbh, Mbh, L_unit, T_unit, M_unit, RHO_unit, U_unit, B_unit, TEMP_unit;
 #endif
 
 #if EOS == EOS_TYPE_TABLE

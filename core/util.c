@@ -145,6 +145,8 @@ void set_units() {
   B_unit   = CL * sqrt(4. * M_PI * RHO_unit);
 #if EOS == EOS_TYPE_TABLE
   TEMP_unit = MEV;
+#elif EOS == EOS_TYPE_GAMMA
+  TEMP_unit = GNEWT * KBOL / pow(CL, 4);
 #endif
 
 #if RADIATION

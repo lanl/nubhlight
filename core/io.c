@@ -753,6 +753,7 @@ void dump() {
   WRITE_HDR(T_unit, TYPE_DBL);
   WRITE_HDR(U_unit, TYPE_DBL);
   WRITE_HDR(B_unit, TYPE_DBL);
+  WRITE_HDR(TEMP_unit, TYPE_DBL);
 #if EOS == EOS_TYPE_TABLE
   WRITE_HDR(TEMP_unit, TYPE_DBL);
 #endif // EOS_TYPE_TABLE
@@ -1117,6 +1118,7 @@ void restart_write(int restart_type) {
   WRITE_HDR(T_unit, TYPE_DBL);
   WRITE_HDR(U_unit, TYPE_DBL);
   WRITE_HDR(B_unit, TYPE_DBL);
+  WRITE_HDR(TEMP_unit, TYPE_DBL);
 #if EOS == EOS_TYPE_TABLE
   WRITE_HDR(TEMP_unit, TYPE_DBL);
 #endif // EOS_TYPE_TABLE
