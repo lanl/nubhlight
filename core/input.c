@@ -95,6 +95,10 @@ void set_core_params() {
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
   set_param("gam", &gam);
 #endif
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+  set_param("entropy", &entropy);
+#endif
+
 #if EOS == EOS_TYPE_GAMMA
   sprintf(eos, "GAMMA");
 #elif EOS == EOS_TYPE_POLYTROPE

@@ -419,6 +419,9 @@ extern double a;
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 extern double gam;
 #endif
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+extern double entropy;
+#endif
 #if EOS == EOS_TYPE_POLYTROPE
 extern double poly_K, poly_gam;
 #endif

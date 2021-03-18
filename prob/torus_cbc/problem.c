@@ -26,9 +26,9 @@ static double const_ye; // if > 0, set ye this way
 static double lrho_guess;
 #endif
 #endif
-#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
-static double entropy;
-#endif
+//#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+//static double entropy;
+//#endif
 #if RADIATION && TRACERS
 static int ntracers;
 #endif
@@ -52,7 +52,7 @@ void set_problem_params() {
 #if EOS == EOS_TYPE_TABLE
   set_param("const_ye", &const_ye);
 #if !GAMMA_FALLBACK
-  set_param("entropy", &entropy);
+  //set_param("entropy", &entropy);
   set_param("lrho_guess", &lrho_guess);
 #endif
 #endif
@@ -180,6 +180,7 @@ void init_prob() {
       lnh[i][j][k] = 1.;
     }
 
+//fprintf(stdout, "entropy: %f\n", entropy);
 #if EOS == EOS_TYPE_TABLE
     ye     = const_ye; // may need to change this eventually
     ye_atm = 0.5;
@@ -224,9 +225,19 @@ void init_prob() {
 
       hm1 = exp(lnh[i][j][k]) - 1.;
 #if EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS
-      a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4)/M_unit;
-      fprintf(stdout, "radiation density constant: %f\n", a);
-      rho = (64./3) * a * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
+      fprintf(stdout, "AR: %e\n", AR);
+      fprintf(stdout, "T_unit: %e\n", T_unit);
+      fprintf(stdout, "L_unit: %e\n", L_unit);
+      fprintf(stdout, "TEMP_unit: %e\n", TEMP_unit);
+      fprintf(stdout, "M_unit: %e\n", M_unit);
+      double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
+      fprintf(stdout, "radiation density constant: %e\n", a);
+      fprintf(stdout, "hm1: %e\n", hm1);
+      fprintf(stdout, "entropy: %f\n", entropy);
+      fprintf(stdout, "gam: %f\n", gam);
+      //rho = (64./3) * a * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
+      rho = (64./3) * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
+      fprintf(stdout, "rho: %e\n", rho);
       u = hm1*rho/gam;
 #elif (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
