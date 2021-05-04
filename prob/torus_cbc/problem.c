@@ -26,9 +26,9 @@ static double const_ye; // if > 0, set ye this way
 static double lrho_guess;
 #endif
 #endif
-//#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
-//static double entropy;
-//#endif
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+static double entropy;
+#endif
 #if RADIATION && TRACERS
 static int ntracers;
 #endif
@@ -49,10 +49,13 @@ void set_problem_params() {
 #if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
   set_param("kappa_eos", &kappa_eos);
 #endif
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+  set_param("entropy", &entropy);
+#endif
 #if EOS == EOS_TYPE_TABLE
   set_param("const_ye", &const_ye);
 #if !GAMMA_FALLBACK
-  //set_param("entropy", &entropy);
+  set_param("entropy", &entropy);
   set_param("lrho_guess", &lrho_guess);
 #endif
 #endif
@@ -72,6 +75,10 @@ void init_prob() {
 // Diagnostics for entropy
 #if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
   double ent, entmax;
+#endif
+
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+  double entropy_CU;
 #endif
 
   // Magnetic field
@@ -225,22 +232,27 @@ void init_prob() {
 
       hm1 = exp(lnh[i][j][k]) - 1.;
 #if EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS
+      a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
       fprintf(stdout, "AR: %e\n", AR);
       fprintf(stdout, "T_unit: %e\n", T_unit);
       fprintf(stdout, "L_unit: %e\n", L_unit);
       fprintf(stdout, "TEMP_unit: %e\n", TEMP_unit);
       fprintf(stdout, "M_unit: %e\n", M_unit);
-      double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
       fprintf(stdout, "radiation density constant: %e\n", a);
       fprintf(stdout, "hm1: %e\n", hm1);
-      fprintf(stdout, "entropy: %f\n", entropy);
+      fprintf(stdout, "entropy_CU: %f\n", entropy_CU);
       fprintf(stdout, "gam: %f\n", gam);
-      //rho = (64./3) * a * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
-      rho = (64./3) * (pow(hm1, 3)/pow(entropy, 4)) * pow((gam - 1.)/gam, 3);
+      entropy_CU = (entropy * KBOL / MP) * pow(T_unit,2) * TEMP_unit * pow(L_unit, -2) * pow(M_unit, -1);
+      rho = (64./3) * a * (pow(hm1, 3)/pow(entropy_CU, 4)) * pow((gam - 1.)/gam, 3);
+      //rho = (64./3) * (pow(hm1, 3)/pow(entropy_CU, 4)) * pow((gam - 1.)/gam, 3);
       fprintf(stdout, "rho: %e\n", rho);
       u = hm1*rho/gam;
 #elif (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
+      fprintf(stdout, "rho: %e\n", rho);
+      fprintf(stdout, "hm1: %e\n", hm1);
+      fprintf(stdout, "kappa_eos: %e\n", kappa_eos);
+      fprintf(stdout, "gam: %f\n", gam);
       u   = kappa_eos * pow(rho, gam) / (gam - 1.);
 #elif EOS == EOS_TYPE_TABLE
       hm1 += hm1_min;
@@ -342,6 +354,7 @@ void init_prob() {
 #endif
       press = EOS_pressure_rho0_u(
           PsaveLocal[i][j][k][RHO], PsaveLocal[i][j][k][UU], extra[i][j][k]);
+      fprintf(stdout, "press: %e\n", press);
       if (press > pressmax)
         pressmax = press;
     }

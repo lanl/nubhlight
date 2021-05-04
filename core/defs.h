@@ -101,9 +101,9 @@ char opac_file[STRLEN];
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 double gam;
 #endif
-#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
-double entropy;
-#endif
+//#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+//double entropy;
+//#endif
 #if EOS == EOS_TYPE_POLYTROPE
 double poly_K, poly_gam;
 #endif
