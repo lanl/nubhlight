@@ -159,6 +159,16 @@ class Adiabat:
         self.slc = np.s_[self.ilrho_bounds[0]:self.ilrho_bounds[1]]
         self.lrho = self.bnd1d(eos['lrho'])
 
+    @classmethod
+    def get_if_valid(cls, s, Ye, eos):
+        try:
+            adiabat = cls(s, Ye, eos)
+        except:
+            raise ValueError("Invalid Adiabat")
+        if not adiabat.is_valid():
+            raise ValueError("Invalid Adiabat")
+        return adiabat
+
     def bnd1d(self,var):
         return var[self.slc]
 
@@ -202,6 +212,17 @@ class Adiabat:
                float(dPdrhoe_interp(lP.min())),
                float(hm1interp(lP.min()))]
         return out
+
+    def is_valid(self):
+        return np.all(np.gradient(self.project(self.eos['lT'])) >= 0)
+
+    def get_rho_of_hm1_interp(self):
+        rho_grid = self.project(self.eos['rho'])
+        hm1_grid = self.project(self.eos['hm1'])
+        fill_value = (0, self.project(self.eos['rho']).max())
+        return interpolate.interp1d(hm1_grid,rho_grid,
+                                    bounds_error = False,
+                                    fill_value=fill_value)
     
     def __call__(self,var):
         return self.project(var)
