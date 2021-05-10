@@ -107,7 +107,7 @@ def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
     Returns mass in solar masses."""
     NX1 = 512
     NX2 = 512
-    X1 = np.linspace(np.log(rin),np.log(1e3), NX1)
+    X1 = np.linspace(np.log(rin),np.log(max(1e3,2*rmax)), NX1)
     rgrid = np.exp(X1)
     thgrid = np.linspace(0, np.pi/2, NX2)
     RGRID,THGRID = np.meshgrid(rgrid,thgrid,indexing='ij')
