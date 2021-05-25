@@ -22,9 +22,12 @@ double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u) {
 }
 
 double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u) {
-  double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
-  return pow((64./3) * a * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
-  //return pow((64./3) * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
+  //double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
+  double u_cgs = u * U_unit;
+  double rho_cgs = rho * RHO_unit;
+  double entropy_cgs = pow((64./3) * AR * (pow(u_cgs, 3)*pow(gam, 3)/pow(rho_cgs, 4)) * pow((gam -1)/gam, 3), 1./4);
+  //return pow((64./3) * a * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
+  return entropy_cgs / (KBOL / MP);
 }
 
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u) { return rho + u * gam; }
@@ -69,9 +72,9 @@ double EOS_Gamma_u_press(double press) { return press / (gam - 1.); }
 
 double EOS_Gamma_temp(double rho, double u) {
   #if EOS_GAMMA == RADPRESS
-    double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
-    double press = (gam - 1.) * u;
-    double temp = pow((3 * press)/a, 1./4);
+    double press_cgs = (gam - 1.) * u * U_unit;
+    double temp_cgs = pow((3 * press_cgs)/AR, 1./4);
+    double temp = temp_cgs * KBOL / MEV;
     //double temp = pow((3 * press), 1./4);
   #else
     // return TEMP_unit*(gam - 1.)*u/rho;

@@ -424,6 +424,7 @@ bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
 
 # EOS
 bhl.config.set_cparm("EOS", EOS_TYPE)
+bhl.config.set_cparm('OUTPUT_EOSVARS', True)
 if EOS_TYPE == 'EOS_TYPE_GAMMA':
     bhl.config.set_cparm("EOS_GAMMA", EOS_GAMMA)
 bhl.config.set_cparm('NVAR_PASSIVE', NVAR_PASSIVE)

@@ -78,7 +78,7 @@ void init_prob() {
 #endif
 
 #if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
-  double entropy_CU;
+  double entropy_cgs, hm1_cgs;
 #endif
 
   // Magnetic field
@@ -232,21 +232,15 @@ void init_prob() {
 
       hm1 = exp(lnh[i][j][k]) - 1.;
 #if EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS
-      a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
-      fprintf(stdout, "AR: %e\n", AR);
-      fprintf(stdout, "T_unit: %e\n", T_unit);
-      fprintf(stdout, "L_unit: %e\n", L_unit);
-      fprintf(stdout, "TEMP_unit: %e\n", TEMP_unit);
-      fprintf(stdout, "M_unit: %e\n", M_unit);
-      fprintf(stdout, "radiation density constant: %e\n", a);
-      fprintf(stdout, "hm1: %e\n", hm1);
-      fprintf(stdout, "entropy_CU: %f\n", entropy_CU);
-      fprintf(stdout, "gam: %f\n", gam);
-      entropy_CU = (entropy * KBOL / MP) * pow(T_unit,2) * TEMP_unit * pow(L_unit, -2) * pow(M_unit, -1);
-      rho = (64./3) * a * (pow(hm1, 3)/pow(entropy_CU, 4)) * pow((gam - 1.)/gam, 3);
-      //rho = (64./3) * (pow(hm1, 3)/pow(entropy_CU, 4)) * pow((gam - 1.)/gam, 3);
+      //a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
+      hm1_cgs = hm1 * pow(CL, 2);
+      fprintf(stdout, "hm1_cgs: %e\n", hm1_cgs);
+      entropy_cgs = entropy * KBOL / MP;
+      fprintf(stdout, "entropy_cgs: %e\n", entropy_cgs);
+      rho = ((64./3) * AR * (pow(hm1_cgs, 3)/pow(entropy_cgs, 4)) * pow((gam - 1.)/gam, 3)) / RHO_unit;
       fprintf(stdout, "rho: %e\n", rho);
-      u = hm1*rho/gam;
+      u = (hm1 * rho / gam);
+      fprintf(stdout, "u: %e\n", u);
 #elif (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
       fprintf(stdout, "rho: %e\n", rho);
