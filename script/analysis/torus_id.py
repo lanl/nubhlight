@@ -116,6 +116,7 @@ def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
 
     # Normalization procedure
     rhomax = integrand.max()
+    rhomin = integrand.min()
     RHO_unit = rhomax
     L_unit = M*cgs['GNEWT']*cgs['MSOLAR']/(cgs['CL']**2)
     M_unit = RHO_unit*(L_unit**3)
@@ -124,10 +125,8 @@ def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
     delta = RGRID**2 - 2*RGRID + a**2
     detg = np.sqrt(sigma*((a**2 + RGRID**2)*sigma
                           + 2*a*a*RGRID*np.sin(THGRID)**2)/(delta + 1e-20))
+    integrand[integrand <= rhomin] = 0
     integrand[integrand <= 1e-2*rhomax] = 0
-    if (np.any(np.isnan(detg))):
-        idx = np.where(np.isnan(detg))[0][0]
-        print(sigma[idx],delta[idx],detg[idx])
     integrand *= detg
     integrand /= RHO_unit
     tot = 2*np.pi*2.*integrate.simpson(integrate.simpson(integrand,
