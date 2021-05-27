@@ -134,8 +134,6 @@ def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
                                                x=thgrid,axis=1),
                                        x = rgrid)
     tot *= M_unit/cgs['MSOLAR']
-    if np.isnan(tot):
-        raise ValueError("Mass NaN!")
     if get_max:
         return RHO_unit, tot
     else:
@@ -147,12 +145,10 @@ def solve_for_rmax_rho_unit(M, a, rin, eos, md_target, rmax_guess=None):
     Also returns the peak density in the disk."""
     if rmax_guess is None:
         for g in np.linspace(rin,100,20):
-            try:
-                tot = get_tot_mass(M, a, rin, g, eos, False)
+            tot = get_tot_mass(M, a, rin, g, eos, False)
+            if not np.isnan(tot):
                 rmax_guess = g
                 break
-            except:
-                continue
     if rmax_guess is None:
         raise ValueError("Could not find good initial guess")
     f = lambda rmax: get_tot_mass(M, a, rin, rmax, eos, False) - md_target
