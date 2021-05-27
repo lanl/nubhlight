@@ -105,8 +105,8 @@ def compute_rho_from_coords(a, rin, rmax, eos, r, th):
 def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
     """Integrate the mass in a fishbone-moncrief disk.
     Returns mass in solar masses."""
-    NX1 = 512
-    NX2 = 512
+    NX1 = 1024
+    NX2 = 1024
     X1 = np.linspace(np.log(rin),np.log(max(1e3,2*rmax)), NX1)
     rgrid = np.exp(X1)
     thgrid = np.linspace(0, np.pi/2, NX2)
@@ -120,23 +120,43 @@ def get_tot_mass(M, a, rin, rmax, eos, get_max = False):
     L_unit = M*cgs['GNEWT']*cgs['MSOLAR']/(cgs['CL']**2)
     M_unit = RHO_unit*(L_unit**3)
     
-    integrand *= RGRID*RGRID*np.sin(THGRID)
+    sigma = RGRID**2 + (a*np.cos(THGRID))**2
+    delta = RGRID**2 - 2*RGRID + a**2
+    detg = np.sqrt(sigma*((a**2 + RGRID**2)*sigma
+                          + 2*a*a*RGRID*np.sin(THGRID)**2)/(delta + 1e-20))
+    integrand[integrand <= 1e-2*rhomax] = 0
+    if (np.any(np.isnan(detg))):
+        idx = np.where(np.isnan(detg))[0][0]
+        print(sigma[idx],delta[idx],detg[idx])
+    integrand *= detg
     integrand /= RHO_unit
     tot = 2*np.pi*2.*integrate.simpson(integrate.simpson(integrand,
                                                x=thgrid,axis=1),
                                        x = rgrid)
     tot *= M_unit/cgs['MSOLAR']
+    if np.isnan(tot):
+        raise ValueError("Mass NaN!")
     if get_max:
         return RHO_unit, tot
     else:
         return tot
 
-def solve_for_rmax_rho_unit(M, a, rin, eos, md_target):
+def solve_for_rmax_rho_unit(M, a, rin, eos, md_target, rmax_guess=None):
     """Given black hole mass, spin, inner disk radius,
     solve for rmax needed to produce a given disk mass.
     Also returns the peak density in the disk."""
+    if rmax_guess is None:
+        for g in np.linspace(rin,100,20):
+            try:
+                tot = get_tot_mass(M, a, rin, g, eos, False)
+                rmax_guess = g
+                break
+            except:
+                continue
+    if rmax_guess is None:
+        raise ValueError("Could not find good initial guess")
     f = lambda rmax: get_tot_mass(M, a, rin, rmax, eos, False) - md_target
-    sol = optimize.root_scalar(f, x0 = 6, bracket = [rin, 100])
+    sol = optimize.root_scalar(f, x0 = 1.5*rin, bracket = [rin, 100])
     if not sol.converged:
         print("Failure to converge! Solution object:")
         print(sol)
@@ -145,18 +165,21 @@ def solve_for_rmax_rho_unit(M, a, rin, eos, md_target):
     rho_max, md_measured = get_tot_mass(M, a, rin, rmax, eos, True)
     return md_measured, sol.root, rho_max
 
-def solve_for_rmax_rho_unit_ideal_gas(M, a, md_target, rin_fac = 1.5):
+def solve_for_rmax_rho_unit_ideal_gas(M, a, md_target, rin_fac = 1.5,
+                                      rmax_guess=None):
     """Sets rin = rin_fac*r_isco. Uses ideal gas."""    
     eos = rho_from_hm1_ideal
     rin = rin_fac*r_isco(a)
     md_measured, rmax, rho_unit = solve_for_rmax_rho_unit(M, a, rin, eos,
-                                                          md_target)
+                                                          md_target,
+                                                          rmax_guess)
     L_unit = M*cgs['GNEWT']*cgs['MSOLAR']/(cgs['CL']**2)
     m_unit = rho_unit*(L*unit**3)
     return md_measured, rin, rmax, rho_unit, m_unit
 
 def solve_for_rmax_rho_unit_tabulated(M, a, md_target, filepath, s, ye,
-                                      rin_fac = 1.5):
+                                      rin_fac = 1.5,
+                                      rmax_guess=None):
     """Sets rin = rin_fac*r_isco. Uses tabulated EOS
     Inputs:
     - M = mass of black hole, in solar masses
@@ -185,7 +208,7 @@ def solve_for_rmax_rho_unit_tabulated(M, a, md_target, filepath, s, ye,
     eos = adiabat.get_rho_of_hm1_interp()
     rin = rin_fac*r_isco(a)
     md_measured, rmax, rho_unit =  solve_for_rmax_rho_unit(M, a, rin, eos,
-                                                           md_target)
+                                                           md_target, rmax_guess)
     L_unit = M*cgs['GNEWT']*cgs['MSOLAR']/(cgs['CL']**2)
     m_unit = rho_unit*(L_unit**3)
     return md_measured, rin, rmax, rho_unit, m_unit
