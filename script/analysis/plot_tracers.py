@@ -44,7 +44,6 @@ def get_bernoulli(tracers):
     h = (1
          + tracers['uu']/tracers['rho']
          + tracers['Press']/tracers['rho']
-         + bsq/tracers['rho']
          + bsq/tracers['rho'])
     Be = -tracers['ucov'][:,0]*h - 1
     return Be
