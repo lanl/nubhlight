@@ -1,4 +1,4 @@
-################################################################################
+
 #                                                                              #
 # COMPARISON TO FORNAX                                                         #
 #                                                                              #
@@ -27,6 +27,7 @@ HDF = '-hdf' in sys.argv
 AUTO = '-auto' in sys.argv
 EQUIL = '-equil' in sys.argv
 FAST = '-fast' in sys.argv
+FORCE = '-force' in sys.argv
 
 OUTNAME='equilibrium' if EQUIL else 'cooling'
 INNAME ='fornax_equil.dat' if EQUIL else 'fornax_cooling.dat'
@@ -50,6 +51,8 @@ if HDF:
     compile_args += ['-hdf']
 if FAST:
     compile_args += ['-fast']
+if FORCE:
+    compile_args += ['-force']
 call(compile_args)
 os.chdir('../../test')
 call(['mv','../prob/' + PROBLEM + '/' + TMP_DIR, './'])
