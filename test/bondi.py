@@ -38,7 +38,7 @@ os.chdir('../prob/bondi/')
 copyfile('build.py', TMP_BUILD)
 # COMPILE CODE AT MULTIPLE RESOLUTIONS USING SEPARATE BUILD FILE
 
-for n in xrange(len(RES)):
+for n in range(len(RES)):
   util.change_cparm('N1TOT', RES[n], TMP_BUILD)
   util.change_cparm('N2TOT', RES[n], TMP_BUILD)
   call([sys.executable, TMP_BUILD, '-dir', TMP_DIR])
@@ -57,7 +57,7 @@ L1 = np.zeros(len(RES))
 os.chdir(TMP_DIR)
 
 # RUN PROBLEM FOR EACH RESOLUTION AND ANALYZE RESULT
-for m in xrange(len(RES)):
+for m in range(len(RES)):
   call_string = ['./bhlight_' + str(RES[m]), '-p', 'param.dat']
   print(call_string)
   bcall(call_string)
