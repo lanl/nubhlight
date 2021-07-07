@@ -25,9 +25,11 @@ import sys
 import os
 
 hostnames = ['collapsar']
-flags_base = '-Wall -Werror -fdiagnostics-color -fopenmp'
+flags_base = '-Wall -fdiagnostics-color -fopenmp'
 fcflags = '-lmpi_usempif08 -lmpi_usempi_ignore_tkr -lmpi_mpifh'
-fflags_base = '-fdiagnostics-color -fopenmp'
+# fallow argument mismatch required to work around gcc10 insanity
+# https://lists.mpich.org/pipermail/discuss/2020-January/005863.html
+fflags_base = '-fdiagnostics-color -fopenmp -fallow-argument-mismatch'
 
 def matches_host():
   host = os.uname()[1]
