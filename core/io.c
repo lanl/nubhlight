@@ -730,7 +730,7 @@ void dump() {
 #endif // RADIATION
 #endif // METRIC
 
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK  
   WRITE_HDR(gam, TYPE_DBL);
 #endif // GAMMA
 #if EOS == EOS_TYPE_POLYTROPE
@@ -753,6 +753,7 @@ void dump() {
   WRITE_HDR(T_unit, TYPE_DBL);
   WRITE_HDR(U_unit, TYPE_DBL);
   WRITE_HDR(B_unit, TYPE_DBL);
+  WRITE_HDR(TEMP_unit, TYPE_DBL);
 #if EOS == EOS_TYPE_TABLE
   WRITE_HDR(TEMP_unit, TYPE_DBL);
 #endif // EOS_TYPE_TABLE
@@ -1099,7 +1100,7 @@ void restart_write(int restart_type) {
 #endif // METRIC
 
 // EOS
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK  
   WRITE_HDR(gam, TYPE_DBL);
 #endif // GAMMA EOS
 #if EOS == EOS_TYPE_POLYTROPE
@@ -1117,6 +1118,7 @@ void restart_write(int restart_type) {
   WRITE_HDR(T_unit, TYPE_DBL);
   WRITE_HDR(U_unit, TYPE_DBL);
   WRITE_HDR(B_unit, TYPE_DBL);
+  WRITE_HDR(TEMP_unit, TYPE_DBL);
 #if EOS == EOS_TYPE_TABLE
   WRITE_HDR(TEMP_unit, TYPE_DBL);
 #endif // EOS_TYPE_TABLE
@@ -1381,7 +1383,7 @@ void restart_read(char *fname) {
 
   READ_HDR(cour, TYPE_DBL);
 
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK  
   READ_HDR(gam, TYPE_DBL);
 #endif // EOS
 
