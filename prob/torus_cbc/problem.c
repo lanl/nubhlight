@@ -471,7 +471,8 @@ void init_prob() {
 
       q = P[i][j][k][RHO] / rhomax - 0.2;
 
-      P[i][j][k][B3] = (q > 0.) ? q : 0.0;
+      // P[i][j][k][B3] = (q > 0.) ? q : 0.0;
+      P[i][j][k][B3] = (q > 0.) ? 1 : 0.0;
 
       geom   = get_geometry(i, j, k, CENT);
       bsq_ij = bsq_calc(P[i][j][k], geom);
