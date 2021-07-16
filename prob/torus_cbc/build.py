@@ -227,6 +227,9 @@ elif THREED or FAKETHREED:
     TFINAL = 10000.
 else:
     TFINAL = 2000.
+# Toroidal fields grow slowly
+if TOROIDALB and not TFINAL_FROM_CLI:
+    TFINAL *= 2
 
 # time when radiation resolution controls turn on
 t0_tune_emiss = Rout_rad if LIMIT_RAD else -1.
