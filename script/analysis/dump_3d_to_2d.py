@@ -179,10 +179,14 @@ def avg_dump(src,dest,dump,
     THRESH=1e2
     def isnan(a):
         return np.logical_or(np.isnan(a),np.abs(a) >= THRESH)
-    dump['dtau_abs'][isnan(dump['dtau_abs'])] = 0.
-    dump['dtau_scatt'][isnan(dump['dtau_scatt'])] = 0.
-    dump['dtau_tot'][isnan(dump['dtau_tot'])] = 0.
-    dump['dtau_avg'][isnan(dump['dtau_avg'])] = 0.
+    if 'dtau_abs' in src.keys():
+        dump['dtau_abs'][isnan(dump['dtau_abs'])] = 0.
+    if 'dtau_scatt' in src.keys():
+        dump['dtau_scatt'][isnan(dump['dtau_scatt'])] = 0.
+    if 'dtau_tot' in src.keys():
+        dump['dtau_tot'][isnan(dump['dtau_tot'])] = 0.
+    if 'dtau_avg' in src.keys():
+        dump['dtau_avg'][isnan(dump['dtau_avg'])] = 0.
 
     # avg in phi
     # ----------
