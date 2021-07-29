@@ -293,8 +293,8 @@ def avg_dump(src,dest,dump,
             prof = sadw.get_spherical_average(dump,dump[v])
             sph_grp.create_dataset(v,data=prof)
     # treat individual scattering cross-sections separately
-    dtau_avg_profs = [None for i in range(1,dump['dtau_avg'].shape[0])]
     if 'dtau_avg' in dump.keys():
+        dtau_avg_profs = [None for i in range(1,dump['dtau_avg'].shape[0])]
         for i in range(1,dump['dtau_avg'].shape[0]):
             dtau_avg_profs[i-1] = sadw.get_spherical_average(dump,
                                                              dump['dtau_avg'][i])
