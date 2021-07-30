@@ -298,8 +298,8 @@ def avg_dump(src,dest,dump,
         for i in range(1,dump['dtau_avg'].shape[0]):
             dtau_avg_profs[i-1] = sadw.get_spherical_average(dump,
                                                              dump['dtau_avg'][i])
-    dtau_avg = np.vstack(dtau_avg_profs)
-    sph_grp.create_dataset('dtau_avg',data = dtau_avg)
+        dtau_avg = np.vstack(dtau_avg_profs)
+        sph_grp.create_dataset('dtau_avg',data = dtau_avg)
 
     # Perform ZoHs
     variables = ['Ye',
