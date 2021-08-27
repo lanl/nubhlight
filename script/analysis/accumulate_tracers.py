@@ -26,18 +26,22 @@ def _accumulate_files_worker(inpt):
     tds = []
     for f in fnams:
         print("...",f,len(ids))
-        hdr,units,data = io.load_tracer(f)
-        td = io.TracerData.fromtuple(hdr,units,data)
-        r = _get_r(data)
-        to_add = td.filter(r >= r_thresh)
-        if len(to_add) > 0:
-            ids_to_add = set(to_add['id']) - ids
-            if len(ids_to_add) > 0:
-                mask = np.in1d(to_add['id'],
-                               np.array(list(ids_to_add)))
-                to_add = to_add.filter(mask)
-                ids |= ids_to_add
-                tds.append(to_add)
+        try:
+            hdr,units,data = io.load_tracer(f)
+            td = io.TracerData.fromtuple(hdr,units,data)
+            r = _get_r(data)
+            to_add = td.filter(r >= r_thresh)
+            if len(to_add) > 0:
+                ids_to_add = set(to_add['id']) - ids
+                if len(ids_to_add) > 0:
+                    mask = np.in1d(to_add['id'],
+                                   np.array(list(ids_to_add)))
+                    to_add = to_add.filter(mask)
+                    ids |= ids_to_add
+                    tds.append(to_add)
+        except:
+            print("...error with",f,"skipping...")
+            continue
 
     return io.TracerData.concatenate(tds)
 
@@ -48,19 +52,23 @@ def _accumulate_files_worker_t_cond(inpt):
     tds = []
     for f in fnams:
         print("...",f,len(ids))
-        hdr,units,data = io.load_tracer(f)
-        td = io.TracerData.fromtuple(hdr,units,data)
-        mask = np.isclose(td['T']*cgs['MEV']/cgs['GK'],
-                          t_cond,atol=atol)
-        to_add = td.filter(mask)
-        if len(to_add) > 0:
-            ids_to_add = set(to_add['id']) - ids
-            if len(ids_to_add) > 0:
-                mask = np.in1d(to_add['id'],
-                               np.array(list(ids_to_add)))
-                to_add = to_add.filter(mask)
-                ids |= ids_to_add
-                tds.append(to_add)
+        try:
+            hdr,units,data = io.load_tracer(f)
+            td = io.TracerData.fromtuple(hdr,units,data)
+            mask = np.isclose(td['T']*cgs['MEV']/cgs['GK'],
+                              t_cond,atol=atol)
+            to_add = td.filter(mask)
+            if len(to_add) > 0:
+                ids_to_add = set(to_add['id']) - ids
+                if len(ids_to_add) > 0:
+                    mask = np.in1d(to_add['id'],
+                                   np.array(list(ids_to_add)))
+                    to_add = to_add.filter(mask)
+                    ids |= ids_to_add
+                    tds.append(to_add)
+        except:
+            print("...error with",f,"skipping...")
+            continue
 
     return io.TracerData.concatenate(tds)
 
@@ -89,14 +97,21 @@ def accumulate_files_parallel(fnams,
     ids = set([])
     tds = []
     for td in work:
-        ids_to_add = set(td['id']) - ids
-        if len(ids_to_add) > 0:
-            mask = np.in1d(td['id'],
-                           np.array(list(ids_to_add)))
-            to_add = td.filter(mask)
-            ids |= ids_to_add
-            tds.append(to_add)
-    tracers = io.TracerData.concatenate(tds)
+        try:
+            ids_to_add = set(td['id']) - ids
+            if len(ids_to_add) > 0:
+                mask = np.in1d(td['id'],
+                               np.array(list(ids_to_add)))
+                to_add = td.filter(mask)
+                ids |= ids_to_add
+                tds.append(to_add)
+        except:
+            print("...There was an error with a worker. Skipping it.")
+            continue
+    if len(tds) > 0:
+        tracers = io.TracerData.concatenate(tds)
+    else:
+        raise ValueError("There are no tracers to accumulate.")
     if len(tracers['id']) > len(set(tracers['id'])):
         raise ValueError("Some tracers are in multiple times.")
     return tracers
@@ -111,19 +126,23 @@ def accumulate_files(fnams,r_thresh=1000):
 
     for f in fnams:
         print("...",f,",",len(ids))
-        hdr,units,data = io.load_tracer(f)
-        td = io.TracerData.fromtuple(hdr,units,data)
-        r = _get_r(data)
-        to_add = td.filter(r >= r_thresh)
-        if len(to_add) > 0:
-            ids_to_add = set(to_add['id']) - ids
-            if len(ids_to_add) > 0:
-                mask = np.in1d(to_add['id'],
-                               np.array(list(ids_to_add)))
-                to_add = to_add.filter(mask)
-                ids |= ids_to_add
-                for k,v in to_add.items():
-                    data_container[k].append(v)
+        try:
+            hdr,units,data = io.load_tracer(f)
+            td = io.TracerData.fromtuple(hdr,units,data)
+            r = _get_r(data)
+            to_add = td.filter(r >= r_thresh)
+            if len(to_add) > 0:
+                ids_to_add = set(to_add['id']) - ids
+                if len(ids_to_add) > 0:
+                    mask = np.in1d(to_add['id'],
+                                   np.array(list(ids_to_add)))
+                    to_add = to_add.filter(mask)
+                    ids |= ids_to_add
+                    for k,v in to_add.items():
+                        data_container[k].append(v)
+        except:
+            print("...error with",f,"skipping...")
+            continue
 
     for k,v in data_container.items():
         data_cat[k] = np.concatenate(v)
