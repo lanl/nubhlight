@@ -42,7 +42,8 @@ parser.add_argument('-N3',type=int,
 parser.add_argument('-n','--nproc',type=int,
                     default = None,
                     help = 'Number of parallel processes to use.')
-parser.add_argument('-r','--restart', action='set_true')
+parser.add_argument('-r','--restart', action='store_true',
+                    help = 'Restart from where you left off, rather than overwriting old files')
 
 def _avg_dump_file_worker(inp):
     infile = inp[0]
