@@ -42,6 +42,7 @@ parser.add_argument('-N3',type=int,
 parser.add_argument('-n','--nproc',type=int,
                     default = None,
                     help = 'Number of parallel processes to use.')
+parser.add_argument('-r','--restart', action='set_true')
 
 def _avg_dump_file_worker(inp):
     infile = inp[0]
@@ -57,10 +58,15 @@ def _avg_dump_file_worker(inp):
 def avg_dump_dir(dirpath,rmin,rmax,zmin,zmax,
                  fix_ghosts = False,
                  N2CPU=2,N3CPU=11,
-                 nproc = None):
+                 nproc = None,
+                 restart = False):
     "Average dump data in directory. Save 2d files to same directory."
     print("Mapping dumps in {} from 3d to 2d...".format(dirpath))
     fnams = io.get_dumps_full(dirpath)
+    if restart:
+        fnams_finished = [name.replace('2d','') \
+                          for name in io.get_dumps_full(dirpath,True)]
+        fnams = list(set(fnams) - set(fnams_finished))
     hdr   = io.load_hdr(fnams[0])
     geom  = io.load_geom(hdr)
     inputs = [(fnam,rmin,rmax,zmin,zmax,fix_ghosts,N2CPU,N3CPU,geom) \
@@ -75,4 +81,5 @@ if __name__ == "__main__":
                  args.zmin,args.zmax,
                  args.fixghosts,
                  args.N2,args.N3,
-                 args.nproc)
+                 args.nproc,
+                 args.restart)
