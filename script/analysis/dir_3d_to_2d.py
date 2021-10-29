@@ -66,7 +66,7 @@ def avg_dump_dir(dirpath,rmin,rmax,zmin,zmax,
     fnams = io.get_dumps_full(dirpath)
     if restart:
         fnams_finished = [name.replace('2d','') \
-                          for name in io.get_dumps_full(dirpath,True)]
+                          for name in io.get_dumps_reduced(dirpath,True)]
         fnams = list(set(fnams) - set(fnams_finished))
     hdr   = io.load_hdr(fnams[0])
     geom  = io.load_geom(hdr)
