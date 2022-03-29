@@ -88,7 +88,7 @@ pairs = list(enumerate(dfnams))
 if args.cache:
   fmap = {"frame_%08d.png" % i : (i, d) for (i,d) in pairs}
   all_frames = set(["frame_%08d.png" % i for i in range(num_files)])
-  frames = set([f for f in os.listdir(tmpdir) '.png' in f])
+  frames = set([f for f in os.listdir(tmpdir) if '.png' in f])
   frames_to_do = all_frames - frames
   pairs = [fmap[f] for f in frames_to_do]
 
