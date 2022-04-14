@@ -46,6 +46,10 @@ parser.add_argument('--label',
 parser.add_argument('-i','--index',
                     type=int,default=None,
                     help='Index to plot in multi-d quantity')
+parser.add_argument('--cache',
+                    default=None,
+                    type=str,
+                    help='Directory to cache frames in for restarts')
 parser.add_argument('--serial',
                     dest='serial',
                     default=False,
@@ -66,14 +70,27 @@ if not os.path.exists(dfold):
   print('ERROR Folder ' + dfnam + ' does not exist!')
   sys.exit()
 
-tmpdir = 'FRAMES'
-util.safe_remove(tmpdir)
-os.mkdir(tmpdir)
+if args.cache is not None:
+  tmpdir = args.cache
+  if not os.path.exists(tmpdir):
+    os.makedirs(tmpdir)
+else:
+  tmpdir = 'FRAMES'
+  util.safe_remove(tmpdir)
+  os.mkdir(tmpdir)
 
 dfnams = io.get_dumps_full(dfold)
 hdr = io.load_hdr(dfnams[0])
 geom = io.load_geom(hdr)
 num_files = len(dfnams)
+
+pairs = list(enumerate(dfnams))
+if args.cache:
+  fmap = {"frame_%08d.png" % i : (i, d) for (i,d) in pairs}
+  all_frames = set(["frame_%08d.png" % i for i in range(num_files)])
+  frames = set([f for f in os.listdir(tmpdir) if '.png' in f])
+  frames_to_do = all_frames - frames
+  pairs = [fmap[f] for f in frames_to_do]
 
 def make_frame(pair):
   i,d = pair
@@ -88,11 +105,11 @@ def make_frame(pair):
             geom=geom)
 
 if args.serial:
-  for pair in enumerate(dfnams):
+  for pair in pairs:
     make_frame(pair)
 else:
   p = Pool(processes=args.nproc)
-  p.map(make_frame,enumerate(dfnams))
+  p.map(make_frame,pairs)
 
 if codec is not None:
   from subprocess import call
