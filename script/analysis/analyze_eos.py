@@ -91,7 +91,7 @@ def load_eos(filename):
     # load file
     with h5py.File(filename,'r') as f:
         for k,v in f.items():
-            eos[k] = v.value
+            eos[k] = v[()]
 
     # derived quantities
     lrho = eos['logrho']
