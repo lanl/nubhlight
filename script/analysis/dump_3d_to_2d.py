@@ -52,7 +52,7 @@ def get_data(h5val):
     If h5val is not an hdf5 dataset, returns None.
     """
     try:
-        data = h5val.value
+        data = h5val[()]
     except:
         data = None
     return data
@@ -97,7 +97,7 @@ def copy_hdr(src,dest,correct_meta=True):
             if v not in dest.keys():
                 src.copy(v,dest)
     if correct_meta:
-        d3x_1d = src['dx[3]'].value*src['N3tot'].value
+        d3x_1d = src['dx[3]'][()]*src['N3tot'][()]
         dest['N3tot'][...] = 1
         dest['dx[3]'][...] = d3x_1d
 
