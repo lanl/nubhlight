@@ -179,10 +179,14 @@ def avg_dump(src,dest,dump,
     THRESH=1e2
     def isnan(a):
         return np.logical_or(np.isnan(a),np.abs(a) >= THRESH)
-    dump['dtau_abs'][isnan(dump['dtau_abs'])] = 0.
-    dump['dtau_scatt'][isnan(dump['dtau_scatt'])] = 0.
-    dump['dtau_tot'][isnan(dump['dtau_tot'])] = 0.
-    dump['dtau_avg'][isnan(dump['dtau_avg'])] = 0.
+    if 'dtau_abs' in src.keys():
+        dump['dtau_abs'][isnan(dump['dtau_abs'])] = 0.
+    if 'dtau_scatt' in src.keys():
+        dump['dtau_scatt'][isnan(dump['dtau_scatt'])] = 0.
+    if 'dtau_tot' in src.keys():
+        dump['dtau_tot'][isnan(dump['dtau_tot'])] = 0.
+    if 'dtau_avg' in src.keys():
+        dump['dtau_avg'][isnan(dump['dtau_avg'])] = 0.
 
     # avg in phi
     # ----------
@@ -289,13 +293,13 @@ def avg_dump(src,dest,dump,
             prof = sadw.get_spherical_average(dump,dump[v])
             sph_grp.create_dataset(v,data=prof)
     # treat individual scattering cross-sections separately
-    dtau_avg_profs = [None for i in range(1,dump['dtau_avg'].shape[0])]
     if 'dtau_avg' in dump.keys():
+        dtau_avg_profs = [None for i in range(1,dump['dtau_avg'].shape[0])]
         for i in range(1,dump['dtau_avg'].shape[0]):
             dtau_avg_profs[i-1] = sadw.get_spherical_average(dump,
                                                              dump['dtau_avg'][i])
-    dtau_avg = np.vstack(dtau_avg_profs)
-    sph_grp.create_dataset('dtau_avg',data = dtau_avg)
+        dtau_avg = np.vstack(dtau_avg_profs)
+        sph_grp.create_dataset('dtau_avg',data = dtau_avg)
 
     # Perform ZoHs
     variables = ['Ye',

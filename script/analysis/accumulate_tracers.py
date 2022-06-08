@@ -97,14 +97,21 @@ def accumulate_files_parallel(fnams,
     ids = set([])
     tds = []
     for td in work:
-        ids_to_add = set(td['id']) - ids
-        if len(ids_to_add) > 0:
-            mask = np.in1d(td['id'],
-                           np.array(list(ids_to_add)))
-            to_add = td.filter(mask)
-            ids |= ids_to_add
-            tds.append(to_add)
-    tracers = io.TracerData.concatenate(tds)
+        try:
+            ids_to_add = set(td['id']) - ids
+            if len(ids_to_add) > 0:
+                mask = np.in1d(td['id'],
+                               np.array(list(ids_to_add)))
+                to_add = td.filter(mask)
+                ids |= ids_to_add
+                tds.append(to_add)
+        except:
+            print("...There was an error with a worker. Skipping it.")
+            continue
+    if len(tds) > 0:
+        tracers = io.TracerData.concatenate(tds)
+    else:
+        raise ValueError("There are no tracers to accumulate.")
     if len(tracers['id']) > len(set(tracers['id'])):
         raise ValueError("Some tracers are in multiple times.")
     return tracers

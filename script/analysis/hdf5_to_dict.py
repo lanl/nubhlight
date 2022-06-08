@@ -54,11 +54,14 @@ def get_dumps_full(folder,twod=False):
   fulldumps = []
 
   for fname in alldumps:
-    with h5py.File(fname, 'r') as dfile:
-      if 'FULL_DUMP' not in dfile:
-        fulldumps.append(fname)
-      elif dfile['FULL_DUMP'][0]:
-        fulldumps.append(fname)
+    try:
+      with h5py.File(fname, 'r') as dfile:
+        if 'FULL_DUMP' not in dfile:
+          fulldumps.append(fname)
+        elif dfile['FULL_DUMP'][0]:
+          fulldumps.append(fname)
+    except:
+      pass
 
   return sorted(fulldumps)
 
