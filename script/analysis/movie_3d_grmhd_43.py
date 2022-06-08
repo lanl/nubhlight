@@ -39,7 +39,7 @@ N1 = hdr['N1']; N2 = hdr['N2']; N3 = hdr['N3']
 
 def plot(args):
   n = args
-  print '%08d / ' % (n+1) + '%08d' % len(files) 
+  print('%08d / ' % (n+1) + '%08d' % len(files))
   diag = io.load_diag(path)
   dump = io.load_dump(files[n], geom)
   #hdr = dump['hdr']
@@ -94,7 +94,7 @@ import signal
 import psutil
 
 NTHREADS = psutil.cpu_count(logical=False)
-print psutil.cpu_count(logical=False)
+print(psutil.cpu_count(logical=False))
 
 original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
 pool = multiprocessing.Pool(NTHREADS)

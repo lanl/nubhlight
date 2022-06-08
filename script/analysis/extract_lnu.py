@@ -16,7 +16,7 @@ units = get_cgs()
 
 def get_data_dump(dumpname):
     with h5py.File(dumpname,'r') as f:
-        nuLnu = f['nuLnu'].value
+        nuLnu = f['nuLnu'][()]
         nth = f['nth'][0]
         nphi = f['nphi'][0]
         nubins = f['nubins'][0]

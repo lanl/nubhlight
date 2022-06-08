@@ -37,7 +37,7 @@ geom = io.load_geom(hdr)
 
 def plot(args):
   n = args
-  print '%08d / ' % (n+1) + '%08d' % len(files) 
+  print('%08d / ' % (n+1) + '%08d' % len(files))
   diag = io.load_diag(path)
   dump = io.load_dump(files[n], geom)
   #hdr = dump['hdr']
@@ -48,11 +48,11 @@ def plot(args):
   sigma = np.zeros(hdr['N1'])
   mdot = np.zeros(hdr['N1'])
 
-  for i in xrange(hdr['N1']):
+  for i in range(hdr['N1']):
     vol = 0.
-    for j in xrange(hdr['N2']):
-      for k in xrange(hdr['N3']):
-        Thetae_sadw[i] += dump['Thetae'][i,j,k]*dump['RHO'][i,j,k]*geom['gdet'][i,j]*hdr['dx1']*hdr['dx2']*hdr['dx3']
+    for j in range(hdr['N2']):
+      for k in range(hdr['N3']):
+        Thetae_sadw[i] += dump['Theta'][i,j,k]*dump['RHO'][i,j,k]*geom['gdet'][i,j]*hdr['dx1']*hdr['dx2']*hdr['dx3']
         sigma[i] += dump['RHO'][i,j,k]*hdr['dx2']*geom['gdet'][i,j]
         mdot[i] += dump['RHO'][i,j,k]*hdr['dx2']*hdr['dx3']*geom['gdet'][i,j]
         vol += dump['RHO'][i,j,k]*geom['gdet'][i,j]*hdr['dx1']*hdr['dx2']*hdr['dx3']
@@ -67,8 +67,8 @@ def plot(args):
   ax.set_yticks([-SIZE,-SIZE/2,0,SIZE/2,SIZE])
   
   ax = plt.subplot(3,3,2)
-  bplt.plot_xz(ax, geom, np.log10(dump['Thetae']), dump,
-    vmin=-2, vmax=2, label='Thetae', cmap='RdBu_r', ticks=[-2,-1,0,1,2])
+  bplt.plot_xz(ax, geom, np.log10(dump['Theta']), dump,
+    vmin=-2, vmax=2, label='Theta', cmap='RdBu_r', ticks=[-2,-1,0,1,2])
   ax.set_xlim([-SIZE, SIZE]); ax.set_ylim([-SIZE, SIZE])
   ax.set_xticks([-SIZE,-SIZE/2,0,SIZE/2,SIZE])
   ax.set_yticks([-SIZE,-SIZE/2,0,SIZE/2,SIZE])
@@ -90,8 +90,8 @@ def plot(args):
   ax.set_yticks([-SIZE,-SIZE/2,0,SIZE/2,SIZE])
   
   ax = plt.subplot(3,3,5)
-  bplt.plot_xy(ax, geom, np.log10(dump['Thetae']), dump,
-     vmin=-2, vmax=2, label='Thetae', cmap='RdBu_r',
+  bplt.plot_xy(ax, geom, np.log10(dump['Theta']), dump,
+     vmin=-2, vmax=2, label='Theta', cmap='RdBu_r',
      ticks=[-2,-1,0,1,2])
   ax.set_xlim([-SIZE, SIZE]); ax.set_ylim([-SIZE, SIZE])
   ax.set_xticks([-SIZE,-SIZE/2,0,SIZE/2,SIZE])
@@ -118,7 +118,7 @@ import signal
 import psutil
 
 nthreads = psutil.cpu_count(logical=False)
-print psutil.cpu_count(logical=False)
+print(psutil.cpu_count(logical=False))
 NTHREADS = 10
 
 original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
