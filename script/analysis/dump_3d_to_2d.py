@@ -91,7 +91,7 @@ def copy_hdr(src,dest,correct_meta=True):
                   'failed','full_dump',
                   'gamma_fallback','nstep',
                   'passive_type']
-    variables = hdr_vars + extra_vars
+    variables = list(set(hdr_vars + extra_vars))
     for v in variables:            
         if v in src.keys():
             if v not in dest.keys():
@@ -272,11 +272,11 @@ def avg_dump(src,dest,dump,
                                 shape=new_shape)
 
     # Perform sadws
-    variables = (hdr['vnams']
+    variables = list(set(hdr['vnams']
                  + ['PRESS','TEMP','ENT',
                     'Thetae','Theta',
                     'Ye',
-                    'bsq','beta','j2','betar'])
+                    'bsq','beta','j2','betar']))
     sadw_grp = dest.create_group('sadw')
     sadw_grp.create_dataset('r',data=geom['r'][:,0,0])
     for v in variables:
@@ -285,7 +285,7 @@ def avg_dump(src,dest,dump,
             sadw_grp.create_dataset(v,data=prof)
 
     # Perform spherical averages
-    variables = ['dtau_tot','dtau_abs','dtau_scatt']
+    variables = list(set['dtau_tot','dtau_abs','dtau_scatt']))
     sph_grp = dest.create_group('sph_avg')
     sph_grp.create_dataset('r',data=geom['r'][:,0,0])
     for v in variables:
@@ -302,10 +302,10 @@ def avg_dump(src,dest,dump,
         sph_grp.create_dataset('dtau_avg',data = dtau_avg)
 
     # Perform ZoHs
-    variables = ['Ye',
+    variables = list(set['Ye',
                  'dtau_tot','dtau_dens',
                  'dtau_abs','dtau_scatt',
-                 'dlepton_rad','dyedt_rad']    
+                 'dlepton_rad','dyedt_rad']))
     pzoh = zoHProjector(hdr,geom,dump,(rmin,rmax),(zmin,zmax))
     zoh_grp = dest.create_group('zoh')
     zoh_grp.create_dataset('zoH_uniform',data=pzoh.zoH_uniform)
