@@ -285,7 +285,7 @@ def avg_dump(src,dest,dump,
             sadw_grp.create_dataset(v,data=prof)
 
     # Perform spherical averages
-    variables = list(set['dtau_tot','dtau_abs','dtau_scatt']))
+    variables = list(set(['dtau_tot','dtau_abs','dtau_scatt']))
     sph_grp = dest.create_group('sph_avg')
     sph_grp.create_dataset('r',data=geom['r'][:,0,0])
     for v in variables:
@@ -302,7 +302,7 @@ def avg_dump(src,dest,dump,
         sph_grp.create_dataset('dtau_avg',data = dtau_avg)
 
     # Perform ZoHs
-    variables = list(set['Ye',
+    variables = list(set(['Ye',
                  'dtau_tot','dtau_dens',
                  'dtau_abs','dtau_scatt',
                  'dlepton_rad','dyedt_rad']))
