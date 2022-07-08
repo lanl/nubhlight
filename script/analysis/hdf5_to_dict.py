@@ -912,7 +912,7 @@ class TracerData(TracerDataBase):
   def get_trace(self,t_id):
     import numpy as np
     # id
-    mask = self.data['id'] == t_id
+    mask = (self.data['id'] == t_id)
     trace_data = self.filter(mask)
     # sort
     trace_data = self.sort_trace(trace_data,'time')
