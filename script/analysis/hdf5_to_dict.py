@@ -914,11 +914,11 @@ class TracerData(TracerDataBase):
     # id
     mask = (self.data['id'] == t_id)
     trace_data = self.filter(mask)
-    # sort
-    trace_data = self.sort_trace(trace_data,'time')
     # uniqueness
     _, mask = np.unique(trace_data['time'], return_index=True)
     trace_data = trace_data.filter(mask)
+    # sort
+    trace_data = self.sort_trace(trace_data,'time')
     return Trace(self.units,trace_data)
 
   def remove_trace(self,t_id):
