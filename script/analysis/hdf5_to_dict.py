@@ -917,8 +917,8 @@ class TracerData(TracerDataBase):
     # sort
     trace_data = self.sort_trace(trace_data,'time')
     # uniqueness
-    _, mask = np.unique(self.data['time'], return_index=True)
-    trace_data = self.filter(mask)
+    _, mask = np.unique(trace_data.data['time'], return_index=True)
+    trace_data = trace_data.filter(mask)
     return Trace(self.units,trace_data)
 
   def remove_trace(self,t_id):
