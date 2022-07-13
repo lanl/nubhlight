@@ -253,31 +253,84 @@ def get_cutoff(trace, p = 6, thresh = 1e-1):
         cutoff = -1
     return cutoff
 
+def value_crossing(a, v):
+    residual = a - v
+    first = residual[:-1]
+    second = residual[1:]
+    return np.logical_and((first*second)<=0,first > 0)
+    
+
 def cleanup_trace(trace,
-                  T9 = 10, atol = 0.3,
+                  T9 = 10, atol = 1,
                   p = 6, thresh = 1e-1):
   """Takes trace and cleans it up so it's suitable for PRISM"""
   # output trace
-  trace_out = {}
+  trsm,trace_out = {},{}
+  Tunit = cgs['MEV']/cgs['GK']
+  
+  trsm['T'],trsm['rho'] = log_smooth(trace['T']),log_smooth(trace['rho'])
 
   # starting temperature
-  Tgk   = trace['T']*cgs['MEV']/cgs['GK']
-  TgkT9 = np.isclose(Tgk,T9,atol=atol)
-  try:
-      sidx = np.where(TgkT9)[0][-1]
-  except:
-      sidx = 0
-  for k in trace.keys():
-    trace_out[k] = trace[k][sidx:]
-    
-  # Cut off at the end  
+  #Tgk   = trace['T']*cgs['MEV']/cgs['GK']
+  Tgk   = trsm['T']*cgs['MEV']/cgs['GK']
+  TgkT9 = value_crossing(Tgk, T9)
+  sidx = np.where(TgkT9)[0][-1] + 1
+  
+  # Sometimes the temperature is not actually that close to T9=10,
+  # so this will do a little interpolation to find a suitable
+  # starting point. 
+  
+  if T9 > Tgk[sidx:][0] > T9-atol or Tgk[0] < T9:
+      if Tgk[0] < T9:
+          #print('Starting at less than T9 = ',T9)
+      #print(Tgk[sidx:][0])
+      for k in trace.keys() - ['T','[rho']:
+            trace_out[k] = trace[k][sidx:]
+      trace_out['T'],trace_out['rho'] = trsm['T'][sidx:],trsm['rho'][sidx:]    
+  else:
+      #print('Having to do interpolation. Everything is fine, though, as long as the following numbers are consistent:')
+      interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],Tgk[sidx-1:sidx+1])
+      newx = np.arange(trace['time'][sidx-1],trace['time'][sidx],0.1)
+      tgk_interp = interpsidx(newx)
+      ind = np.where(np.isclose(tgk_interp,T9,atol=0.1))[0][-1]
+
+      trace_out['T'] = np.insert(trsm['T'][sidx:],0,tgk_interp[ind]/Tunit)
+      #print(Tgk[sidx]/Tunit,Tgk[sidx+1]/Tunit)
+      #print(trace_out['T'][0],trace_out['T'][1],trace_out['T'][2])
+      trace_out['time'] = np.insert(trace['time'][sidx:],0,newx[ind])
+      # Still need to get corresponding other key values
+      for k in trace.keys() - ['time','T']:
+          if trace[k].size == len(trace):
+              if k == 'rho':
+                interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trsm[k][sidx-1:sidx+1])
+                interp = interpsidx(newx)
+                trace_out[k] = np.insert(trsm[k][sidx:],0,interp[ind])
+              else:
+                interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trace[k][sidx-1:sidx+1])
+                interp = interpsidx(newx)
+                trace_out[k] = np.insert(trace[k][sidx:],0,interp[ind])
+          else:
+              dim = int(trace[k].size/len(trace))
+              temp,trace_out[k] = {},[]
+              for i in range(dim):
+                  interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trace[k][:,i][sidx-1:sidx+1])
+                  interp = interpsidx(newx)
+                  temp[i] = np.insert(trace[k][sidx:][:,i],0,interp[ind])
+                  trace_out[k].append(temp[i])
+              trace_out[k] = np.array(trace_out[k])
+              if trace_out[k].shape[0] == dim:
+                  trace_out[k] = np.reshape(trace_out[k],(trace_out[k].shape[1],trace_out[k].shape[0]))
+
+  #print('This should be the same as ',trace_out['T'][0]*Tunit)
+  # Cut off at the end
   cutoff = get_cutoff(trace_out,p,thresh)
   for k in trace.keys():
       trace_out[k] = trace_out[k][:cutoff]
+      #np.savetxt('clean_'+k+'.dat',trace_out[k])
+  #print('this: ',trace_out['T'][0]*Tunit)
 
   # smooth rho and T
-  trace_out['rho'] = log_smooth(trace_out['rho'])
-  trace_out['T']   = log_smooth(trace_out['T'])
+  #print('and this: ',trace_out['T'][0]*Tunit)
   trace_out['Tgk'] = trace_out['T']*cgs['MEV']/cgs['GK']
 
   # heavies don't matter
@@ -325,17 +378,21 @@ def to_file(trace,
                header=header,
                comments = '# ')
 
-def meta_file(idx,mass,mass_unit,total_mass = None):
+def meta_file(idx,mass,mass_unit,T_initx,rho_initx,total_mass = None):
     if total_mass is not None:
         mass_fraction = mass / total_mass
     mass *= mass_unit
     with open('metadata.dat','w') as f:
         if total_mass is not None:
-            f.write("# 1:id 2:mass[g] 3:mass fraction\n")
-            f.write("{} {:.6e} {:.6e}\n".format(idx,mass,mass_fraction))
+            #f.write("# 1:id 2:mass[g] 3:mass fraction\n")
+            #f.write("{} {:.6e} {:.6e}\n".format(idx,mass,mass_fraction))
+            f.write("# 1:id 2:mass[g] 3:mass fraction 4:T_initx[GK] 5:rho_initx[g/cm3]\n")
+            f.write("{} {:.6e} {:.6e} {:.6e} {:.6e}\n".format(idx,mass,mass_fraction,T_initx,rho_initx))
         else:
-            f.write("# 1:id 2:mass[g]\n")
-            f.write("{} {:.6e}\n".format(idx,mass))
+            f.write("# 1:id 2:mass[g] 3:T_smooth[GK] 4:rho_initx[g/cm3]\n")
+            f.write("{} {:.6e} {:.6e} {:.6e}\n".format(idx,mass,T_initx,rho_initx))
+            #f.write("# 1:id 2:mass[g]\n")
+            #f.write("{} {:.6e}\n".format(idx,mass))            
 
 def extrapolate_trace(trace,T9,atol,p,thresh,tfinal = 1e3):
     # extrapolation
@@ -358,6 +415,8 @@ def extrapolate_trace(trace,T9,atol,p,thresh,tfinal = 1e3):
     trace_out['Ye_avg'] = extrap.Ye(tnew)
     trace_out['id'] = trace['id'][0]
     trace_out['mass'] = trace['mass'][0]
+    trace_out['T_smooth'] = trace['Tgk'][0]
+    trace_out['rho_smooth'] = trace['rho'][0]*trace.units['RHO_unit']
     return trace_out
 
 def convert_file(tracer_file,outdir,
@@ -377,11 +436,16 @@ def convert_file(tracer_file,outdir,
         os.makedirs(directory,exist_ok=True)
     os.chdir(directory)
     to_file(trace)
-    meta_file(trace['id'],trace['mass'],mass_unit)
+    #meta_file(trace['id'],trace['mass'],mass_unit,trace['T_smooth'])
+    meta_file(trace['id'],trace['mass'],mass_unit,trace['T_smooth'],trace['rho_smooth'])
     if frdm_path is not None:
         Ye = trace['Ye_avg'][0]
-        rho = trace['rho'][0]
-        frdm_comp(Ye,T9,rho,'initx.dat',frdm_path)
+        #rho = trace['rho'][0]
+        rhosmooth = trace['rho_smooth']
+        Tsmooth = trace['T_smooth']
+        #frdm_comp(Ye,T9,rho,'initx.dat',frdm_path)
+        frdm_comp(Ye,Tsmooth,rhosmooth,'initx.dat',frdm_path)
+        print('initx file written.')
     os.chdir(currdir)
     return
 
