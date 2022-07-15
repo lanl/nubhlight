@@ -324,7 +324,6 @@ def cleanup_trace(trace,
       trace_out[k] = trace_out[k][:cutoff]
 
   # smooth rho and T
-  #print('and this: ',trace_out['T'][0]*Tunit)
   trace_out['Tgk'] = trace_out['T']*cgs['MEV']/cgs['GK']
 
   # heavies don't matter
