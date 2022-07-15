@@ -294,8 +294,6 @@ def cleanup_trace(trace,
       ind = np.where(np.isclose(tgk_interp,T9,atol=0.1))[0][-1]
 
       trace_out['T'] = np.insert(trsm['T'][sidx:],0,tgk_interp[ind]/Tunit)
-      #print(Tgk[sidx]/Tunit,Tgk[sidx+1]/Tunit)
-      #print(trace_out['T'][0],trace_out['T'][1],trace_out['T'][2])
       trace_out['time'] = np.insert(trace['time'][sidx:],0,newx[ind])
       # Still need to get corresponding other key values
       for k in trace.keys() - ['time','T']:
