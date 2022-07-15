@@ -288,7 +288,6 @@ def cleanup_trace(trace,
             trace_out[k] = trace[k][sidx:]
       trace_out['T'],trace_out['rho'] = trsm['T'][sidx:],trsm['rho'][sidx:]    
   else:
-      #print('Having to do interpolation. Everything is fine, though, as long as the following numbers are consistent:')
       interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],Tgk[sidx-1:sidx+1])
       newx = np.arange(trace['time'][sidx-1],trace['time'][sidx],0.1)
       tgk_interp = interpsidx(newx)
