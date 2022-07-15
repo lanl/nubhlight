@@ -322,8 +322,6 @@ def cleanup_trace(trace,
   cutoff = get_cutoff(trace_out,p,thresh)
   for k in trace.keys():
       trace_out[k] = trace_out[k][:cutoff]
-      #np.savetxt('clean_'+k+'.dat',trace_out[k])
-  #print('this: ',trace_out['T'][0]*Tunit)
 
   # smooth rho and T
   #print('and this: ',trace_out['T'][0]*Tunit)
