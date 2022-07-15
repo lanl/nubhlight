@@ -320,7 +320,6 @@ def cleanup_trace(trace,
               if trace_out[k].shape[0] == dim:
                   trace_out[k] = np.reshape(trace_out[k],(trace_out[k].shape[1],trace_out[k].shape[0]))
 
-  #print('This should be the same as ',trace_out['T'][0]*Tunit)
   # Cut off at the end
   cutoff = get_cutoff(trace_out,p,thresh)
   for k in trace.keys():
