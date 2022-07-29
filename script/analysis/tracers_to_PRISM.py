@@ -300,26 +300,9 @@ def cleanup_trace(trace,
       trace_out['time'] = np.insert(trace['time'][sidx:],0,newx[ind])
       # Still need to get corresponding other key values
       for k in trace.keys() - ['time','T']:
-          if trace[k].size == len(trace):
-              if k == 'rho':
-                interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trsm[k][sidx-1:sidx+1])
-                interp = interpsidx(newx)
-                trace_out[k] = np.insert(trsm[k][sidx:],0,interp[ind])
-              else:
-                interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trace[k][sidx-1:sidx+1])
-                interp = interpsidx(newx)
-                trace_out[k] = np.insert(trace[k][sidx:],0,interp[ind])
-          else:
-              dim = int(trace[k].size/len(trace))
-              temp,trace_out[k] = {},[]
-              for i in range(dim):
-                  interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trace[k][:,i][sidx-1:sidx+1])
-                  interp = interpsidx(newx)
-                  temp[i] = np.insert(trace[k][sidx:][:,i],0,interp[ind])
-                  trace_out[k].append(temp[i])
-              trace_out[k] = np.array(trace_out[k])
-              if trace_out[k].shape[0] == dim:
-                  trace_out[k] = np.reshape(trace_out[k],(trace_out[k].shape[1],trace_out[k].shape[0]))
+          trace_in = trsm if k in trsm.keys() else trace
+          interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],trace_in[k][sidx-1:sidx+1],axis=0)
+          trace_out[k] = np.insert(trace_in[k][sidx:],0,interpsidx(new_time),axis=0)
 
   # Cut off at the end
   cutoff = get_cutoff(trace_out,p,thresh)
