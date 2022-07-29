@@ -289,11 +289,14 @@ def cleanup_trace(trace,
       trace_out['T'],trace_out['rho'] = trsm['T'][sidx:],trsm['rho'][sidx:]    
   else:
       interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],Tgk[sidx-1:sidx+1])
-      newx = np.arange(trace['time'][sidx-1],trace['time'][sidx],0.1)
-      tgk_interp = interpsidx(newx)
-      ind = np.where(np.isclose(tgk_interp,T9,atol=0.1))[0][-1]
-
-      trace_out['T'] = np.insert(trsm['T'][sidx:],0,tgk_interp[ind]/Tunit)
+      residual = lambda t: interpsidx(t) - T9
+      root_results = optimize.root_scalar(residual, bracket=(trace['time'][sidx-1],trace['time'][sidx+1]))
+      if not root_results.converged:
+          raise ValueError("Root finding failed for tracer {}".format(trace['id'][0]))
+      new_time = root_results.root
+      new_val = interpsidx(new_time)
+      trace_out['T'] = np.insert(trsm['T'][sidx:],0,new_val/Tunit)
+      trace_out['time'] = np.insert(trace['time'][sidx:],0,new_time)
       trace_out['time'] = np.insert(trace['time'][sidx:],0,newx[ind])
       # Still need to get corresponding other key values
       for k in trace.keys() - ['time','T']:
