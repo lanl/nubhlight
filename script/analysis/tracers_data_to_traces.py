@@ -84,7 +84,7 @@ if __name__ == "__main__":
     print("Traces will be loaded from: {}".format(args.inpath))
 
     if args.ids is not None:
-        tids = TracerData.frompath(args.ids)['id']
+        tids = TracerData.frompath(args.ids).ids()
         nts = len(tids)
         print("There are {} traces to save".format(nts))
         

@@ -912,13 +912,13 @@ class TracerData(TracerDataBase):
   def get_trace(self,t_id):
     import numpy as np
     # id
-    mask = self.data['id'] == t_id
+    mask = (self.data['id'] == t_id)
     trace_data = self.filter(mask)
+    # uniqueness
+    _, mask = np.unique(trace_data['time'], return_index=True)
+    trace_data = trace_data.filter(mask)
     # sort
     trace_data = self.sort_trace(trace_data,'time')
-    # uniqueness
-    _, mask = np.unique(self.data['time'], return_index=True)
-    trace_data = self.filter(mask)
     return Trace(self.units,trace_data)
 
   def remove_trace(self,t_id):
