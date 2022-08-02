@@ -59,7 +59,8 @@ class zoHProjector:
         if self.zoH_uniform is None:
             raise ValueError("You must set zoH_range "
                              +"before calling this function.")
-        q_interp = interpolate.interp1d(self.zoH[ir,:,iphi],q[ir,:,iphi])
+        q_interp = interpolate.interp1d(self.zoH[ir,:,iphi],q[ir,:,iphi],
+                                        fill_value='extrapolate')
         q_grid = q_interp(self.zoH_uniform)
         return q_grid
 
