@@ -39,7 +39,8 @@ def get_options():
   host = {}
 
   host['NAME']           = os.uname()[1]
-  host['COMPILER']       = '/usr/local/hdf5-parallel/bin/h5pcc'
+  #host['COMPILER']       = '/usr/local/hdf5-parallel/bin/h5pcc'
+  host['COMPILER']       = 'h5pcc'
   host['COMPILER_FLAGS'] = flags_base + ' ' + fcflags + ' ' + '-O2 -march=native'
   host['DEBUG_FLAGS']    = flags_base + ' ' + fcflags + ' ' + '-g -O0'
   host['GSL_DIR']        = ''

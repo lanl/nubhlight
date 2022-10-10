@@ -1519,6 +1519,7 @@ void restart_read(char *fname) {
       nph_in += dset_sizes[n];
     }
     H5Sclose(space);
+    H5Dclose(ph_dsets[n]);
   }
   printf("[%i] nph_in = %lu\n", mpi_myrank(), (unsigned long int)nph_in);
   // Actually read datasets
@@ -1527,8 +1528,11 @@ void restart_read(char *fname) {
     int noffset = 0;
     for (int n = 0; n < num_datasets; n++) {
       if (n % mpi_nprocs() == mpi_myrank()) {
+        sprintf(dsetnam, "photons_%08d", n);
+        ph_dsets[n] = H5Dopen(file_id, dsetnam, H5P_DEFAULT);
         H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
             &rdata[noffset]);
+        H5Dclose(ph_dsets[n]);
         noffset += dset_sizes[n];
       }
     }
@@ -1573,9 +1577,6 @@ void restart_read(char *fname) {
   }
 
   free(rdata);
-  for (int n = 0; n < num_datasets; n++) {
-    H5Dclose(ph_dsets[n]);
-  }
   free(ph_dsets);
   free(dset_sizes);
 #endif // RADIATION
