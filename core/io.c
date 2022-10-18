@@ -1555,15 +1555,12 @@ void restart_read(char *fname) {
   }
 
   // Divide array among openmp processes equitably
-  int               thread_start = (int)(get_rand() * nthreads);
-  struct of_photon *ph_lists_local[nthreads];
-  for (int it = 0; it < nthreads; ++it) {
-    ph_lists_local[it] = photon_lists[it];
-  }
+  int thread_start = (int)(get_rand() * nthreads);
   for (int ip = 0; ip < npart_local; ++ip) {
-    int index = (thread_start + ip) % nthreads;
-    copy_photon(&(superphotons[ip]), ph_lists_local[index]);
-    ph_lists_local[index] = ph_lists_local[index]->next;
+    int               index = (thread_start + ip) % nthreads;
+    struct of_photon *ph    = safe_malloc(sizeof(struct of_photon));
+    copy_photon(&superphotons[ip], ph);
+    swap_ph(&ph, &photon_lists[index]);
   }
 
   free(superphotons);
@@ -2080,9 +2077,12 @@ void write_array(void *data, const char *name, hsize_t rank, hsize_t *fdims,
     plist_id = H5Pcreate(H5P_DATASET_XFER);
     H5Dwrite(dset_id, string_type, memspace, filespace, plist_id, data);
   } else {
-    fprintf(
-        stderr, "type %llu not supported by write_array()! Exiting...\n", type);
-    exit(-1);
+    dset_id = H5Dcreate(
+        file_id, name, type, filespace, H5P_DEFAULT, plist_id, H5P_DEFAULT);
+    H5Pclose(plist_id);
+    plist_id = H5Pcreate(H5P_DATASET_XFER);
+    H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);
+    H5Dwrite(dset_id, type, memspace, filespace, plist_id, data);
   }
   H5Dclose(dset_id);
   H5Pclose(plist_id);
@@ -2115,9 +2115,8 @@ void read_array(void *data, const char *name, hsize_t rank, hsize_t *fdims,
       mpi_int_broadcast(data);
     }
   } else {
-    fprintf(
-        stderr, "type %llu not supported by read_array()! Exiting...\n", type);
-    exit(-1);
+    H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);
+    H5Dread(dset_id, type, memspace, filespace, plist_id, data);
   }
   H5Dclose(dset_id);
   H5Pclose(plist_id);
