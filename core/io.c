@@ -1266,7 +1266,7 @@ void restart_write(int restart_type) {
 #define RANK (1)
     hsize_t NTOT_CPU         = N1CPU * N2CPU * N3CPU;
     hsize_t my_rank          = mpi_myrank();
-    hsite_t fdims[RANK]      = {NTOT_CPU};
+    hsize_t fdims[RANK]      = {NTOT_CPU};
     hsize_t fstart[RANK]     = {my_rank};
     hsize_t fcount[RANK]     = {1};
     hsize_t mdims[RANK]      = {1};
@@ -1515,11 +1515,12 @@ void restart_read(char *fname) {
 
   // Superphoton datasets
   // read number of particles per rank
+  int npart_offset, npart_local;
   {
 #define RANK (1)
     hsize_t NTOT_CPU         = N1CPU * N2CPU * N3CPU;
     hsize_t my_rank          = mpi_myrank();
-    hsite_t fdims[RANK]      = {NTOT_CPU};
+    hsize_t fdims[RANK]      = {NTOT_CPU};
     hsize_t fstart[RANK]     = {my_rank};
     hsize_t fcount[RANK]     = {1};
     hsize_t mdims[RANK]      = {1};
@@ -1530,8 +1531,8 @@ void restart_read(char *fname) {
         particle_offsets, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
     READ_ARRAY(
         particle_counts, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
-    int npart_offset = particle_offsets[0];
-    int npart_local  = particle_counts[0];
+    npart_offset = particle_offsets[0];
+    npart_local  = particle_counts[0];
     free(particle_offsets);
     free(particle_counts);
 #undef RANK
@@ -1554,15 +1555,14 @@ void restart_read(char *fname) {
   }
 
   // Divide array among openmp processes equitably
-  int               idx          = 0;
   int               thread_start = (int)(get_rand() * nthreads);
   struct of_photon *ph_lists_local[nthreads];
   for (int it = 0; it < nthreads; ++it) {
     ph_lists_local[it] = photon_lists[it];
   }
   for (int ip = 0; ip < npart_local; ++ip) {
-    int index = n % nthreads;
-    copy_photon(&(superhotons[ip]), ph_lists_local[index]);
+    int index = (thread_start + ip) % nthreads;
+    copy_photon(&(superphotons[ip]), ph_lists_local[index]);
     ph_lists_local[index] = ph_lists_local[index]->next;
   }
 
