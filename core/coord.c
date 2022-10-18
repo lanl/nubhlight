@@ -37,7 +37,7 @@
  *
  */
 
-void coord(int i, int j, int k, int loc, double *X) {
+void coord(int i, int j, int k, int loc, double X[NDIM]) {
   X[0] = t;
 
   i += global_start[1];
@@ -488,14 +488,14 @@ void set_grid() {
             0.) {
           double cplus      = fabs((-ggeom[i][j][CENT].gcon[0][mu] +
                                   sqrt(pow(ggeom[i][j][CENT].gcon[0][mu], 2.) -
-                                       ggeom[i][j][CENT].gcon[mu][mu] *
-                                           ggeom[i][j][CENT].gcon[0][0])) /
-                              (ggeom[i][j][CENT].gcon[0][0]));
+                                            ggeom[i][j][CENT].gcon[mu][mu] *
+                                                ggeom[i][j][CENT].gcon[0][0])) /
+                                   (ggeom[i][j][CENT].gcon[0][0]));
           double cminus     = fabs((-ggeom[i][j][CENT].gcon[0][mu] -
                                    sqrt(pow(ggeom[i][j][CENT].gcon[0][mu], 2.) -
-                                        ggeom[i][j][CENT].gcon[mu][mu] *
-                                            ggeom[i][j][CENT].gcon[0][0])) /
-                               (ggeom[i][j][CENT].gcon[0][0]));
+                                            ggeom[i][j][CENT].gcon[mu][mu] *
+                                                ggeom[i][j][CENT].gcon[0][0])) /
+                                   (ggeom[i][j][CENT].gcon[0][0]));
           light_phase_speed = MY_MAX(cplus, cminus);
         } else {
           light_phase_speed = SMALL;

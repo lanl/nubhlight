@@ -134,7 +134,7 @@ int antisym(int a, int b, int c, int d) {
 }
 
 // Due to Norm Hardy; good for general n
-int pp(int n, int P[n]) {
+int pp(int n, int *P) {
   int x;
   int p = 0;
   int v[n];
