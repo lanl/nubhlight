@@ -359,7 +359,7 @@ void track_ph() {
       hsize_t dims[1] = {num_tracked_buf};
       hid_t   space   = H5Screate_simple(1, dims, NULL);
       ph_dsets[n]     = H5Dcreate(file_id, dsetnam, trackphfiletype, space,
-          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+              H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       H5Sclose(space);
     }
     if (num_tracked > 0)
@@ -816,7 +816,7 @@ void dump() {
     hsize_t str_dims[1] = {NVAR};
     hid_t   prim_space  = H5Screate_simple(1, str_dims, NULL);
     hid_t   str_attr    = H5Acreate(
-        prim_dset, "vnams", strtype, prim_space, H5P_DEFAULT, H5P_DEFAULT);
+             prim_dset, "vnams", strtype, prim_space, H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(str_attr, strtype, vnams);
     H5Aclose(str_attr);
     H5Sclose(prim_space);
@@ -1241,46 +1241,64 @@ void restart_write(int restart_type) {
   }
 
   // Superphoton data
-  hid_t             space;
-  char              dsetnam[STRLEN];
-  struct of_photon *wdata;
-  wdata = safe_malloc((size_t)(step_tot) * sizeof(struct of_photon));
+  // compute sizes
+  size_t npart_local  = count_particles_local();
+  size_t npart        = mpi_reduce_int(npart_local);
+  size_t npart_offset = mpi_accumulate_int(npart_local);
+
+  // allocate
+  struct of_photon *superphotons;
+  superphotons = safe_malloc((size_t)(npart_local) * sizeof(struct of_photon));
 
   // Copy superphotons into buffer
   int nph = 0;
   for (int n = 0; n < nthreads; n++) {
     struct of_photon *ph = photon_lists[n];
     while (ph != NULL) {
-      copy_photon(ph, &(wdata[nph]));
+      copy_photon(ph, &(superphotons[nph]));
       ph = ph->next;
       nph++;
     }
   }
 
-  // Each processor must create all datasets
-  hid_t *ph_dsets = safe_malloc((size_t)mpi_nprocs() * sizeof(hid_t));
-  for (int n = 0; n < mpi_nprocs(); n++) {
-    sprintf(dsetnam, "photons_%08d", n);
-    // int step_tot_buf = step_tot;
-    int step_tot_buf = nph;
-    mpi_int_broadcast_proc(&step_tot_buf, n);
-    hsize_t dims[1] = {step_tot_buf};
-    space           = H5Screate_simple(1, dims, NULL);
-    ph_dsets[n] = H5Dcreate(file_id, dsetnam, phfiletype, space, H5P_DEFAULT,
-        H5P_DEFAULT, H5P_DEFAULT);
-    H5Sclose(space);
+  // write number of particles per rank
+  {
+#define RANK (1)
+    hsize_t NTOT_CPU         = N1CPU * N2CPU * N3CPU;
+    hsize_t my_rank          = mpi_myrank();
+    hsite_t fdims[RANK]      = {NTOT_CPU};
+    hsize_t fstart[RANK]     = {my_rank};
+    hsize_t fcount[RANK]     = {1};
+    hsize_t mdims[RANK]      = {1};
+    hsize_t mstart[RANK]     = {0};
+    int    *particle_offsets = safe_malloc(1 * sizeof(int));
+    int    *particle_counts  = safe_malloc(1 * sizeof(int));
+    particle_offsets[0]      = npart_offset;
+    particle_counts[0]       = npart_local;
+    WRITE_ARRAY(
+        particle_offsets, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
+    WRITE_ARRAY(
+        particle_counts, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
+    free(particle_offsets);
+    free(particle_counts);
+#undef RANK
   }
-  if (step_tot > 0) {
-    H5Dwrite(ph_dsets[mpi_myrank()], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-        wdata);
+
+  // write superphoton datasets
+  {
+#define RANK (1)
+    hsize_t fdims[RANK]  = {npart};
+    hsize_t fstart[RANK] = {npart_offset};
+    hsize_t fcount[RANK] = {npart_local};
+    hsize_t mdims[RANK]  = {npart_local};
+    hsize_t mstart[RANK] = {0};
+    WRITE_ARRAY(
+        superphotons, RANK, fdims, fstart, fcount, mdims, mstart, phmemtype);
+#undef RANK
   }
 
   // Close and release resources
-  free(wdata);
-  for (int n = 0; n < mpi_nprocs(); n++) {
-    H5Dclose(ph_dsets[n]);
-  }
-  free(ph_dsets);
+  free(superphotons);
 #endif // RADIATION
 
   H5Fflush(file_id, H5F_SCOPE_GLOBAL);
@@ -1494,90 +1512,61 @@ void restart_read(char *fname) {
     READ_ARRAY(nuLnu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
   }
-  // Superphoton datasets -- each processor must create all datasets
-  // compute how many datasets are needed
-  char dsetnam[STRLEN];
-  int  num_datasets = -1;
-  do {
-    sprintf(dsetnam, "photons_%08d", ++num_datasets);
-  } while (H5Lexists(file_id, dsetnam, H5P_DEFAULT));
-  if (mpi_myrank() == 0) {
-    printf("Number of particle datasets = %d\n", num_datasets);
+
+  // Superphoton datasets
+  // read number of particles per rank
+  {
+#define RANK (1)
+    hsize_t NTOT_CPU         = N1CPU * N2CPU * N3CPU;
+    hsize_t my_rank          = mpi_myrank();
+    hsite_t fdims[RANK]      = {NTOT_CPU};
+    hsize_t fstart[RANK]     = {my_rank};
+    hsize_t fcount[RANK]     = {1};
+    hsize_t mdims[RANK]      = {1};
+    hsize_t mstart[RANK]     = {0};
+    int    *particle_offsets = safe_malloc(1 * sizeof(int));
+    int    *particle_counts  = safe_malloc(1 * sizeof(int));
+    READ_ARRAY(
+        particle_offsets, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
+    READ_ARRAY(
+        particle_counts, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
+    int npart_offset = particle_offsets[0];
+    int npart_local  = particle_counts[0];
+    free(particle_offsets);
+    free(particle_counts);
+#undef RANK
   }
-  // Compute how much space to allocate
-  hsize_t dims[1];
-  size_t  nph_in     = 0;
-  hid_t * ph_dsets   = safe_malloc((size_t)num_datasets * sizeof(hid_t));
-  size_t *dset_sizes = safe_malloc((size_t)num_datasets * sizeof(size_t));
-  for (int n = 0; n < num_datasets; n++) {
-    sprintf(dsetnam, "photons_%08d", n);
-    ph_dsets[n] = H5Dopen(file_id, dsetnam, H5P_DEFAULT);
-    hid_t space = H5Dget_space(ph_dsets[n]);
-    H5Sget_simple_extent_dims(space, dims, NULL);
-    if (n % mpi_nprocs() == mpi_myrank()) {
-      dset_sizes[n] = dims[0];
-      nph_in += dset_sizes[n];
-    }
-    H5Sclose(space);
-  }
-  printf("[%i] nph_in = %lu\n", mpi_myrank(), (unsigned long int)nph_in);
-  // Actually read datasets
-  struct of_photon *rdata = safe_malloc(nph_in * sizeof(struct of_photon));
-  if (nph_in > 0) {
-    int noffset = 0;
-    for (int n = 0; n < num_datasets; n++) {
-      if (n % mpi_nprocs() == mpi_myrank()) {
-        H5Dread(ph_dsets[n], phmemtype, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-            &rdata[noffset]);
-        noffset += dset_sizes[n];
-      }
-    }
+  int npart = mpi_reduce_int(npart_local);
 
-    struct of_photon *tmp = NULL, *ph_in = NULL;
-    for (int n = 0; n < nph_in; n++) {
-      tmp = malloc(sizeof(struct of_photon));
-      copy_photon(&(rdata[n]), tmp);
-      if (tmp->Kcov[2][0] > 0.) {
-        printf("BAD PHOTON BEING READ IN!\n");
-        printf("Kcov[0] = %e\n", tmp->Kcov[2][0]);
-      }
-
-      tmp->next = ph_in;
-      ph_in     = tmp;
-    }
-
-    int               len_list  = 0;
-    struct of_photon *ph_in_tmp = ph_in;
-    while (ph_in_tmp != NULL) {
-      len_list++;
-      ph_in_tmp = ph_in_tmp->next;
-    }
-
-    // Divide linked list among openmp processes equitably
-    int thread_start = (int)(get_rand() * nthreads);
-    // int ph_per_thread = nph_in/nthreads;
-
-    for (int n = thread_start; n < thread_start + nph_in; n++) {
-      int index = n % nthreads;
-      /*if (ph_in->X[2][0] < 0.1) {printf("%i BAD\n", mpi_myrank());
-        for (int i = 0; i < 3; i++) {
-          for (int mu = 0; mu < NDIM; mu++) {
-            printf("X Kcov Kcon = %e %e %e\n", ph_in->X[i][mu],
-      ph_in->Kcov[i][mu], ph_in->Kcon[i][mu]);
-          }
-          printf("w = %e\n", ph_in->w);
-        }
-      }*/
-      swap_ph(&ph_in, &(photon_lists[index]));
-    }
+  // read full dataset
+  struct of_photon *superphotons;
+  superphotons = safe_malloc((size_t)(npart_local) * sizeof(struct of_photon));
+  {
+#define RANK (1)
+    hsize_t fdims[RANK]  = {npart};
+    hsize_t fstart[RANK] = {npart_offset};
+    hsize_t fcount[RANK] = {npart_local};
+    hsize_t mdims[RANK]  = {npart_local};
+    hsize_t mstart[RANK] = {0};
+    READ_ARRAY(
+        superphotons, RANK, fdims, fstart, fcount, mdims, mstart, phmemtype);
+#undef RANK
   }
 
-  free(rdata);
-  for (int n = 0; n < num_datasets; n++) {
-    H5Dclose(ph_dsets[n]);
+  // Divide array among openmp processes equitably
+  int               idx          = 0;
+  int               thread_start = (int)(get_rand() * nthreads);
+  struct of_photon *ph_lists_local[nthreads];
+  for (int it = 0; it < nthreads; ++it) {
+    ph_lists_local[it] = photon_lists[it];
   }
-  free(ph_dsets);
-  free(dset_sizes);
+  for (int ip = 0; ip < npart_local; ++ip) {
+    int index = n % nthreads;
+    copy_photon(&(superhotons[ip]), ph_lists_local[index]);
+    ph_lists_local[index] = ph_lists_local[index]->next;
+  }
+
+  free(superphotons);
 #endif // RADIATION
 
   H5Fflush(file_id, H5F_SCOPE_GLOBAL);
@@ -1788,9 +1777,9 @@ void dump_tracers() {
   WRITE_HDR(ntracers, TYPE_INT);
 
   // arrays to fil
-  int *   id     = safe_malloc(ntracers_local * sizeof(int));
-  int *   it     = safe_malloc(ntracers_local * sizeof(int));
-  int *   active = safe_malloc(ntracers_local * sizeof(int));
+  int    *id     = safe_malloc(ntracers_local * sizeof(int));
+  int    *it     = safe_malloc(ntracers_local * sizeof(int));
+  int    *active = safe_malloc(ntracers_local * sizeof(int));
   double *time   = safe_malloc(ntracers_local * sizeof(double));
   double *mass   = safe_malloc(ntracers_local * sizeof(double));
   double *Xharm  = safe_malloc(3 * ntracers_local * sizeof(double));
@@ -2086,7 +2075,7 @@ void write_array(void *data, const char *name, hsize_t rank, hsize_t *fdims,
     H5Tset_size(string_type, strlen(data));
     plist_id = H5Pcreate(H5P_DATASET_CREATE);
     dset_id  = H5Dcreate(file_id, name, string_type, filespace, H5P_DEFAULT,
-        plist_id, H5P_DEFAULT);
+         plist_id, H5P_DEFAULT);
     H5Pclose(plist_id);
     plist_id = H5Pcreate(H5P_DATASET_XFER);
     H5Dwrite(dset_id, string_type, memspace, filespace, plist_id, data);
