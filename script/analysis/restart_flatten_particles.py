@@ -24,7 +24,9 @@ def update_file(h5file):
     if len(keys) <= 0:
         raise ValueError("This file does not need conversion.")
     sizes = np.array(sizes)
-    offsets = np.cumsum(sizes)
+    offsets = np.zeros(len(sizes)+1)
+    offsets[1:] = np.cumsum(sizes)
+    offsets = offsets[:-1]
     h5file.create_dataset('particle_counts',
                           data=sizes)
     h5file.create_dataset('particle_offsets',
@@ -36,6 +38,7 @@ def update_file(h5file):
               h5file[k].shape)
         data[i] = h5file[k][:]
     data = np.hstack(data)
+    print("\tWriting superphoton dataset.")
     h5file.create_dataset('superphotons',
                           data=data)
 
@@ -47,3 +50,4 @@ if __name__ == "__main__":
     print("Updating file",args.restart)
     with h5py.File(args.restart, 'r+') as f:
         update_file(f)
+    print("Done.")
