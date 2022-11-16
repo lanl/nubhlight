@@ -105,7 +105,7 @@ def _tau_dyn_files_worker(inpt):
         dt_contrib[mask] = 0
         
         # add to integral/sum (first-order)
-        tau_dyns_int += tau_dyns_now
+        tau_dyns_int += tau_dyns_now*dt
         dt_int += dt_contrib
         # except:
         #     print("...dump id {} failed.".format(dump_id))
