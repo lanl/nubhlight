@@ -815,6 +815,13 @@ class TracerDataBase(object):
       out[k] = v[sort_indcs]
     return out
 
+  def sort_data(self,key):
+    sort_indcs = self.data[key].argsort()
+    new_data = {}
+    for k,v in self.data.items():
+      new_data[k] = v[sort_indcs]
+    return new_data
+
   def discrete_location(self,hdr):
     "Finds indexes i,j,k"
     import numpy as np
@@ -881,7 +888,7 @@ class TracerData(TracerDataBase):
     'optional_data' : ['Ye','Ye_em','uu','Xharm',
                        'ucon','ucov',
                        'rate_emitted','rate_absorbed',
-                       'bcon', 'bcov']
+                       'bcon', 'bcov', 'tau_dyn']
     }
 
   @classmethod
@@ -904,6 +911,10 @@ class TracerData(TracerDataBase):
 
   def ids(self):
     return sorted(set(self.data['id']))
+
+  def sort(self, key='id'):
+    sorted_data = self.sort_data(key)
+    return TracerData(self.units, sorted_data)
 
   def filter(self,mask):
     filtered_data = self.filter_data(mask)
