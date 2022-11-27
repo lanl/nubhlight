@@ -69,6 +69,7 @@ void step() {
 #endif
 
   // Corrector step
+  if (mpi_myrank() == 0) printf("\tadvance\n");
   ndt = advance(P, Ph, dt, P, 1);
 #if ELECTRONS
   heat_electrons(P, Ph, P, dt);
@@ -113,7 +114,9 @@ void step() {
   t += dt;
 
 #if RADIATION
+  if (mpi_myrank() == 0) printf("\tget_min_dt_cool\n");
   dt_cool = get_min_dt_cool(P, extra);
+  if (mpi_myrank() == 0) printf("\tMY_MIN\n");
   ndt     = MY_MIN(cour * dt_light_min, cour_cool * dt_cool);
 #if RECORD_DT_MIN
   if (ndt < dt_min)
@@ -164,6 +167,7 @@ double advance(grid_prim_type Pi, grid_prim_type Pb, double Dt,
   ZLOOP PLOOP Pf[i][j][k][ip] = Pi[i][j][k][ip];
 
   timer_start(TIMER_FLUXCALC);
+  if (mpi_rank() == 0) printf("\tfluxcalc\n");
   ndt = fluxcalc(Pb);
 
 #if METRIC == MKS
@@ -246,6 +250,7 @@ void apply_rad_force(grid_prim_type Pr, double Dt) {
     }
 #endif
 
+    if (mpi_myrank() == 0) printf("\tUtoprim\n");
     pflag[i][j][k] = Utoprim(U, &(ggeom[i][j][CENT]), Pr[i][j][k]);
     /*if (pflag[i][j][k] == 5) {
       Pr[i][j][k][UU] = 0.;
@@ -398,6 +403,7 @@ void lr_to_flux(double P_l[NVAR], double P_r[NVAR], struct of_geom *geom,
   mhd_vchar(P_l, &state_l, geom, dir, &cmax_l, &cmin_l);
   mhd_vchar(P_r, &state_r, geom, dir, &cmax_r, &cmin_r);
 
+  if (mpi_myrank() == 0) printf("\tfabs\n");
   cmax = fabs(MY_MAX(MY_MAX(0., cmax_l), cmax_r));
   cmin = fabs(MY_MAX(MY_MAX(0., -cmin_l), -cmin_r));
   ctop = MY_MAX(cmax, cmin);
