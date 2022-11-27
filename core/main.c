@@ -218,8 +218,10 @@ int main(int argc, char *argv[]) {
     }
 
 #if RADIATION
+    if (mpi_myrank() == 0) printf("\tupdate_sphoton_res\n");
     update_superphoton_resolution(P, extra);
 #if RADIATION == RADTYPE_NEUTRINOS
+    if (mpi_myrank() == 0) printf("\tlep_lost_step\n");
     lepton_lost_step = mpi_reduce(lepton_lost_local);
     count_leptons(P, dt, nstep);
 #endif
