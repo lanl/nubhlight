@@ -284,7 +284,7 @@ def cleanup_trace(trace,
       if Tgk[0] < T9:
           print("WARNING: Tracer {} starting at temperature {} < T9 = {}".format(trace['id'][0], Tgk[0], T9))
           sidx = 0
-      for k in trace.keys() - ['T','[rho']:
+      for k in trace.keys() - ['T','rho']:
             trace_out[k] = trace[k][sidx:]
       trace_out['T'],trace_out['rho'] = trsm['T'][sidx:],trsm['rho'][sidx:]    
   else:
