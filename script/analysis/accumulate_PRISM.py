@@ -27,6 +27,7 @@ def find_t_closest(input,time):
 
 def find_PRISM_start_t(trace_ID,dirt):
 	# Pulls out starting time of PRISM trajectory file (in seconds, beware!)
+	trid = int(trace_ID.split('trace_')[-1].split('.td')[0])
 	tstart = np.loadtxt(dirt + '/trace_%08d'%trace_ID + '/trajectory.dat')[0][0]
 	return tstart 
     
@@ -48,7 +49,7 @@ def loop(inputs):#tr_id,dirt):
 		trace_times = trace['time'] * trace.units['T_unit']
 		vals = {}
 	
-		start_t = find_PRISM_start_t(tr_id, prdirt)
+		start_t = find_PRISM_start_t(tr_id, pr_dirt)
 		index = find_t_closest(trace_times,start_t)
 	
 		for key in trace.keys():
@@ -92,3 +93,12 @@ if __name__ == "__main__":
 #nprocs = 10
 
 
+#trace_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/traces/'
+#prism_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/done_DND/'
+#fnams = accp.get_IDs(trace_dir)
+#from multiprocessing import Pool
+#p = Pool(10)
+#inputs,vals = [],{}
+#for f in fnams:
+#	inputs.append((f,prism_dir))
+# vals_out = p.map(accP.loop,inputs)
