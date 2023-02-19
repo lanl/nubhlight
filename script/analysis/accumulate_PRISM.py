@@ -11,6 +11,7 @@ outputs from that whole procedure is the accumulated file.
 """
 
 import glob
+import pickle
 import traceback
 import numpy as np
 import hdf5_to_dict as io
@@ -86,11 +87,14 @@ if __name__ == "__main__":
 				vals[key] = vals[key]
 			else:
 				vals[key] = np.concatenate((vals[key],vals_out[key]))
+				
+		with open(args.accumulated,'wb') as f:
+			pickle.dump(vals, f)
 	except:
 		traceback.print_exc()
 
 
-
+ with open('test.td','wb') as f:
 #trace_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/traces/'
 #prism_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/done_DND/'
 #nprocs = 10
