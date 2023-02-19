@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-"""
-Author: Kelsey Lund but based on Jonah Miller's analysis scripts
-
-Accumulate tracer data into a single file with values that are used as inputs for PRISM calculations.
-For now, this should only be used as a post-processing step in the sense that it assumes PRISM
-trajectory files already exist. 
-To do: Build this structure into the cleanup_trace function in tracers_to_PRISM so that one of the 
-outputs from that whole procedure is the accumulated file.
-"""
+#"""
+# Author: Kelsey Lund but based on Jonah Miller's analysis scripts
+#
+# Accumulate tracer data into a single file with values that are used as inputs for PRISM calculations.
+# For now, this should only be used as a post-processing step in the sense that it assumes PRISM
+# trajectory files already exist. 
+# To do: Build this structure into the cleanup_trace function in tracers_to_PRISM so that one of the 
+# outputs from that whole procedure is the accumulated file.
+# """
 
 import glob
 import pickle
@@ -16,6 +16,7 @@ import traceback
 import numpy as np
 import hdf5_to_dict as io
 from multiprocessing import Pool
+from argparse import ArgumentParser
 import units; units = units.get_cgs()
 
 def find_t_closest(input,time):
@@ -58,17 +59,10 @@ def loop(inputs):#tr_id,dirt):
 #---------------------------------------------------------------------------------------#
 
 parser = ArgumentParser()
-parser.add_argument('trace_dir', type = str,
-	help = ('Directory where subdirectories containing tracer files by IDs are located.'))
-
-parser.add_argument('prism_dir', type=str,
-	help = ('Directory where PRISM trajectory files are kept.'))
-
-parser.add_argument('accumulated',type=str,
-	help = ('Name of file to save accumulated tracers to.'))
-
-parser.add_argument('-n','--nprocs',type=int, default = None,
-	help=('Number of parallel procs to use.'))
+parser.add_argument('trace_dir', type = str, help = ('Directory where subdirectories containing tracer files by IDs are located.'))
+parser.add_argument('prism_dir', type=str, help = ('Directory where PRISM trajectory files are kept.'))
+parser.add_argument('accumulated',type=str, help = ('Name of file to save accumulated tracers to.'))
+parser.add_argument('-n','--nprocs',type=int, default = None, help=('Number of parallel procs to use.'))
 
 if __name__ == "__main__":
 	try:
@@ -93,8 +87,6 @@ if __name__ == "__main__":
 	except:
 		traceback.print_exc()
 
-
- with open('test.td','wb') as f:
 #trace_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/traces/'
 #prism_dir = '/users/klund/scratch4/nubhlight/torus_gw/analysis/done_DND/'
 #nprocs = 10
