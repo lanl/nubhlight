@@ -213,7 +213,9 @@ def build(PROBLEM, PATHS):
 
   C_FLAGS = '-std=c99 '
   if 'MEM_MODEL' in host:
-    C_FLAGS += "-mcmodel=" + host['MEM_MODEL'] + ' '
+    if host['MEM_MODEL']: # empty strings and False bools do not add
+                          # this flag
+      C_FLAGS += "-mcmodel=" + host['MEM_MODEL'] + ' '
   else:
     C_FLAGS += "-mcmodel=medium "
   if DEBUG:
@@ -227,32 +229,42 @@ def build(PROBLEM, PATHS):
   LIBRARIES = ''
   INCLUDES  = ''
 
+  USE_RPATH = host.get('USE_RPATH', True)
+
   # GSL
-  if 'GSL_DIR' not in host: 
-    host['GSL_DIR'] = ''
-  host['GSL_DIR'] = util.sanitize_path(host['GSL_DIR'])
-  LIB_FLAGS += (' -lgsl -lgslcblas'
-                + ' -Wl,-rpath='
-                + host['GSL_DIR'] + 'lib/')
-  LIBRARIES += '-L' + host['GSL_DIR'] + 'lib/'
-  INCLUDES  += '-I' + host['GSL_DIR'] + 'include/'
+  LIB_FLAGS += ' -lgsl -lgslcblas'
+  if 'GSL_DIR' in host: 
+    host['GSL_DIR'] = util.sanitize_path(host['GSL_DIR'])
+    if USE_RPATH:
+      LIB_FLAGS += (' -Wl,-rpath='
+                    + host['GSL_DIR'] + 'lib/')
+    LIBRARIES += '-L' + host['GSL_DIR'] + 'lib/'
+    INCLUDES  += '-I' + host['GSL_DIR'] + 'include/'
 
   # MPI
   if 'MPI_DIR' in host:
+    LIB_FLAGS += ' -lmpi'
     host['MPI_DIR'] = util.sanitize_path(host['MPI_DIR'])
-    LIB_FLAGS += (' -Wl,-rpath='
-                  + host['MPI_DIR'] + 'lib/')
+    if USE_RPATH:
+      LIB_FLAGS += (' -Wl,-rpath='
+                    + host['MPI_DIR'] + 'lib/')
     LIBRARIES += ' -L' + host['MPI_DIR'] + 'lib/'
     INCLUDES  += ' -I' + host['MPI_DIR'] + 'include/'
 
   # HDF5
   if 'HDF5_DIR' in host:
+    LIB_FLAGS += ' -lhdf5_hl -lhdf5'
     host['HDF5_DIR'] = util.sanitize_path(host['HDF5_DIR'])
-    LIB_FLAGS += (' -lhdf5_hl -lhdf5'
-                  +' -Wl,-rpath='
-                  + host['HDF5_DIR'] + 'lib/')
+    if USE_RPATH:
+      LIB_FLAGS += (' -Wl,-rpath='
+                    + host['HDF5_DIR'] + 'lib/')
     LIBRARIES += ' -L' + host['HDF5_DIR'] + 'lib/'
     INCLUDES  += ' -I' + host['HDF5_DIR'] + 'include/'
+
+  if 'EXTRA_INCLUDES' in host:
+    INCLUDES += (" " + host['EXTRA_INCLUDES'])
+  if 'EXTRA_LIBRARIES' in host:
+    LIBRARIES += (" " + host['EXTRA_LIBRARIES'])
 
   print("  CONFIGURATION\n")
 

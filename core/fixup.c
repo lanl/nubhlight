@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "decs.h"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 
 // Apply floors to density, internal energy
 void fixup(grid_prim_type Pv, grid_eosvar_type extra) {
