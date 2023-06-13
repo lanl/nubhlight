@@ -14,38 +14,30 @@
 #                                                                              #
 ################################################################################
 
-################################################################################
-# This machine file is for continuous integration servers running on CI        #
-################################################################################
-
 import util
 import sys
 import os
 
-flags_base = '-fopenmp'
-fcflags = ''
-fflags_base = '-fopenmp'
-home = os.environ['HOME']
+flags_base = '-Wall -Werror=unknown-pragmas -Wstringop-overflow -fdiagnostics-color -fopenmp'
 
 def matches_host():
   host = os.uname()[1]
-  keywords = ['fv','az']
-  kinh = [k in host for k in keywords]
-  return any(kinh) and all(kinh)
+  return 'sudi.local' in host # change to your username
 
 def get_options():
   host = {}
 
+  local_root = os.path.join(os.environ['HOME'],'local','gcc')
   host['NAME']           = os.uname()[1]
-  host['COMPILER']       = home + '/local/hdf5-parallel/bin/h5pcc'
-  host['COMPILER_FLAGS'] = flags_base + ' ' + fcflags + ' ' + '-O2 -march=native'
-  host['DEBUG_FLAGS']    = flags_base + ' ' + fcflags + ' ' + '-g -O0'
-  host['GSL_DIR']        = ''
-  host['FORTRAN_COMP']   = home + '/local/hdf5-parallel/bin/h5pfc'
-  host['FCFLAGS']        = fflags_base + ' ' + '-cpp -O2'
-  host['FORTLINK']       = '-lgfortran -lhdf5_fortran'
-  host['FORTLIB']        = ''
-  host['EXECUTABLE']     = 'mpirun'
-
+  host['COMPILER']       = os.path.join('/opt/homebrew/opt/gcc/','bin','gcc-13')
+  host['COMPILER_FLAGS'] = flags_base + ' ' + '-O2'
+  host['DEBUG_FLAGS']    = flags_base + ' ' + '-g -O0'
+  host['GSL_DIR']        = os.path.join(local_root,'gsl')
+  host['GSL_DIR']        = os.path.join('/opt/homebrew/opt/','gsl')
+  host['MPI_DIR']        = os.path.join('/opt/homebrew/opt/','open-mpi')
+  host['HDF5_DIR']       = os.path.join('/opt/homebrew/opt/','hdf5-mpi')
+  host['EXTRA_INCLUDES'] = "-I/opt/homebrew/Cellar/gcc/13.1.0/lib/gcc/current/gcc/aarch64-apple-darwin22/13/include/"
+  host['MEM_MODEL']      = False
+  host['USE_RPATH']      = False
   return host
-
+ 
