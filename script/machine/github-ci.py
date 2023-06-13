@@ -22,7 +22,7 @@ import util
 import sys
 import os
 
-flags_base = '-Wall -Werror -fopenmp'
+flags_base = '-Wpedantic -fopenmp'
 fcflags = ''
 fflags_base = '-fopenmp'
 home = os.environ['HOME']
