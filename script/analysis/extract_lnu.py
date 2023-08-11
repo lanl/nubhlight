@@ -11,11 +11,13 @@ import h5py, argparse
 import numpy as np
 from units import get_cgs
 from scipy import integrate
-from hdf5_to_dict import get_dumps_full
+from hdf5_to_dict import get_dumps_reduced
+from multiprocessing import Pool
 units = get_cgs()
 
 def get_data_dump(dumpname):
     with h5py.File(dumpname,'r') as f:
+        print("...",dumpname)
         nuLnu = f['nuLnu'][()]
         nth = f['nth'][0]
         nphi = f['nphi'][0]
@@ -26,46 +28,72 @@ def get_data_dump(dumpname):
         t = f['t'][0]*t_unit
         R = f['Rout_rad'][0]*f['L_unit'][0]
 
+    return t,R,nth,nphi,nubins,numin,numax,nuLnu
+
+def get_time_series(folder,twod=False,savepath='nuLnu.h5',nproc=None):
+    dfnams = get_dumps_reduced(folder,twod)
+    if len(dfnams) == 0:
+        raise ValueError("No valid dumps in directory",folder)
+    t,R,nth,nphi,nubins,numin,numax,nuLnu = get_data_dump(dfnams[0])
+
     nu = np.zeros(nubins)
     lnumin = np.log(numin)
     lnumax = np.log(numax)
     dlnu = (lnumax - lnumin)/nubins
     for n in range(len(nu)):
       nu[n] = np.exp(lnumin + (0.5 + n)*dlnu)
+    lnu = np.log(nu)
 
-    theta = np.linspace(0,np.pi,nth)
-    phi = np.linspace(0,2*np.pi,nphi)
+    theta_f = np.linspace(0,np.pi,nth+1)
+    phi_f = np.linspace(0,2*np.pi,nphi+1)
+    
+    theta_c = 0.5*(theta_f[1:] + theta_f[:-1])
+    phi_c = 0.5*(phi_f[1:] + phi_f[:-1])
 
     eps = units['HPL']*nu/units['MEV']
     l10eps = np.log10(eps)
-    Lnu = nuLnu/(nu[np.newaxis,np.newaxis,np.newaxis,:])
-    integrand = R*R*Lnu*np.sin(theta[np.newaxis,:,np.newaxis,np.newaxis])
-    Lnu_1 = integrate.simps(integrand,x=theta,axis=1)
-    Lnu = integrate.simps(Lnu_1,x=phi,axis=1)
-
-    return t,R,l10eps,Lnu
-
-def get_time_series(folder,savepath='Lnu.h5'):
-    dfnams = get_dumps_full(folder)
-    t,R,l10eps,Lnu = get_data_dump(dfnams[0])
 
     times = np.empty(len(dfnams))
-    Lnus  = np.empty((len(dfnams),*Lnu.shape))
+    nuLnus = np.empty((len(dfnams),*nuLnu.shape))
 
-    for i,fnam in enumerate(dfnams):
-        print("...",fnam)
-        times[i],R,l10eps,Lnus[i] = get_data_dump(fnam)
+    p = Pool(processes=nproc)
+    tuples = p.map(get_data_dump, dfnams)
+    for i,t in enumerate(tuples):
+        times[i] = t[0]
+        nuLnus[i] = t[7]
 
     with h5py.File(savepath,'w') as f:
+        dset = f.create_dataset("lnu", data = lnu)
+        dset.attrs['description'] = "ln of neutrino frequency, in Hz"
+        dset.attrs['units'] = 'Hz'
+        dset = f.create_dataset("nu", data = nu)
+        dset.attrs['description'] = "neutrino frequency, in Hz"
+        dset.attrs['units'] = 'Hz'
         dset = f.create_dataset("logener",data=l10eps)
         dset.attrs['description'] = "log10 of neutrino energy in MeV"
+        dset.attrs['units'] = 'MeV'
         dset = f.create_dataset("t",data=times)
         dset.attrs['description'] = "time at each dump, in seconds"
-        dset = f.create_dataset("Lnu",data=Lnus)
-        dset.attrs['description'] = "Luminosity (in cgs)"
-        dset.attrs['indices'] = "time; species: [electron, anti, heavy]; neutrino energy"
+        dset.attrs['units'] = 's'
+        dset = f.create_dataset("nuLnu",data=nuLnus)
+        dset.attrs['description'] = "luminous Flux, nuLnu. To get bolumetric, sum over th,phi, integrate over lnu. To get luminosity vs frequency and angle, divide by nu"
+        dset.attrs['units'] =  "Hz * ergs / solid angle / Hz."
+        dset.attrs['indices'] = "time; species: [electron, anti, heavy]; theta; phi; neutrino energy"
         dset = f.create_dataset('R',data=R)
-        dset.attrs['description'] = "Radius at which Luminosity is measured"
+        dset.attrs['description'] = "radius at which Luminosity is measured, in cm"
+        dset.attrs['units'] = 'cm'
+        dset = f.create_dataset("theta_f", data=theta_f)
+        dset.attrs['description'] = "edges of solid angle bins in theta"
+        dset.attrs['units'] = "radians"
+        dset = f.create_dataset("phi_f", data=phi_f)
+        dset.attrs['description'] = "edges of solid angle bins in phi"
+        dset.attrs['units'] = "radians"
+        dset = f.create_dataset("theta_c", data=theta_c)
+        dset.attrs['description'] = "centers of solid angle bins in theta"
+        dset.attrs['units'] = "radians"
+        dset = f.create_dataset("phi_c", data=phi_c)
+        dset.attrs['description'] = "centers of solid angle bins in phi"
+        dset.attrs['units'] = "radians"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -75,9 +103,13 @@ if __name__ == "__main__":
                         help='Directory to read from')
     parser.add_argument('-s','--save',
                         type=str,
-                        default='Lnu.h5',
-                        help='File to save to. Defaults to ./Lnu.h5')
+                        default='nuLnu.h5',
+                        help='File to save to. Defaults to ./nuLnu.h5')
+    parser.add_argument("-n","--nprocs",type=int,default=None,
+                        help="Number of processors to use. Defaults to all.")
+    parser.add_argument("-t","--twod", action="store_true",
+                        help="Use 2D dumps instead of 3D dumps.")
     args = parser.parse_args()
     print("Extracting luminosities from...")
-    get_time_series(args.directory,args.save)
+    get_time_series(args.directory,args.twod,args.save,args.nprocs)
     print("Done!")
