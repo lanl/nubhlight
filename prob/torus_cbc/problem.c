@@ -78,6 +78,9 @@ void init_prob() {
   // total mass
   double mtot = 0.0;
 
+  // scale angle
+  double thdsqr = 0.0;
+
   // min and max
   double rhomin, umin;
   rhomin = RHOMINLIMIT;
@@ -364,16 +367,27 @@ void init_prob() {
   }
   ZLOOP {
     if (disk_cell[i][j][k]) {
-      mtot += P[i][j][k][RHO] * ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3];
+      double rho_integrand =
+          P[i][j][k][RHO] * ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3];
+      mtot += rho_integrand;
+
+      coord(i, j, k, CENT, X);
+      bl_coord(X, &r, &th);
+      thdsqr += rho_integrand * (th - M_PI / 2) * (th - M_PI / 2);
     }
   }
-  mtot = mpi_reduce(mtot);
+  mtot       = mpi_reduce(mtot);
+  thdsqr     = mpi_reduce(thdsqr);
+  double thd = sqrtf(thdsqr / mtot);
   if (mpi_io_proc()) {
     printf("TOTAL MASS:\n"
            "\tcode units = %g\n"
            "\tcgs        = %g\n"
            "\tMsun       = %g\n",
         mtot, mtot * M_unit, mtot * M_unit / MSUN);
+    printf("Opening angle of initial torus:\n"
+           "\tthd        = %g\n",
+        thd);
   }
 // debug
 #if EOS == EOS_TYPE_TABLE
