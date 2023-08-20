@@ -70,3 +70,6 @@ param_template.dat
 
 # editing detritus
 *.bak
+
+#MasOS system files
+*.DS_Store
