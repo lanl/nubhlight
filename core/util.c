@@ -139,8 +139,14 @@ void set_units() {
 #if METRIC == MKS
   L_unit = GNEWT * Mbh / (CL * CL);
 #endif
-  T_unit   = L_unit / CL;
+#if METRIC == NUMERICAL
+  L_unit = GNEWT * 2.* MSUN / (CL * CL);
+  M_unit = RHO_unit * L_unit * L_unit * L_unit;
+#else
   RHO_unit = M_unit * pow(L_unit, -3.);
+#endif
+  T_unit   = L_unit / CL;
+  //RHO_unit = M_unit * pow(L_unit, -3.);
   U_unit   = RHO_unit * CL * CL;
   B_unit   = CL * sqrt(4. * M_PI * RHO_unit);
 #if EOS == EOS_TYPE_TABLE

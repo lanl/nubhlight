@@ -113,6 +113,8 @@ void set_core_params() {
 #elif METRIC == MKS
   set_param("mbh", &mbh);
   set_param("M_unit", &M_unit);
+#elif METRIC == NUMERICAL
+  set_param("RHO_unit", &RHO_unit);
 #endif // METRIC
 #endif // NEED_UNITS
 
