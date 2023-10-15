@@ -328,7 +328,8 @@ void set_metric(double X[NDIM], struct of_geom *g) {
   g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
 }
 
-void num_set_metric(){
+/* Set numerical metric */
+void num_set_metric(double X[NDIM], struct of_geom *g){
     
     double *xp, *yp, *zp;
     
@@ -358,7 +359,7 @@ void num_set_metric(){
     int iflat = 0;
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
       LOCLOOP {
-        double X[NDIM];
+        //double X[NDIM];
         coord(i, j, k, loc, X);
         xp[iflat] = X[1];
         yp[iflat] = X[2];
@@ -492,7 +493,7 @@ void num_set_metric(){
     int iflat = 0
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
       LOCLOOP {
-        struct of_geom *g = &ggeom[i][j][k][loc];
+        //struct of_geom *g = &ggeom[i][j][k][loc];
         // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
         g->gcov[0][1] = betax[iflat];
         g->gcov[0][2] = betay[iflat];
@@ -697,7 +698,7 @@ void set_grid() {
 #endif
 
 #if METRIC == NUMERICAL
-    num_get_metric();
+    num_get_metric(X, &(ggeom[i][j][k][loc]));
     // Only required in zone center
     conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
 #else

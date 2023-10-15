@@ -35,7 +35,7 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
     
 #if METRIC == NUMERICAL
       
-    //implement
+    //implement: extract gcov at Xh and Xl
     
 #else
     set_gcov(Xh, gh);
@@ -104,7 +104,7 @@ struct of_geom *get_geometry(int ii, int jj, int kk, int loc) {
 //#if METRIC == NUMERICAL
     return (&(ggeom[ii][jj][kk][loc]));
 //#else
-    //return (&(ggeom[ii][jj][1][loc]));
+    //return (&(ggeom[ii][jj][1][loc]
 }
 #undef DELTA
 
