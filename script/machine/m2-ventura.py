@@ -36,7 +36,7 @@ def get_options():
   host['GSL_DIR']        = os.path.join('/opt/homebrew/opt/','gsl')
   host['MPI_DIR']        = os.path.join('/opt/homebrew/opt/','open-mpi')
   host['HDF5_DIR']       = os.path.join('/opt/homebrew/opt/','hdf5-mpi')
-  host['EXTRA_INCLUDES'] = "-I/opt/homebrew/Cellar/gcc/13.1.0/lib/gcc/current/gcc/aarch64-apple-darwin22/13/include/"
+  host['EXTRA_INCLUDES'] = "-I/opt/homebrew/Cellar/gcc/13.2.0/lib/gcc/current/gcc/aarch64-apple-darwin22/13/include/"
   host['MEM_MODEL']      = False
   host['USE_RPATH']      = False
   return host

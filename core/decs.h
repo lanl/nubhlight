@@ -252,6 +252,7 @@
 #define MINKOWSKI (0)
 #define SPHERICAL (1)
 #define MKS (2)
+#define NUMERICAL (3)
 
 // Diagnostic calls
 #define DIAG_INIT (0)
@@ -602,8 +603,14 @@ struct of_tablebounds {
 #endif
 
 // More grid functions. Axisymmetry assumed.
-extern double         conn[N1 + 2 * NG][N2 + 2 * NG][NDIM][NDIM][NDIM];
-extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][NPG];
+extern double conn[N1 + 2 * NG][N2 + 2 * NG][NDIM][NDIM][NDIM];
+
+#if METRIC == NUMERICAL
+extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NPG];
+#else
+extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][1][NPG];
+#endif
+
 #if RADIATION
 // extern double dt_light, dt_light_min;
 extern double                 dt_light[N1 + 2 * NG][N2 + 2 * NG], dt_light_min;
@@ -713,6 +720,7 @@ int  bl_i_of_r(double r);
 void cart_coord(const double X[NDIM], double Xcart[NDIM]);
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]);
 void set_metric(double X[NDIM], struct of_geom *g);
+void num_get_metric();
 void set_points();
 void zero_arrays(void);
 void set_grid(void);

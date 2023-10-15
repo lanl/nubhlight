@@ -32,8 +32,15 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
     }
     Xh[k] += DELTA;
     Xl[k] -= DELTA;
+    
+#if METRIC == NUMERICAL
+      
+    //implement
+    
+#else
     set_gcov(Xh, gh);
     set_gcov(Xl, gl);
+#endif
 
     for (int i = 0; i < NDIM; i++) {
       for (int j = 0; j < NDIM; j++) {
@@ -94,7 +101,10 @@ struct of_geom *get_geometry(int ii, int jj, int kk, int loc) {
   jcurr = jj;
   kcurr = kk;
 
-  return (&(ggeom[ii][jj][loc]));
+//#if METRIC == NUMERICAL
+    return (&(ggeom[ii][jj][kk][loc]));
+//#else
+    //return (&(ggeom[ii][jj][1][loc]));
 }
 #undef DELTA
 

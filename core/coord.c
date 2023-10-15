@@ -22,6 +22,7 @@
  ******************************************************************************/
 
 #include "decs.h"
+#include "cprof3d.h"
 
 /*      ASSUMING X3 SYMMETRY IN COORDINATES AND SPACETIME
  *      -- given the indices i,j and location in the cell, return with
@@ -327,6 +328,235 @@ void set_metric(double X[NDIM], struct of_geom *g) {
   g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
 }
 
+void num_set_metric(){
+    
+    double *xp, *yp, *zp;
+    
+    double *gxx,*gxy,*gxz,*gyy,*gyz,*gzz,*lapse,*betax,*betay,*betaz;
+    
+    int np = (N1 + 2. * NG)*(N2 + 2. * NG)*(N3 + 2. * NG)
+    
+    xp = malloc(np*sizeof(*xp));
+    yp = malloc(np*sizeof(*yp));
+    zp = malloc(np*sizeof(*zp));
+    
+    gxx = malloc(np*sizeof(*gxx));
+    gxy = malloc(np*sizeof(*gxy));
+    gxz = malloc(np*sizeof(*gxz));
+
+    gyy = malloc(np*sizeof(*gyy));
+    gyz = malloc(np*sizeof(*gyz));
+
+    gzz = malloc(np*sizeof(*gzz));
+    
+    lapse = malloc(np*sizeof(*lapse));
+    
+    betax = malloc(np*sizeof(*betax));
+    betay = malloc(np*sizeof(*betay));
+    betaz = malloc(np*sizeof(*betaz));
+    
+    int iflat = 0;
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
+      LOCLOOP {
+        double X[NDIM];
+        coord(i, j, k, loc, X);
+        xp[iflat] = X[1];
+        yp[iflat] = X[2];
+        zp[iflat] = X[3];
+        iflat++;
+      }
+    }
+    
+    /* Read metadata */
+    cprof3d_file_t * dfile = cprof3d_open_file("3dprofile-QHC21A_D45M125_res231m.h5"); //TODO:pass through runtime arguments
+    
+    /* Open dataset: gxx,gxy,gxz,gyy,gyz,gzz */
+    cprof3d_dset_t * dset_gxx = cprof3d_read_dset(dfile, "gxx");
+    cprof3d_dset_t * dset_gxy = cprof3d_read_dset(dfile, "gxy");
+    cprof3d_dset_t * dset_gxz = cprof3d_read_dset(dfile, "gxz");
+    cprof3d_dset_t * dset_gyy = cprof3d_read_dset(dfile, "gyy");
+    cprof3d_dset_t * dset_gyz = cprof3d_read_dset(dfile, "gyz");
+    cprof3d_dset_t * dset_gzz = cprof3d_read_dset(dfile, "gzz");
+    
+    /* Open dataset: lapse */
+    cprof3d_dset_t * dset_lapse = cprof3d_read_dset(dfile, "lapse");
+    
+    /* Open dataset: shift */
+    cprof3d_dset_t * dset_betax = cprof3d_read_dset(dfile, "betax");
+    cprof3d_dset_t * dset_betay = cprof3d_read_dset(dfile, "betay");
+    cprof3d_dset_t * dset_betaz = cprof3d_read_dset(dfile, "betaz");
+
+    /* Interpolate metric on the grid*/
+    bool set_all_points_gxx = cprof3d_interp(dset_gxx,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gxx is a scalar */
+            np, xp, yp, zp,
+            gxx);
+    bool set_all_points_gxy = cprof3d_interp(dset_gxy,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gxy is a scalar */
+            np, xp, yp, zp,
+            gxy);
+    bool set_all_points_gxz = cprof3d_interp(dset_gxz,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gxz is a scalar */
+            np, xp, yp, zp,
+            gxz);
+    bool set_all_points_gyy = cprof3d_interp(dset_gyy,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gyy is a scalar */
+            np, xp, yp, zp,
+            gyy);
+    bool set_all_points_gyz = cprof3d_interp(dset_gyz,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gyz is a scalar */
+            np, xp, yp, zp,
+            gyz);
+    bool set_all_points_gzz = cprof3d_interp(dset_gzz,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            gzz);
+    
+    /* Interpolate lapse on the grid*/
+    bool set_all_points_lapse = cprof3d_interp(dset_lapse,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            lapse);
+    
+    /* Interpolate shift on the grid*/
+    bool set_all_points_betax = cprof3d_interp(dset_betax,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betax);
+    bool set_all_points_betay = cprof3d_interp(dset_betay,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betay);
+    bool set_all_points_betaz = cprof3d_interp(dset_betaz,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betaz);
+    
+    /* Check if interpolation of metric gone wrong*/
+    if(!set_all_points_gxx) {
+        fprintf(stderr, "Something went wrong with the interpolation gxx!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_gxy) {
+        fprintf(stderr, "Something went wrong with the interpolation gxy!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_gxz) {
+        fprintf(stderr, "Something went wrong with the interpolation gxz!");
+        return EXIT_FAILURE;
+    }if(!set_all_points_gyy) {
+        fprintf(stderr, "Something went wrong with the interpolation gyy!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_gyz) {
+        fprintf(stderr, "Something went wrong with the interpolation gyz!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_gzz) {
+        fprintf(stderr, "Something went wrong with the interpolation gzz!");
+        return EXIT_FAILURE;
+    }
+    
+    /* Check if interpolation of lapse gone wrong*/
+    if(!set_all_points_lapse) {
+        fprintf(stderr, "Something went wrong with the interpolation lapse!");
+        return EXIT_FAILURE;
+    }
+    
+    /* Check if interpolation of shift gone wrong*/
+    if(!set_all_points_betax) {
+        fprintf(stderr, "Something went wrong with the interpolation betax!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_betay) {
+        fprintf(stderr, "Something went wrong with the interpolation betay!");
+        return EXIT_FAILURE;
+    }
+    if(!set_all_points_betaz) {
+        fprintf(stderr, "Something went wrong with the interpolation betaz!");
+        return EXIT_FAILURE;
+    }
+    
+    memset(gcov, 0, NDIM * NDIM * sizeof(double));
+    
+    int iflat = 0
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
+      LOCLOOP {
+        struct of_geom *g = &ggeom[i][j][k][loc];
+        // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
+        g->gcov[0][1] = betax[iflat];
+        g->gcov[0][2] = betay[iflat];
+        g->gcov[0][3] = betaz[iflat];
+         
+        g->gcov[1][0] = g->gcov[0][1]
+        g->gcov[1][1] = gxx[iflat];
+        g->gcov[1][2] = gxy[iflat];
+        g->gcov[1][3] = gxz[iflat];
+
+        g->gcov[2][0] = g->gcov[0][2]
+        g->gcov[2][1] = g->gcov[1][2];
+        g->gcov[2][2] = gyy[iflat];
+        g->gcov[2][3] = gyz[iflat];
+
+        g->gcov[3][0] = g->gcov[0][3]
+        g->gcov[3][1] = g->gcov[1][3];
+        g->gcov[3][2] = g->gcov[2][3];
+        g->gcov[3][3] = gzz[iflat];
+          
+        beta2 = g->gcon[1][1] * betax[iflat] * betax[iflat] + g->gcon[2][2] * betay[iflat] * betay[iflat] + g->gcon[3][3] * betaz[iflat] * betaz[iflat] + 2 * g->gcon[1][2] * betax[iflat] * betay[iflat] + 2 * g->gcon[1][3] * betax[iflat] * betaz[iflat] + 2 * g->gcon[2][3] * betay[iflat] * betaz[iflat];
+        
+        g->gcov[0][0] = -lapse[iflat]*lapse[iflat] + beta2;
+        // setting detg and alpha
+        g->g     = gcon_func(g->gcov, g->gcon);
+        g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
+        iflat++;
+      }
+    }
+    
+    /* Free memory */
+    cprof3d_del_dset(dset_gxx);
+    cprof3d_del_dset(dset_gxy);
+    cprof3d_del_dset(dset_gxz);
+    cprof3d_del_dset(dset_gyy);
+    cprof3d_del_dset(dset_gyz);
+    cprof3d_del_dset(dset_gzz);
+    
+    cprof3d_del_dset(dset_lapse);
+    
+    cprof3d_del_dset(dset_betax);
+    cprof3d_del_dset(dset_betay);
+    cprof3d_del_dset(dset_betaz);
+    
+    cprof3d_close_file(dfile);
+    
+    free(gxx);
+    free(gxy);
+    free(gxz);
+    free(gyy);
+    free(gyz);
+    free(gzz);
+    
+    free(lapse);
+    
+    free(shiftx);
+    free(shifty);
+    free(shiftz);
+    
+    free(zp);
+    free(yp);
+    free(xp);
+}
+
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]) {
   memset(gcov, 0, NDIM * NDIM * sizeof(double));
 
@@ -466,15 +696,21 @@ void set_grid() {
   dt_light_min = 1. / SMALL;
 #endif
 
+#if METRIC == NUMERICAL
+    num_get_metric();
+    // Only required in zone center
+    conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
+#else
   ISLOOP(-NG, N1 - 1 + NG) {
     JSLOOP(-NG, N2 - 1 + NG) {
       LOCLOOP { // loop variable is loc
         coord(i, j, 0, loc, X);
-        set_metric(X, &(ggeom[i][j][loc]));
+        set_metric(X, &(ggeom[i][j][k][loc]));
       } // LOCLOOP
 
       // Only required in zone center
-      conn_func(X, &ggeom[i][j][CENT], conn[i][j]);
+      conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
+#endif
 
 #if RADIATION
       // Set minimum light crossing time for each zone
