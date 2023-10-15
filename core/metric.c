@@ -34,20 +34,24 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
     Xl[k] -= DELTA;
     
 #if METRIC == NUMERICAL
-      
-    //implement: extract gcov at Xh and Xl
-    
+    //extract gcov at Xh and Xl
+      for (int i = 0; i < NDIM; i++) {
+        for (int j = 0; j < NDIM; j++) {
+          conn[i][j][k] = (geom->gcov[i][j] - geom->gcov[i][j]) / (Xh[k] - Xl[k]);
+        }
+      }
+    } // for k
 #else
     set_gcov(Xh, gh);
     set_gcov(Xl, gl);
-#endif
-
-    for (int i = 0; i < NDIM; i++) {
-      for (int j = 0; j < NDIM; j++) {
-        conn[i][j][k] = (gh[i][j] - gl[i][j]) / (Xh[k] - Xl[k]);
+      
+      for (int i = 0; i < NDIM; i++) {
+        for (int j = 0; j < NDIM; j++) {
+          conn[i][j][k] = (gh[i][j] - gl[i][j]) / (Xh[k] - Xl[k]);
+        }
       }
-    }
-  } // for k
+    } // for k
+#endif
 
   // Rearrange to find \Gamma_{ijk}
   for (int i = 0; i < NDIM; i++) {

@@ -697,59 +697,63 @@ void set_grid() {
   dt_light_min = 1. / SMALL;
 #endif
 
-#if METRIC == NUMERICAL
-    num_get_metric(X, &(ggeom[i][j][k][loc]));
-    // Only required in zone center
-    conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
+#if METRIC == NUMERICAL //TODO: make radiation work with numerical
+    coord(i, j, k, loc, X); // setting coordinate
+    num_get_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+        // Only required in zone center
+        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]); // should it be conn[i][j][k] ?
 #else
-  ISLOOP(-NG, N1 - 1 + NG) {
-    JSLOOP(-NG, N2 - 1 + NG) {
-      LOCLOOP { // loop variable is loc
-        coord(i, j, 0, loc, X);
-        set_metric(X, &(ggeom[i][j][k][loc]));
-      } // LOCLOOP
-
-      // Only required in zone center
-      conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
+  //ISLOOP(-NG, N1 - 1 + NG) {
+    //JSLOOP(-NG, N2 - 1 + NG) {
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+        LOCLOOP { // loop variable is loc
+            coord(i, j, 0, loc, X);
+            set_metric(X, &(ggeom[i][j][k][loc]));
+        } // LOCLOOP
+        
+        // Only required in zone center
+        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
 #endif
-
+        
 #if RADIATION
-      // Set minimum light crossing time for each zone
-      dt_light[i][j]           = 1.e30;
-      double light_phase_speed = SMALL;
-      double dt_light_local    = 0.;
-
-      for (int mu = 1; mu < NDIM; mu++) {
-        if (pow(ggeom[i][j][CENT].gcon[0][mu], 2.) -
-                ggeom[i][j][CENT].gcon[mu][mu] * ggeom[i][j][CENT].gcon[0][0] >=
-            0.) {
-          double cplus      = fabs((-ggeom[i][j][CENT].gcon[0][mu] +
-                                  sqrt(pow(ggeom[i][j][CENT].gcon[0][mu], 2.) -
-                                            ggeom[i][j][CENT].gcon[mu][mu] *
-                                                ggeom[i][j][CENT].gcon[0][0])) /
-                                   (ggeom[i][j][CENT].gcon[0][0]));
-          double cminus     = fabs((-ggeom[i][j][CENT].gcon[0][mu] -
-                                   sqrt(pow(ggeom[i][j][CENT].gcon[0][mu], 2.) -
-                                            ggeom[i][j][CENT].gcon[mu][mu] *
-                                                ggeom[i][j][CENT].gcon[0][0])) /
-                                   (ggeom[i][j][CENT].gcon[0][0]));
-          light_phase_speed = MY_MAX(cplus, cminus);
-        } else {
-          light_phase_speed = SMALL;
+        // Set minimum light crossing time for each zone
+        dt_light[i][j]           = 1.e30;
+        double light_phase_speed = SMALL;
+        double dt_light_local    = 0.;
+        
+        for (int mu = 1; mu < NDIM; mu++) {
+            if (pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
+                ggeom[i][j][k][CENT].gcon[mu][mu] * ggeom[i][j][k][CENT].gcon[0][0] >=
+                0.) {
+                double cplus      = fabs((-ggeom[i][j][k][CENT].gcon[0][mu] +
+                                          sqrt(pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
+                                               ggeom[i][j][k][CENT].gcon[mu][mu] *
+                                               ggeom[i][j][k][CENT].gcon[0][0])) /
+                                         (ggeom[i][j][k][CENT].gcon[0][0]));
+                double cminus     = fabs((-ggeom[i][j][k][CENT].gcon[0][mu] -
+                                          sqrt(pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
+                                               ggeom[i][j][k][CENT].gcon[mu][mu] *
+                                               ggeom[i][j][k][CENT].gcon[0][0])) /
+                                         (ggeom[i][j][k][CENT].gcon[0][0]));
+                light_phase_speed = MY_MAX(cplus, cminus);
+            } else {
+                light_phase_speed = SMALL;
+            }
+            
+            dt_light_local += 1. / (dx[mu] / light_phase_speed);
+            
+            if (dx[mu] / light_phase_speed < dt_light[i][j]) {
+                dt_light[i][j] = dx[mu] / light_phase_speed;
+            }
         }
-
-        dt_light_local += 1. / (dx[mu] / light_phase_speed);
-
-        if (dx[mu] / light_phase_speed < dt_light[i][j]) {
-          dt_light[i][j] = dx[mu] / light_phase_speed;
-        }
-      }
-      dt_light_local = 1. / dt_light_local;
-      if (dt_light_local < dt_light_min)
-        dt_light_min = dt_light_local;
+        dt_light_local = 1. / dt_light_local;
+        if (dt_light_local < dt_light_min)
+            dt_light_min = dt_light_local;
 #endif // RADIATION
-    }  // JSLOOP
-  }    // ISLOOP
+        //    }  // JSLOOP
+        //  }    // ISLOOP
+    } // ZSLOOP
 
 #if RADIATION
   /*dt_light_min = 1.e300;
