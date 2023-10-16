@@ -487,18 +487,16 @@ void num_set_metric(double X[NDIM], struct of_geom *g){
         fprintf(stderr, "Something went wrong with the interpolation betaz!");
         return EXIT_FAILURE;
     }
-    
-    memset(gcov, 0, NDIM * NDIM * sizeof(double));
-    
     int iflat = 0
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
       LOCLOOP {
+        memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
         //struct of_geom *g = &ggeom[i][j][k][loc];
         // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
         g->gcov[0][1] = betax[iflat];
         g->gcov[0][2] = betay[iflat];
         g->gcov[0][3] = betaz[iflat];
-         
+
         g->gcov[1][0] = g->gcov[0][1]
         g->gcov[1][1] = gxx[iflat];
         g->gcov[1][2] = gxy[iflat];
@@ -514,15 +512,15 @@ void num_set_metric(double X[NDIM], struct of_geom *g){
         g->gcov[3][2] = g->gcov[2][3];
         g->gcov[3][3] = gzz[iflat];
           
-        beta2 = g->gcon[1][1] * betax[iflat] * betax[iflat] + g->gcon[2][2] * betay[iflat] * betay[iflat] + g->gcon[3][3] * betaz[iflat] * betaz[iflat] + 2 * g->gcon[1][2] * betax[iflat] * betay[iflat] + 2 * g->gcon[1][3] * betax[iflat] * betaz[iflat] + 2 * g->gcon[2][3] * betay[iflat] * betaz[iflat];
-        
+        double beta2 = g->gcov[1][1] * betax[iflat] * betax[iflat] + g->gcov[2][2] * betay[iflat] * betay[iflat] + g->gcov[3][3] * betaz[iflat] * betaz[iflat] + 2 * g->gcov[1][2] * betax[iflat] * betay[iflat] + 2 * g->gcov[1][3] * betax[iflat] * betaz[iflat] + 2 * g->gcov[2][3] * betay[iflat] * betaz[iflat];
+
         g->gcov[0][0] = -lapse[iflat]*lapse[iflat] + beta2;
         // setting detg and alpha
         g->g     = gcon_func(g->gcov, g->gcon);
         g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
         iflat++;
-      }
-    }
+      } // LOCLOOP end
+    } // ZSLOOP end
     
     /* Free memory */
     cprof3d_del_dset(dset_gxx);
@@ -556,7 +554,7 @@ void num_set_metric(double X[NDIM], struct of_geom *g){
     free(zp);
     free(yp);
     free(xp);
-}
+} // num_set_metric end
 
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]) {
   memset(gcov, 0, NDIM * NDIM * sizeof(double));

@@ -34,13 +34,13 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
     Xl[k] -= DELTA;
     
 #if METRIC == NUMERICAL
-    //extract gcov at Xh and Xl
-      for (int i = 0; i < NDIM; i++) {
-        for (int j = 0; j < NDIM; j++) {
-          conn[i][j][k] = (geom->gcov[i][j] - geom->gcov[i][j]) / (Xh[k] - Xl[k]);
-        }
-      }
-    } // for k
+    //extract gcov at Xh and Xl after displacing the kth coordinate
+//      for (int i = 0; i < NDIM; i++) {
+//        for (int j = 0; j < NDIM; j++) {
+//          conn[i][j][k] = (geom->gcov[i][j] - geom->gcov[i][j]) / (Xh[k] - Xl[k]);
+//        }
+//      }
+//    } // for k
 #else
     set_gcov(Xh, gh);
     set_gcov(Xl, gl);
