@@ -696,11 +696,55 @@ void set_grid() {
 #endif
 
 #if METRIC == NUMERICAL //TODO: make radiation work with numerical
-    coord(i, j, k, loc, X); // setting coordinate
-    num_get_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+        LOCLOOP{
+            coord(i, j, k, loc, X); // setting coordinate
+        }
+    }
+    num_get_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
+    
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+        
+        double Xl[NDIM];
+        double Xr[NDIM];
+        double conn[][NDIM][NDIM]
+        
+        if (k = -NG) {
+            coord(i, j, k, CENT, Xl); // 
+            coord(i, j, k+1, CENT, Xh);
+            for (int k = 0; k < NDIM; k++) {
+              for (int i = 0; i < NDIM; i++) {
+                for (int j = 0; j < NDIM; j++) {
+                  conn[i][j][k] = (geom[i][j][k+1][CENT].gcov[i][j] - geom[i][j][k][CENT].gcov[i][j]) / (Xh[k]-Xl[k]);
+                }
+              }
+            } // for k
+        }
+        else if ( k = N3 - 1 + NG) {
+            coord(i, j, k-1, CENT, Xl); //
+            coord(i, j, k, CENT, Xh);
+            for (int k = 0; k < NDIM; k++) {
+              for (int i = 0; i < NDIM; i++) {
+                for (int j = 0; j < NDIM; j++) {
+                  conn[i][j][k] = (geom[i][j][k][CENT].gcov[i][j] - geom[i][j][k-1][CENT].gcov[i][j]) / (Xh[k]-Xl[k]);
+                }
+              }
+            } // for k
+        }
+        }
+        else{
+            coord(i, j, k-1, CENT, Xl); // 
+            coord(i, j, k+1, CENT, Xh);
+            for (int k = 0; k < NDIM; k++) {
+              for (int i = 0; i < NDIM; i++) {
+                for (int j = 0; j < NDIM; j++) {
+                  conn[i][j][k] = (geom[i][j][k+1][CENT].gcov[i][j] - geom[i][j][k-1][CENT].gcov[i][j]) / 2*(Xh[k]-Xl[k]);
+                }
+              }
+            } // for k
+        }
         // Only required in zone center
-        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]); // should it be conn[i][j][k] ?
+        num_conn_func(&ggeom[i][j][k][CENT], conn[i][j][k]); // should it be conn[i][j][k] ?
 #else
   //ISLOOP(-NG, N1 - 1 + NG) {
     //JSLOOP(-NG, N2 - 1 + NG) {
@@ -711,7 +755,7 @@ void set_grid() {
         } // LOCLOOP
         
         // Only required in zone center
-        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]);
+        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]); // why conn[i][j] ??
 #endif
         
 #if RADIATION
