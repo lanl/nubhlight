@@ -720,7 +720,7 @@ int  bl_i_of_r(double r);
 void cart_coord(const double X[NDIM], double Xcart[NDIM]);
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]);
 void set_metric(double X[NDIM], struct of_geom *g);
-void num_get_metric();
+void num_set_metric(double X[NDIM], struct of_geom *g);
 void set_points();
 void zero_arrays(void);
 void set_grid(void);

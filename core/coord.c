@@ -701,7 +701,7 @@ void set_grid() {
             coord(i, j, k, loc, X); // setting coordinate
         }
     }
-    num_get_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
+    num_set_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
         
@@ -710,7 +710,7 @@ void set_grid() {
         double conn[][NDIM][NDIM]
         
         if (k = -NG) {
-            coord(i, j, k, CENT, Xl); // 
+            coord(i, j, k, CENT, Xl); //
             coord(i, j, k+1, CENT, Xh);
             for (int k = 0; k < NDIM; k++) {
               for (int i = 0; i < NDIM; i++) {
