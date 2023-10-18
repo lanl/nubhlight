@@ -918,7 +918,7 @@ void get_dnz(grid_prim_type Prad, grid_eosvar_type extra);
 // metric.c
 double gcon_func(double lgcov[][NDIM], double lgcon[][NDIM]);
 void   conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]);
-void   num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM]);
+//void   num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM]);
 void   lower(double ucon[NDIM], double gcov[NDIM][NDIM], double ucov[NDIM]);
 void   raise(double ucov[NDIM], double gcon[NDIM][NDIM], double ucon[NDIM]);
 struct of_geom *get_geometry(int ii, int jj, int kk, int loc);

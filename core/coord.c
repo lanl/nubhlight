@@ -701,50 +701,182 @@ void set_grid() {
             coord(i, j, k, loc, X); // setting coordinate
         }
     }
+    
     num_set_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
         
-        double Xl[NDIM];
-        double Xr[NDIM];
-        double conn[][NDIM][NDIM]
+        /* connection coefficient calculation */
         
-        if (k = -NG) {
-            coord(i, j, k, CENT, Xl); //
-            coord(i, j, k+1, CENT, Xh);
-            for (int k = 0; k < NDIM; k++) {
-              for (int i = 0; i < NDIM; i++) {
-                for (int j = 0; j < NDIM; j++) {
-                  conn[i][j][k] = (geom[i][j][k+1][CENT].gcov[i][j] - geom[i][j][k][CENT].gcov[i][j]) / (Xh[k]-Xl[k]);
-                }
-              }
-            } // for k
+        double conn[][NDIM][NDIM];
+        double tmp[NDIM][NDIM][NDIM];
+        
+        for (int l = 0; l < NDIM; l++) {
+            if ( l = 0 ){
+                if ( i = -NG ){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j, k, CENT, Xl);
+                    coord(i+1, j, k, CENT, Xh);
+                    
+                    for (int m = 0; m < NDIM; m++) {
+                        for (int n = 0; n < NDIM; n++) {
+                            conn[m][n][l] = (geom[i+1][j][k][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                        } // for n
+                    } // for m
+                } // if i
+                
+                else if ( i = N3 - 1 + NG){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i-1, j, k, CENT, Xl);
+                    coord(i, j, k, CENT, Xh);
+                    
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i-1][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                    } // elif i
+    
+                else{
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i-1, j, k, CENT, Xl); //
+                    coord(i+1, j, k, CENT, Xh);
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i+1][j][k][CENT].gcov[m][n] - geom[i-1][j][k][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                    } // else i
+                
+            } // if l
+            
+            else if ( l = 1){
+                if ( j = -NG ){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j, k, CENT, Xl);
+                    coord(i, j+1, k, CENT, Xh);
+                    
+                    for (int m = 0; m < NDIM; m++) {
+                        for (int n = 0; n < NDIM; n++) {
+                            conn[m][n][l] = (geom[i][j+1][k][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                        } // for n
+                    } // for m
+                } // if j
+                else if ( j = N3 - 1 + NG){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j-1, k, CENT, Xl); //
+                    coord(i, j, k, CENT, Xh);
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i][j-1][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                } // elif j
+                else{
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j-1, k, CENT, Xl); //
+                    coord(i, j+1, k, CENT, Xh);
+                    
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i][j+1][k][CENT].gcov[m][n] - geom[i][j-1][k][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                    
+                } // else j
+                
+            } // elif l
+            else{
+                if ( k = -NG ){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j, k, CENT, Xl);
+                    coord(i, j, k+1, CENT, Xh);
+                    
+                    for (int m = 0; m < NDIM; m++) {
+                        for (int n = 0; n < NDIM; n++) {
+                            conn[m][n][l] = (geom[i][j][k+1][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                        } // for n
+                    } // for m
+                    
+                } // if k
+                else if ( k = N3 - 1 + NG){
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j, k-1, CENT, Xl); //
+                    coord(i, j, k, CENT, Xh);
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i][j][k-1][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                    
+                } // elif k
+                else{
+                    
+                    double Xl[NDIM];
+                    double Xh[NDIM];
+                    
+                    coord(i, j, k-1, CENT, Xl); //
+                    coord(i, j, k+1, CENT, Xh);
+                    
+                        for (int m = 0; m < NDIM; m++) {
+                            for (int n = 0; n < NDIM; n++) {
+                                conn[m][n][l] = (geom[i][j][k+1][CENT].gcov[m][n] - geom[i][j][k-1][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
+                            } // for n
+                        } // for m
+                    
+                } // else k
+                
+            } // else l
+            
+        } // for l
+
+        // Rearrange to find \Gamma_{ijk}
+        for (int i = 0; i < NDIM; i++) {
+        for (int j = 0; j < NDIM; j++) {
+          for (int k = 0; k < NDIM; k++) {
+            tmp[i][j][k] = 0.5 * (conn[j][i][k] + conn[k][i][j] - conn[k][j][i]);
+          }
         }
-        else if ( k = N3 - 1 + NG) {
-            coord(i, j, k-1, CENT, Xl); //
-            coord(i, j, k, CENT, Xh);
-            for (int k = 0; k < NDIM; k++) {
-              for (int i = 0; i < NDIM; i++) {
-                for (int j = 0; j < NDIM; j++) {
-                  conn[i][j][k] = (geom[i][j][k][CENT].gcov[i][j] - geom[i][j][k-1][CENT].gcov[i][j]) / (Xh[k]-Xl[k]);
-                }
-              }
-            } // for k
         }
+
+        // Raise index to get \Gamma^i_{jk}
+        for (int i = 0; i < NDIM; i++) {
+        for (int j = 0; j < NDIM; j++) {
+          for (int k = 0; k < NDIM; k++) {
+            conn[i][j][k] = 0.;
+            for (int l = 0; l < NDIM; l++)
+              conn[i][j][k] += geom->gcon[i][l] * tmp[l][j][k];
+          }
         }
-        else{
-            coord(i, j, k-1, CENT, Xl); // 
-            coord(i, j, k+1, CENT, Xh);
-            for (int k = 0; k < NDIM; k++) {
-              for (int i = 0; i < NDIM; i++) {
-                for (int j = 0; j < NDIM; j++) {
-                  conn[i][j][k] = (geom[i][j][k+1][CENT].gcov[i][j] - geom[i][j][k-1][CENT].gcov[i][j]) / 2*(Xh[k]-Xl[k]);
-                }
-              }
-            } // for k
         }
         // Only required in zone center
-        num_conn_func(&ggeom[i][j][k][CENT], conn[i][j][k]); // should it be conn[i][j][k] ?
+        //num_conn_func(&ggeom[i][j][k][CENT], conn[i][j][k]); // should it be conn[i][j][k] ?
+        
+        /* connection coefficient calculation */
 #else
   //ISLOOP(-NG, N1 - 1 + NG) {
     //JSLOOP(-NG, N2 - 1 + NG) {

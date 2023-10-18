@@ -37,7 +37,7 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
     set_gcov(Xh, gh);
     set_gcov(Xl, gl);
       
-      for (int i = 0; i < NDIM; i++) {
+    for (int i = 0; i < NDIM; i++) {
         for (int j = 0; j < NDIM; j++) {
           conn[i][j][k] = (gh[i][j] - gl[i][j]) / (Xh[k] - Xl[k]);
         }
@@ -65,31 +65,31 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
   }
 }
 
-// For numerical metric: Calculate connection coefficient \Gamma^{i}_{j,k} = conn[..][i][j][k]
-void num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM]) {
-  
-    double tmp[NDIM][NDIM][NDIM];
-
-  // Rearrange to find \Gamma_{ijk}
-  for (int i = 0; i < NDIM; i++) {
-    for (int j = 0; j < NDIM; j++) {
-      for (int k = 0; k < NDIM; k++) {
-        tmp[i][j][k] = 0.5 * (conn[j][i][k] + conn[k][i][j] - conn[k][j][i]);
-      }
-    }
-  }
-
-  // Raise index to get \Gamma^i_{jk}
-  for (int i = 0; i < NDIM; i++) {
-    for (int j = 0; j < NDIM; j++) {
-      for (int k = 0; k < NDIM; k++) {
-        conn[i][j][k] = 0.;
-        for (int l = 0; l < NDIM; l++)
-          conn[i][j][k] += geom->gcon[i][l] * tmp[l][j][k];
-      }
-    }
-  }
-}
+//// For numerical metric: Calculate connection coefficient \Gamma^{i}_{j,k} = conn[..][i][j][k]
+//void num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM]) {
+//
+//    double tmp[NDIM][NDIM][NDIM];
+//
+//  // Rearrange to find \Gamma_{ijk}
+//  for (int i = 0; i < NDIM; i++) {
+//    for (int j = 0; j < NDIM; j++) {
+//      for (int k = 0; k < NDIM; k++) {
+//        tmp[i][j][k] = 0.5 * (conn[j][i][k] + conn[k][i][j] - conn[k][j][i]);
+//      }
+//    }
+//  }
+//
+//  // Raise index to get \Gamma^i_{jk}
+//  for (int i = 0; i < NDIM; i++) {
+//    for (int j = 0; j < NDIM; j++) {
+//      for (int k = 0; k < NDIM; k++) {
+//        conn[i][j][k] = 0.;
+//        for (int l = 0; l < NDIM; l++)
+//          conn[i][j][k] += geom->gcon[i][l] * tmp[l][j][k];
+//      }
+//    }
+//  }
+//}
 
 // Lower a contravariant rank-1 tensor to a covariant one
 void lower(double ucon[NDIM], double gcov[NDIM][NDIM], double ucov[NDIM]) {
