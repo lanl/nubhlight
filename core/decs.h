@@ -603,13 +603,38 @@ struct of_tablebounds {
 #endif
 
 // More grid functions. Axisymmetry assumed.
-extern double conn[N1 + 2 * NG][N2 + 2 * NG][NDIM][NDIM][NDIM];
+typedef double conn_type[N1 + 2 * NG][N2 + 2 * NG][GN3][NDIM][NDIM][NDIM];
+extern conn_type conn;
 
-#if METRIC == NUMERICAL
-extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NPG];
+
+//extern double conn[N1 + 2 * NG][N2 + 2 * NG][NDIM][NDIM][NDIM];
+
+//#if METRIC == NUMERICAL
+//extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NPG];
+//
+//typedef struct of_geom grid_geom_type[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NPG];
+//extern grid_geom_type ggeom;
+//
+//#else
+//extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][1][NPG];
+//#endif
+
+
+//#if METRIC==NUMERICAL
+//typedef struct of_geom grid_geom_type[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NPG];
+//#else
+//typedef struct of_geom grid_geom_type[N1 + 2 * NG][N2 + 2 * NG][1][NPG];
+//#endif
+//extern grid_geom_type ggeom;
+
+#if METRIC==NUMERICAL
+#define GN3 (N2 + 2*NG)
 #else
-extern struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][1][NPG];
+#define GN3 (1)
 #endif
+typedef struct of_geom grid_geom_type[N1 + 2 * NG][N2 + 2 * NG][GN3][NPG];
+extern grid_geom_type ggeom;
+
 
 #if RADIATION
 // extern double dt_light, dt_light_min;

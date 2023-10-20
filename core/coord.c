@@ -329,7 +329,7 @@ void set_metric(double X[NDIM], struct of_geom *g) {
 }
 
 /* Set numerical metric */
-void num_set_metric(double X[NDIM], struct of_geom *g){
+void num_set_metric(grid_geom_type ggeom){
     
     double *xp, *yp, *zp;
     
@@ -356,10 +356,10 @@ void num_set_metric(double X[NDIM], struct of_geom *g){
     betay = malloc(np*sizeof(*betay));
     betaz = malloc(np*sizeof(*betaz));
     
+    double X[NDIM];
     int iflat = 0;
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
       LOCLOOP {
-        //double X[NDIM];
         coord(i, j, k, loc, X);
         xp[iflat] = X[1];
         yp[iflat] = X[2];
@@ -488,38 +488,45 @@ void num_set_metric(double X[NDIM], struct of_geom *g){
         return EXIT_FAILURE;
     }
     int iflat = 0
+    double betaxcon,betaycon,betazcon,beta2;
+    
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
-      LOCLOOP {
-        memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
-        //struct of_geom *g = &ggeom[i][j][k][loc];
-        // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
-        g->gcov[0][1] = betax[iflat];
-        g->gcov[0][2] = betay[iflat];
-        g->gcov[0][3] = betaz[iflat];
+        LOCLOOP {
+            struct of_geom *g = &ggeom[i][j][k][loc];
+            memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
+            // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
+            g->gcov[1][1] = gxx[iflat];
+            g->gcov[1][2] = gxy[iflat];
+            g->gcov[1][3] = gxz[iflat];
+              
+            g->gcov[2][1] = g->gcov[1][2];
+            g->gcov[2][2] = gyy[iflat];
+            g->gcov[2][3] = gyz[iflat];
 
-        g->gcov[1][0] = g->gcov[0][1]
-        g->gcov[1][1] = gxx[iflat];
-        g->gcov[1][2] = gxy[iflat];
-        g->gcov[1][3] = gxz[iflat];
-
-        g->gcov[2][0] = g->gcov[0][2]
-        g->gcov[2][1] = g->gcov[1][2];
-        g->gcov[2][2] = gyy[iflat];
-        g->gcov[2][3] = gyz[iflat];
-
-        g->gcov[3][0] = g->gcov[0][3]
-        g->gcov[3][1] = g->gcov[1][3];
-        g->gcov[3][2] = g->gcov[2][3];
-        g->gcov[3][3] = gzz[iflat];
+            g->gcov[3][1] = g->gcov[1][3];
+            g->gcov[3][2] = g->gcov[2][3];
+            g->gcov[3][3] = gzz[iflat];
+            
+            betaxcon = g->gcov[1][1]*betax[iflat];
+            betaycon = g->gcov[2][2]*betay[iflat];
+            betazcon = g->gcov[3][3]*betaz[iflat];
+            
+            g->gcov[0][1] = betaxcon;
+            g->gcov[0][2] = betaycon;
+            g->gcov[0][3] = betazcon;
+            
+            g->gcov[1][0] = g->gcov[0][1]
+            g->gcov[2][0] = g->gcov[0][2]
+            g->gcov[3][0] = g->gcov[0][3]
           
-        double beta2 = g->gcov[1][1] * betax[iflat] * betax[iflat] + g->gcov[2][2] * betay[iflat] * betay[iflat] + g->gcov[3][3] * betaz[iflat] * betaz[iflat] + 2 * g->gcov[1][2] * betax[iflat] * betay[iflat] + 2 * g->gcov[1][3] * betax[iflat] * betaz[iflat] + 2 * g->gcov[2][3] * betay[iflat] * betaz[iflat];
+            beta2 =  betaxcon * betax[iflat] + betaycon * betay[iflat] + betazcon * betaz[iflat];
 
-        g->gcov[0][0] = -lapse[iflat]*lapse[iflat] + beta2;
-        // setting detg and alpha
-        g->g     = gcon_func(g->gcov, g->gcon);
-        g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
-        iflat++;
-      } // LOCLOOP end
+            g->gcov[0][0] = -lapse[iflat]*lapse[iflat] + beta2;
+            // setting detg and alpha
+            g->g     = gcon_func(g->gcov, g->gcon);
+            g->alpha = lapse[iflat]; //1.0 / sqrt(-(g->gcon[0][0]));
+            iflat++;
+        } // LOCLOOP end
     } // ZSLOOP end
     
     /* Free memory */
@@ -696,180 +703,18 @@ void set_grid() {
 #endif
 
 #if METRIC == NUMERICAL //TODO: make radiation work with numerical
-    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
-        LOCLOOP{
-            coord(i, j, k, loc, X); // setting coordinate
-        }
-    }
+//    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+//        LOCLOOP{
+//            coord(i, j, k, loc, X); // setting coordinate
+//        }
+//    }
     
-    num_set_metric(X, &(ggeom[i][j][k][loc])); // setting numerical metric // pass reference to the whole structure not a specific element
+    num_set_metric(ggeom); //
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
-        
-        /* connection coefficient calculation */
-        
-//        double conn[][NDIM][NDIM];
-//        double tmp[NDIM][NDIM][NDIM];
-//
-//        for (int l = 0; l < NDIM; l++) {
-//
-//            if ( l = 0 ){
-//
-//                if ( i = -NG ){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j, k, CENT, Xl);
-//                    coord(i+1, j, k, CENT, Xh);
-//
-//                    for (int m = 0; m < NDIM; m++) {
-//                        for (int n = 0; n < NDIM; n++) {
-//                            conn[m][n][l] = (geom[i+1][j][k][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                        } // for n
-//                    } // for m
-//                } // if i
-//
-//                else if ( i = N3 - 1 + NG){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i-1, j, k, CENT, Xl);
-//                    coord(i, j, k, CENT, Xh);
-//
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i-1][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//                    } // elif i
-//
-//                else{
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i-1, j, k, CENT, Xl); //
-//                    coord(i+1, j, k, CENT, Xh);
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i+1][j][k][CENT].gcov[m][n] - geom[i-1][j][k][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//                    } // else i
-//
-//            } // if l
-//
-//            else if ( l = 1){
-//                if ( j = -NG ){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j, k, CENT, Xl);
-//                    coord(i, j+1, k, CENT, Xh);
-//
-//                    for (int m = 0; m < NDIM; m++) {
-//                        for (int n = 0; n < NDIM; n++) {
-//                            conn[m][n][l] = (geom[i][j+1][k][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                        } // for n
-//                    } // for m
-//                } // if j
-//                else if ( j = N3 - 1 + NG){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j-1, k, CENT, Xl); //
-//                    coord(i, j, k, CENT, Xh);
-//
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i][j-1][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//                } // elif j
-//                else{
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j-1, k, CENT, Xl); //
-//                    coord(i, j+1, k, CENT, Xh);
-//
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i][j+1][k][CENT].gcov[m][n] - geom[i][j-1][k][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//
-//                } // else j
-//
-//            } // elif l
-//            else{
-//                if ( k = -NG ){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j, k, CENT, Xl);
-//                    coord(i, j, k+1, CENT, Xh);
-//
-//                    for (int m = 0; m < NDIM; m++) {
-//                        for (int n = 0; n < NDIM; n++) {
-//                            conn[m][n][l] = (geom[i][j][k+1][CENT].gcov[m][n] - geom[i][j][k][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                        } // for n
-//                    } // for m
-//
-//                } // if k
-//                else if ( k = N3 - 1 + NG){
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j, k-1, CENT, Xl); //
-//                    coord(i, j, k, CENT, Xh);
-//
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i][j][k][CENT].gcov[m][n] - geom[i][j][k-1][CENT].gcov[m][n]) / (Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//
-//                } // elif k
-//                else{
-//
-//                    double Xl[NDIM];
-//                    double Xh[NDIM];
-//                    coord(i, j, k-1, CENT, Xl); //
-//                    coord(i, j, k+1, CENT, Xh);
-//
-//                        for (int m = 0; m < NDIM; m++) {
-//                            for (int n = 0; n < NDIM; n++) {
-//                                conn[m][n][l] = (geom[i][j][k+1][CENT].gcov[m][n] - geom[i][j][k-1][CENT].gcov[m][n]) / 2*(Xh[l]-Xl[l]);
-//                            } // for n
-//                        } // for m
-//
-//                } // else k
-//
-//            } // else l
-//
-//        } // for l
-//
-//        // Rearrange to find \Gamma_{ijk}
-//        for (int i = 0; i < NDIM; i++) {
-//        for (int j = 0; j < NDIM; j++) {
-//          for (int k = 0; k < NDIM; k++) {
-//            tmp[i][j][k] = 0.5 * (conn[j][i][k] + conn[k][i][j] - conn[k][j][i]);
-//          }
-//        }
-//        }
-//
-//        // Raise index to get \Gamma^i_{jk}
-//        for (int i = 0; i < NDIM; i++) {
-//        for (int j = 0; j < NDIM; j++) {
-//          for (int k = 0; k < NDIM; k++) {
-//            conn[i][j][k] = 0.;
-//            for (int l = 0; l < NDIM; l++)
-//              conn[i][j][k] += geom->gcon[i][l] * tmp[l][j][k];
-//          }
-//        }
-//        }
+
         // Only required in zone center
-        num_conn_func(&ggeom[i][j][k][CENT], conn[i][j][k], i , j ,k); // should it be conn[i][j][k] ? how can I pass the reference for whole array of the structure not a particular element ? is it &ggeom[][][][CENT]?
+        num_conn_func(ggeom, conn[i][j][k], i , j , k);
         
         /* connection coefficient calculation */
 #else
@@ -878,11 +723,11 @@ void set_grid() {
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
         LOCLOOP { // loop variable is loc
             coord(i, j, 0, loc, X);
-            set_metric(X, &(ggeom[i][j][k][loc]));
+            set_metric(X, &(ggeom[i][j][k][loc])); // should I set k = 1 ?
         } // LOCLOOP
         
         // Only required in zone center
-        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j]); // why conn[i][j] ??
+        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j][k]); // why conn[i][j] ?? should I set k = 1 ?
 #endif
         
 #if RADIATION
