@@ -628,7 +628,7 @@ extern conn_type conn;
 //extern grid_geom_type ggeom;
 
 #if METRIC==NUMERICAL
-#define GN3 (N2 + 2*NG)
+#define GN3 (N3 + 2*NG)
 #else
 #define GN3 (1)
 #endif
@@ -745,7 +745,7 @@ int  bl_i_of_r(double r);
 void cart_coord(const double X[NDIM], double Xcart[NDIM]);
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]);
 void set_metric(double X[NDIM], struct of_geom *g);
-void num_set_metric(double X[NDIM], struct of_geom *g);
+void num_set_metric(struct of_geom *g);
 void set_points();
 void zero_arrays(void);
 void set_grid(void);

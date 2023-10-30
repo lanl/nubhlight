@@ -333,28 +333,28 @@ void num_set_metric(grid_geom_type ggeom){
     
     double *xp, *yp, *zp;
     
-    double *gxx,*gxy,*gxz,*gyy,*gyz,*gzz,*lapse,*betax,*betay,*betaz;
+    double *gxx, *gxy, *gxz, *gyy, *gyz, *gzz, *lapse, *betax, *betay, *betaz;
     
-    int np = (N1 + 2. * NG)*(N2 + 2. * NG)*(N3 + 2. * NG)
+    int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG) * NPG;
     
-    xp = malloc(np*sizeof(*xp));
-    yp = malloc(np*sizeof(*yp));
-    zp = malloc(np*sizeof(*zp));
+    xp = malloc(np * sizeof(*xp));
+    yp = malloc(np * sizeof(*yp));
+    zp = malloc(np * sizeof(*zp));
     
-    gxx = malloc(np*sizeof(*gxx));
-    gxy = malloc(np*sizeof(*gxy));
-    gxz = malloc(np*sizeof(*gxz));
+    gxx = malloc(np * sizeof(*gxx));
+    gxy = malloc(np * sizeof(*gxy));
+    gxz = malloc(np * sizeof(*gxz));
 
-    gyy = malloc(np*sizeof(*gyy));
-    gyz = malloc(np*sizeof(*gyz));
+    gyy = malloc(np * sizeof(*gyy));
+    gyz = malloc(np * sizeof(*gyz));
 
-    gzz = malloc(np*sizeof(*gzz));
+    gzz = malloc(np * sizeof(*gzz));
     
-    lapse = malloc(np*sizeof(*lapse));
+    lapse = malloc(np * sizeof(*lapse));
     
-    betax = malloc(np*sizeof(*betax));
-    betay = malloc(np*sizeof(*betay));
-    betaz = malloc(np*sizeof(*betaz));
+    betax = malloc(np * sizeof(*betax));
+    betay = malloc(np * sizeof(*betay));
+    betaz = malloc(np * sizeof(*betaz));
     
     double X[NDIM];
     int iflat = 0;
@@ -494,7 +494,7 @@ void num_set_metric(grid_geom_type ggeom){
         LOCLOOP {
             struct of_geom *g = &ggeom[i][j][k][loc];
             memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
-            // fill geom // check stored variables in the 3d profile are contravariant or covariant ?
+
             g->gcov[1][1] = gxx[iflat];
             g->gcov[1][2] = gxy[iflat];
             g->gcov[1][3] = gxz[iflat];
@@ -538,7 +538,6 @@ void num_set_metric(grid_geom_type ggeom){
     cprof3d_del_dset(dset_gzz);
     
     cprof3d_del_dset(dset_lapse);
-    
     cprof3d_del_dset(dset_betax);
     cprof3d_del_dset(dset_betay);
     cprof3d_del_dset(dset_betaz);
@@ -553,7 +552,6 @@ void num_set_metric(grid_geom_type ggeom){
     free(gzz);
     
     free(lapse);
-    
     free(shiftx);
     free(shifty);
     free(shiftz);
@@ -705,18 +703,16 @@ void set_grid() {
 #if METRIC == NUMERICAL //TODO: make radiation work with numerical
 //    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
 //        LOCLOOP{
-//            coord(i, j, k, loc, X); // setting coordinate
+//            coord(i, j, k, loc, X);
 //        }
 //    }
     
-    num_set_metric(ggeom); //
+    num_set_metric(ggeom);
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
 
-        // Only required in zone center
+        // Only required in zone center /* connection coefficient calculation */
         num_conn_func(ggeom, conn[i][j][k], i , j , k);
-        
-        /* connection coefficient calculation */
 #else
   //ISLOOP(-NG, N1 - 1 + NG) {
     //JSLOOP(-NG, N2 - 1 + NG) {
