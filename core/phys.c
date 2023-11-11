@@ -92,7 +92,7 @@ void mhd_calc(double *Pr, int dir, int magnetic, struct of_state *q,
 }
 
 // Source terms for equations of motion
-void source(double *Ph, struct of_geom *geom, int ii, int jj, double *dU,
+void source(double *Ph, struct of_geom *geom, int ii, int jj, int k, double *dU,
     double Dt, double *extra) {
   double          mhd[NDIM][NDIM];
   struct of_state q;
@@ -108,10 +108,10 @@ void source(double *Ph, struct of_geom *geom, int ii, int jj, double *dU,
 
   for (int mu = 0; mu < NDIM; mu++) {
     for (int nu = 0; nu < NDIM; nu++) {
-      dU[UU] += mhd[mu][nu] * conn[ii][jj][nu][0][mu];
-      dU[U1] += mhd[mu][nu] * conn[ii][jj][nu][1][mu];
-      dU[U2] += mhd[mu][nu] * conn[ii][jj][nu][2][mu];
-      dU[U3] += mhd[mu][nu] * conn[ii][jj][nu][3][mu];
+      dU[UU] += mhd[mu][nu] * conn[ii][jj][newk][nu][0][mu]; // OK ?
+      dU[U1] += mhd[mu][nu] * conn[ii][jj][newk][nu][1][mu];
+      dU[U2] += mhd[mu][nu] * conn[ii][jj][newk][nu][2][mu];
+      dU[U3] += mhd[mu][nu] * conn[ii][jj][newk][nu][3][mu];
     }
   }
 

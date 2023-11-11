@@ -58,6 +58,12 @@ DT0 = TFINAL/1.e6
 DTd = TFINAL/10
 DTl = TFINAL/100
 
+FORCE = '-force' in sys.argv
+
+args = [sys.executable, 'build.py', '-dir']
+if FORCE:
+  args.append('-force')
+
                          ### COMPILE TIME PARAMETERS ###
 
 # SPATIAL RESOLUTION AND MPI DECOMPOSITION
@@ -65,14 +71,20 @@ bhl.config.set_cparm('N1TOT', 256)
 bhl.config.set_cparm('N2TOT', 1)
 bhl.config.set_cparm('N3TOT', 1)
 bhl.config.set_cparm('N1CPU', 2 if MPI else 1)
+#bhl.config.set_cparm('N1CPU', 1)
 bhl.config.set_cparm('N2CPU', 1)
 bhl.config.set_cparm('N3CPU', 1)
 
 # OPENMP PARALLELIZATION
 bhl.config.set_cparm('OPENMP', False)
+#bhl.config.set_cparm('OPENMP', True)
 
 # COORDINATES
-bhl.config.set_cparm('METRIC', 'MINKOWSKI')
+bhl.config.set_cparm('METRIC', 'NUMERICAL')
+#bhl.config.set_cparm('METRIC', 'MINKOWSKI')
+
+#EXIT AFTER GRID SETTING
+bhl.config.set_cparm('EXIT_ON_INIT', True)
 
 # FLUID
 bhl.config.set_cparm('RECONSTRUCTION', 'WENO')

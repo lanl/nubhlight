@@ -495,7 +495,7 @@ void dump_grid() {
     int n = 0;
     ZLOOP {
       DLOOP2 {
-        gcov[n] = ggeom[i][j][CENT].gcov[mu][nu];
+        gcov[n] = ggeom[i][j][newk][CENT].gcov[mu][nu];
         n++;
       }
     }
@@ -509,7 +509,7 @@ void dump_grid() {
     int n = 0;
     ZLOOP {
       DLOOP2 {
-        gcon[n] = ggeom[i][j][CENT].gcon[mu][nu];
+        gcon[n] = ggeom[i][j][newk][CENT].gcon[mu][nu];
         n++;
       }
     }
@@ -521,7 +521,7 @@ void dump_grid() {
     double *gdet = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
     int     n    = 0;
     ZLOOP {
-      gdet[n] = ggeom[i][j][CENT].g;
+      gdet[n] = ggeom[i][j][newk][CENT].g;
       n++;
     }
     WRITE_GRID_NO_GHOSTS(gdet, TYPE_DBL);
@@ -532,7 +532,7 @@ void dump_grid() {
     double *alpha = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
     int     n     = 0;
     ZLOOP {
-      alpha[n] = ggeom[i][j][CENT].alpha;
+      alpha[n] = ggeom[i][j][newk][CENT].alpha;
       n++;
     }
     WRITE_GRID_NO_GHOSTS(alpha, TYPE_DBL);
@@ -554,7 +554,7 @@ void dump_grid() {
     int n = 0;
     ZLOOP {
       DLOOP3 {
-        Gamma[n] = conn[i][j][mu][nu][sigma];
+        Gamma[n] = conn[i][j][n][mu][nu][sigma];
         n++;
       }
     }
@@ -1690,7 +1690,7 @@ int restart_init() {
 #if RADIATION
     {
       ZLOOP {
-        sim_vol += ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3] * L_unit *
+        sim_vol += ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3] * L_unit *
                    L_unit * L_unit;
       }
       sim_vol = mpi_reduce(sim_vol);

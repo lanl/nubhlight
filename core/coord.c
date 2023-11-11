@@ -335,6 +335,8 @@ void num_set_metric(grid_geom_type ggeom){
     
     double *gxx, *gxy, *gxz, *gyy, *gyz, *gzz, *lapse, *betax, *betay, *betaz;
     
+    double betaxcon,betaycon,betazcon,beta2;
+    
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG) * NPG;
     
     xp = malloc(np * sizeof(*xp));
@@ -487,12 +489,11 @@ void num_set_metric(grid_geom_type ggeom){
         fprintf(stderr, "Something went wrong with the interpolation betaz!");
         return EXIT_FAILURE;
     }
-    int iflat = 0
-    double betaxcon,betaycon,betazcon,beta2;
+    //int iflat = 0;
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
         LOCLOOP {
-            struct of_geom *g = &ggeom[i][j][k][loc];
+            struct of_geom *g = &ggeom[i][j][newk][loc];
             memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
 
             g->gcov[1][1] = gxx[iflat];
@@ -515,9 +516,9 @@ void num_set_metric(grid_geom_type ggeom){
             g->gcov[0][2] = betaycon;
             g->gcov[0][3] = betazcon;
             
-            g->gcov[1][0] = g->gcov[0][1]
-            g->gcov[2][0] = g->gcov[0][2]
-            g->gcov[3][0] = g->gcov[0][3]
+            g->gcov[1][0] = g->gcov[0][1];
+            g->gcov[2][0] = g->gcov[0][2];
+            g->gcov[3][0] = g->gcov[0][3];
           
             beta2 =  betaxcon * betax[iflat] + betaycon * betay[iflat] + betazcon * betaz[iflat];
 
@@ -552,9 +553,9 @@ void num_set_metric(grid_geom_type ggeom){
     free(gzz);
     
     free(lapse);
-    free(shiftx);
-    free(shifty);
-    free(shiftz);
+    free(betax);
+    free(betay);
+    free(betaz);
     
     free(zp);
     free(yp);
@@ -712,18 +713,18 @@ void set_grid() {
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
 
         // Only required in zone center /* connection coefficient calculation */
-        num_conn_func(ggeom, conn[i][j][k], i , j , k);
+        num_conn_func(ggeom, conn[i][j][newk], i , j , k);
 #else
   //ISLOOP(-NG, N1 - 1 + NG) {
     //JSLOOP(-NG, N2 - 1 + NG) {
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
         LOCLOOP { // loop variable is loc
             coord(i, j, 0, loc, X);
-            set_metric(X, &(ggeom[i][j][k][loc])); // should I set k = 1 ?
+            set_metric(X, &(ggeom[i][j][newk][loc])); // should I set k = 1 ?
         } // LOCLOOP
         
         // Only required in zone center
-        conn_func(X, &ggeom[i][j][k][CENT], conn[i][j][k]); // why conn[i][j] ?? should I set k = 1 ?
+        conn_func(X, &ggeom[i][j][newk][CENT], conn[i][j][newk]); // why conn[i][j] ?? should I set k = 1 ?
 #endif
         
 #if RADIATION
@@ -733,19 +734,19 @@ void set_grid() {
         double dt_light_local    = 0.;
         
         for (int mu = 1; mu < NDIM; mu++) {
-            if (pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
-                ggeom[i][j][k][CENT].gcon[mu][mu] * ggeom[i][j][k][CENT].gcon[0][0] >=
+            if (pow(ggeom[i][j][newk][CENT].gcon[0][mu], 2.) -
+                ggeom[i][j][newk][CENT].gcon[mu][mu] * ggeom[i][j][newk][CENT].gcon[0][0] >=
                 0.) {
-                double cplus      = fabs((-ggeom[i][j][k][CENT].gcon[0][mu] +
-                                          sqrt(pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
-                                               ggeom[i][j][k][CENT].gcon[mu][mu] *
-                                               ggeom[i][j][k][CENT].gcon[0][0])) /
-                                         (ggeom[i][j][k][CENT].gcon[0][0]));
-                double cminus     = fabs((-ggeom[i][j][k][CENT].gcon[0][mu] -
-                                          sqrt(pow(ggeom[i][j][k][CENT].gcon[0][mu], 2.) -
-                                               ggeom[i][j][k][CENT].gcon[mu][mu] *
-                                               ggeom[i][j][k][CENT].gcon[0][0])) /
-                                         (ggeom[i][j][k][CENT].gcon[0][0]));
+                double cplus      = fabs((-ggeom[i][j][newk][CENT].gcon[0][mu] +
+                                          sqrt(pow(ggeom[i][j][newk][CENT].gcon[0][mu], 2.) -
+                                               ggeom[i][j][newk][CENT].gcon[mu][mu] *
+                                               ggeom[i][j][newk][CENT].gcon[0][0])) /
+                                         (ggeom[i][j][newk][CENT].gcon[0][0]));
+                double cminus     = fabs((-ggeom[i][j][newk][CENT].gcon[0][mu] -
+                                          sqrt(pow(ggeom[i][j][newk][CENT].gcon[0][mu], 2.) -
+                                               ggeom[i][j][newk][CENT].gcon[mu][mu] *
+                                               ggeom[i][j][newk][CENT].gcon[0][0])) /
+                                         (ggeom[i][j][newk][CENT].gcon[0][0]));
                 light_phase_speed = MY_MAX(cplus, cminus);
             } else {
                 light_phase_speed = SMALL;

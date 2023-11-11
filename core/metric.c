@@ -66,7 +66,7 @@ void conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]) {
 }
 
 //// For numerical metric: Calculate connection coefficient \Gamma^{i}_{j,k} = conn[..][i][j][k]
-void num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM], int i, int j , int k) {
+void num_conn_func(grid_geom_type geom, double conn[][NDIM][NDIM], int i, int j , int k) {
     
 //    double conn[][NDIM][NDIM];
 //    double tmp[NDIM][NDIM][NDIM];
@@ -201,7 +201,7 @@ void num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM], int i, int j
     
     
     /* duplicate without  redundant blocks*/
-    double conn[][NDIM][NDIM];
+    //double conn[][NDIM][NDIM];
     double tmp[NDIM][NDIM][NDIM];
     double Xl[NDIM];
     double Xh[NDIM];
@@ -242,12 +242,12 @@ void num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM], int i, int j
   }
 
   // Raise index to get \Gamma^i_{jk}
-  for (int i = 0; i < NDIM; i++) {
-    for (int j = 0; j < NDIM; j++) {
-      for (int k = 0; k < NDIM; k++) {
-        conn[i][j][k] = 0.;
+  for (int p = 0; p < NDIM; p++) {
+    for (int q = 0; q < NDIM; q++) {
+      for (int r = 0; r < NDIM; r++) {
+        conn[p][q][r] = 0.;
         for (int l = 0; l < NDIM; l++)
-          conn[i][j][k] += geom->gcon[i][l] * tmp[l][j][k];
+          conn[p][q][r] += geom[i][j][k]->gcon[p][l] * tmp[l][q][r];
       }
     }
   }
@@ -285,7 +285,7 @@ struct of_geom *get_geometry(int ii, int jj, int kk, int loc) {
   kcurr = kk;
 
 //#if METRIC == NUMERICAL
-    return (&(ggeom[ii][jj][kk][loc]));
+    return (&(ggeom[ii][jj][kk][loc])); // Is it okay even now ?
 //#else
     //return (&(ggeom[ii][jj][1][loc]
 }

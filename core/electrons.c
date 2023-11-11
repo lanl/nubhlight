@@ -70,7 +70,7 @@ void heat_electrons_zone(int i, int j, int k, double Pi[NVAR], double Ps[NVAR],
              (ktotharm - ktotadv);
 
   // Diagnostics
-  struct of_geom *geom = &ggeom[i][j][CENT];
+  struct of_geom *geom = &ggeom[i][j][newk][CENT];
   struct of_state q;
   get_state(Ps, geom, &q);
   double uadv = ktotadv / (gam - 1.) * pow(Pf[RHO], gam);
@@ -196,7 +196,7 @@ void coulomb(
       Qc *= T_unit / U_unit;
 
       // Update electron internal energy
-      geom = &ggeom[i][j][CENT];
+      geom = &ggeom[i][j][newk][CENT];
       get_state(Ps[i][j][k], geom, &q);
 
       double ue_f =
@@ -220,7 +220,7 @@ void apply_rad_force_e(grid_prim_type Prh, grid_prim_type Pr,
 // depositions already communicated over MPI
 #pragma omp parallel for collapse(3) schedule(dynamic)
   ZLOOP {
-    struct of_geom *geom = &ggeom[i][j][CENT];
+    struct of_geom *geom = &ggeom[i][j][newk][CENT];
     struct of_state q;
     double          Uel, Urho;
     double          C = 0.;
@@ -250,15 +250,15 @@ void apply_rad_force_e(grid_prim_type Prh, grid_prim_type Pr,
       Nsuper[i][j][k]++;
 
       // (1) Record total energy density after cooling
-      get_state(Pr[i][j][k], &ggeom[i][j][CENT], &q_1);
-      primtoflux(Pr[i][j][k], &q_1, 0, 0, &ggeom[i][j][CENT], U_1);
+      get_state(Pr[i][j][k], &ggeom[i][j][newk][CENT], &q_1);
+      primtoflux(Pr[i][j][k], &q_1, 0, 0, &ggeom[i][j][newk][CENT], U_1);
 
       // (2) Calculate total energy density with zero electron energy density
       PLOOP  prim_2[ip] = psupersave[i][j][k][ip];
       double ue         = prim_2[KEL] * pow(prim_2[RHO], game) / (game - 1.);
       prim_2[UU] -= ue;
-      get_state(prim_2, &ggeom[i][j][CENT], &q_2);
-      primtoflux(prim_2, &q_2, 0, 0, &ggeom[i][j][CENT], U_2);
+      get_state(prim_2, &ggeom[i][j][newk][CENT], &q_2);
+      primtoflux(prim_2, &q_2, 0, 0, &ggeom[i][j][newk][CENT], U_2);
 
       // Subtract (2) from (1); integrated over volume, this is fake energy
       Esuper[i][j][k] += fabs((U_1[UU] - U_2[UU]) * dx[1] * dx[2] * dx[3]);

@@ -299,7 +299,7 @@ void sample_tracers_in_cell(struct of_photon **head, int nstep, int i, int j,
   double r[NDIM];
   double Xcell[NDIM], Xpart[NDIM];
   double mass_cell, mass_part;
-  mass_cell = P[i][j][k][RHO] * ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3];
+  mass_cell = P[i][j][k][RHO] * ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3];
   mass_part = mass_cell / ntracers_per_cell;
 
   for (int tcr = 0; tcr < ntracers_per_cell; tcr++) {

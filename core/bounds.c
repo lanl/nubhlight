@@ -30,7 +30,7 @@ void bound_prim(grid_prim_type prim) {
             pflag[i][j][k]          = pflag[iactive][j][k];
 
             double rescale_fac =
-                ggeom[iactive][j][CENT].g / ggeom[i][j][CENT].g;
+                ggeom[iactive][j][newk][CENT].g / ggeom[i][j][newk][CENT].g;
             prim[i][j][k][B1] *= rescale_fac;
             prim[i][j][k][B2] *= rescale_fac;
             prim[i][j][k][B3] *= rescale_fac;
@@ -66,7 +66,7 @@ void bound_prim(grid_prim_type prim) {
             pflag[i][j][k]          = pflag[iactive][j][k];
 
             double rescale_fac =
-                ggeom[iactive][j][CENT].g / ggeom[i][j][CENT].g;
+                ggeom[iactive][j][newk][CENT].g / ggeom[i][j][newk][CENT].g;
             prim[i][j][k][B1] *= rescale_fac;
             prim[i][j][k][B2] *= rescale_fac;
             prim[i][j][k][B3] *= rescale_fac;

@@ -135,8 +135,8 @@ void diag(int call_code) {
 
     struct of_state q;
     double          U[NVAR];
-    get_state(P[i][j][k], &(ggeom[i][j][CENT]), &q);
-    primtoflux(P[i][j][k], &q, 0, 0, &(ggeom[i][j][CENT]), U);
+    get_state(P[i][j][k], &(ggeom[i][j][newk][CENT]), &q);
+    primtoflux(P[i][j][k], &q, 0, 0, &(ggeom[i][j][newk][CENT]), U);
     mass_proc += U[0] * dx[1] * dx[2] * dx[3];
     egas_proc += U[1] * dx[1] * dx[2] * dx[3];
     double rho   = P[i][j][k][RHO];
@@ -147,26 +147,26 @@ void diag(int call_code) {
     double C_eht = 0.2;
     double j_eht = pow(rho, 3.) * pow(Pg, -2.) *
                    exp(-C_eht * pow(rho * rho / (Bmag * Pg * Pg), 1. / 3.));
-    lum_eht_proc += j_eht * dx[1] * dx[2] * dx[3] * ggeom[i][j][CENT].g;
+    lum_eht_proc += j_eht * dx[1] * dx[2] * dx[3] * ggeom[i][j][newk][CENT].g;
     if (global_start[1] == 0 && i == 5 + NG) {
       Phi_proc +=
-          0.5 * fabs(P[i][j][k][B1]) * dx[2] * dx[3] * ggeom[i][j][CENT].g;
+          0.5 * fabs(P[i][j][k][B1]) * dx[2] * dx[3] * ggeom[i][j][newk][CENT].g;
 
       double P_EM[NVAR];
       PLOOP  P_EM[ip] = P[i][j][k][ip];
       P_EM[RHO]       = 0.;
       P_EM[UU]        = 0.;
-      get_state(P_EM, &(ggeom[i][j][CENT]), &q);
+      get_state(P_EM, &(ggeom[i][j][newk][CENT]), &q);
       double sig = dot(q.bcon, q.bcov) / P[i][j][k][RHO];
       if (sig > 1.) {
-        primtoflux(P_EM, &q, 1, 1, &(ggeom[i][j][CENT]), U);
+        primtoflux(P_EM, &q, 1, 1, &(ggeom[i][j][newk][CENT]), U);
         jet_EM_flux_proc += -U[U1] * dx[2] * dx[3];
       }
     }
 
 #if RADIATION
     erad_proc +=
-        Rmunu[i][j][k][0][0] * dx[1] * dx[2] * dx[3] * ggeom[i][j][CENT].g;
+        Rmunu[i][j][k][0][0] * dx[1] * dx[2] * dx[3] * ggeom[i][j][newk][CENT].g;
 #endif
   }
   double mdot_all    = mpi_io_reduce(mdot);
@@ -203,7 +203,7 @@ void diag(int call_code) {
     JSLOOP(0, N2 - 1) {
       KSLOOP(0, N3 - 1) {
         lum_proc -= Rmunu[stopi_rad][j][k][1][0] * dx[2] * dx[3] *
-                    ggeom[stopi_rad][j][CENT].g;
+                    ggeom[stopi_rad][j][newk][CENT].g;
       }
     }
   }
@@ -368,34 +368,34 @@ void diag_flux(grid_prim_type F1, grid_prim_type F2, grid_prim_type F3) {
 double flux_ct_divb(int i, int j, int k) {
   return fabs(
       0.25 *
-          (P[i][j][k][B1] * ggeom[i][j][CENT].g +
-              P[i][j - 1][k][B1] * ggeom[i][j - 1][CENT].g +
-              P[i][j][k - 1][B1] * ggeom[i][j][CENT].g +
-              P[i][j - 1][k - 1][B1] * ggeom[i][j - 1][CENT].g -
-              P[i - 1][j][k][B1] * ggeom[i - 1][j][CENT].g -
-              P[i - 1][j - 1][k][B1] * ggeom[i - 1][j - 1][CENT].g -
-              P[i - 1][j][k - 1][B1] * ggeom[i - 1][j][CENT].g -
-              P[i - 1][j - 1][k - 1][B1] * ggeom[i - 1][j - 1][CENT].g) /
+          (P[i][j][k][B1] * ggeom[i][j][newk][CENT].g +
+              P[i][j - 1][k][B1] * ggeom[i][j - 1][newk][CENT].g +
+              P[i][j][k - 1][B1] * ggeom[i][j][newk][CENT].g +
+              P[i][j - 1][k - 1][B1] * ggeom[i][j - 1][newk][CENT].g -
+              P[i - 1][j][k][B1] * ggeom[i - 1][j][newk][CENT].g -
+              P[i - 1][j - 1][k][B1] * ggeom[i - 1][j - 1][newk][CENT].g -
+              P[i - 1][j][k - 1][B1] * ggeom[i - 1][j][newk][CENT].g -
+              P[i - 1][j - 1][k - 1][B1] * ggeom[i - 1][j - 1][newk][CENT].g) /
           dx[1] +
       0.25 *
-          (P[i][j][k][B2] * ggeom[i][j][CENT].g +
-              P[i - 1][j][k][B2] * ggeom[i - 1][j][CENT].g +
-              P[i][j][k - 1][B2] * ggeom[i][j][CENT].g +
-              P[i - 1][j][k - 1][B2] * ggeom[i - 1][j][CENT].g -
-              P[i][j - 1][k][B2] * ggeom[i][j - 1][CENT].g -
-              P[i - 1][j - 1][k][B2] * ggeom[i - 1][j - 1][CENT].g -
-              P[i][j - 1][k - 1][B2] * ggeom[i][j - 1][CENT].g -
-              P[i - 1][j - 1][k - 1][B2] * ggeom[i - 1][j - 1][CENT].g) /
+          (P[i][j][k][B2] * ggeom[i][j][newk][CENT].g +
+              P[i - 1][j][k][B2] * ggeom[i - 1][j][newk][CENT].g +
+              P[i][j][k - 1][B2] * ggeom[i][j][newk][CENT].g +
+              P[i - 1][j][k - 1][B2] * ggeom[i - 1][j][newk][CENT].g -
+              P[i][j - 1][k][B2] * ggeom[i][j - 1][newk][CENT].g -
+              P[i - 1][j - 1][k][B2] * ggeom[i - 1][j - 1][newk][CENT].g -
+              P[i][j - 1][k - 1][B2] * ggeom[i][j - 1][newk][CENT].g -
+              P[i - 1][j - 1][k - 1][B2] * ggeom[i - 1][j - 1][newk][CENT].g) /
           dx[2] +
       0.25 *
-          (P[i][j][k][B3] * ggeom[i][j][CENT].g +
-              P[i][j - 1][k][B3] * ggeom[i][j - 1][CENT].g +
-              P[i - 1][j][k][B3] * ggeom[i - 1][j][CENT].g +
-              P[i - 1][j - 1][k][B3] * ggeom[i - 1][j - 1][CENT].g -
-              P[i][j][k - 1][B3] * ggeom[i][j][CENT].g -
-              P[i][j - 1][k - 1][B3] * ggeom[i][j - 1][CENT].g -
-              P[i - 1][j][k - 1][B3] * ggeom[i - 1][j][CENT].g -
-              P[i - 1][j - 1][k - 1][B3] * ggeom[i - 1][j - 1][CENT].g) /
+          (P[i][j][k][B3] * ggeom[i][j][newk][CENT].g +
+              P[i][j - 1][k][B3] * ggeom[i][j - 1][newk][CENT].g +
+              P[i - 1][j][k][B3] * ggeom[i - 1][j][newk][CENT].g +
+              P[i - 1][j - 1][k][B3] * ggeom[i - 1][j - 1][newk][CENT].g -
+              P[i][j][k - 1][B3] * ggeom[i][j][newk][CENT].g -
+              P[i][j - 1][k - 1][B3] * ggeom[i][j - 1][newk][CENT].g -
+              P[i - 1][j][k - 1][B3] * ggeom[i - 1][j][newk][CENT].g -
+              P[i - 1][j - 1][k - 1][B3] * ggeom[i - 1][j - 1][newk][CENT].g) /
           dx[3]);
 }
 
@@ -502,13 +502,13 @@ void count_leptons(grid_prim_type P, double dt, int nstep) {
 #pragma omp parallel for collapse(3)
   ZLOOP {
     double gamma, alpha, ucon0;
-    mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][CENT]), &gamma);
-    alpha = ggeom[i][j][CENT].alpha;
+    mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][newk][CENT]), &gamma);
+    alpha = ggeom[i][j][newk][CENT].alpha;
     ucon0 = gamma / alpha;
 
     double nb_cell     = ucon0 * P[i][j][k][RHO] * RHO_unit / MP;
     double n_cell      = nb_cell * P[i][j][k][YE];
-    double cell_vol    = reference_vol * ggeom[i][j][CENT].g;
+    double cell_vol    = reference_vol * ggeom[i][j][newk][CENT].g;
     double lepton_cell = n_cell * cell_vol;
 #pragma omp atomic
     lepton_gas += lepton_cell;

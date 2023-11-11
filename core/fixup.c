@@ -97,6 +97,19 @@ double get_scale(int i, int j, int k) {
     }
     return scale;
   }
+#elif METRIC == NUMERICAL
+  {
+    double scale, r, X[NDIM];
+    coord(i, j, k, CENT, X);
+    r = sqrtf(X[1]*X[1] + X[2]*X[2] + X[3]*X[3]);
+
+    if (r <= FLR_R0) {
+      scale = pow(r, -FLR_POWER1);
+    } else {
+      scale = pow(FLR_R0, FLR_POWER2 - FLR_POWER1) * pow(r, -FLR_POWER2);
+    }
+    return scale;
+  }
 #else
   {
     fprintf(stderr, "[fixup1zone]: Unknown metric!\n");
@@ -202,20 +215,20 @@ void fixup1zone(
       Padd[RHO]       = MY_MAX(0.0, rhoflr - pv[RHO]);
       Padd[UU]        = MY_MAX(0.0, uflr - pv[UU]);
 
-      get_state(Padd, &ggeom[i][j][CENT], &q);
+      get_state(Padd, &ggeom[i][j][newk][CENT], &q);
 
-      primtoflux(Padd, &q, 0, 0, &ggeom[i][j][CENT], Uadd);
+      primtoflux(Padd, &q, 0, 0, &ggeom[i][j][newk][CENT], Uadd);
 
       double Utot[NVAR];
-      get_state(pv, &ggeom[i][j][CENT], &q);
-      primtoflux(pv, &q, 0, 0, &ggeom[i][j][CENT], Utot);
+      get_state(pv, &ggeom[i][j][newk][CENT], &q);
+      primtoflux(pv, &q, 0, 0, &ggeom[i][j][newk][CENT], Utot);
 
       PLOOP Utot[ip] += Uadd[ip];
 
       PLOOP pv[ip] += Padd[ip];
 
       // Record fails here?
-      Utoprim(Utot, &ggeom[i][j][CENT], pv);
+      Utoprim(Utot, &ggeom[i][j][newk][CENT], pv);
     }
   }
 

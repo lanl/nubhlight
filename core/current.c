@@ -65,7 +65,7 @@ void current_calc() {
 
     // Difference: D_mu F^{mu nu} = 4 \pi j^nu
     for (int mu = 0; mu < NDIM; mu++) {
-      jcon[i][j][k][mu] = (1. / (4. * M_PI * ggeom[i][j][CENT].g)) *
+      jcon[i][j][k][mu] = (1. / (4. * M_PI * ggeom[i][j][newk][CENT].g)) *
                           ((gF0p[mu] - gF0m[mu]) / dtsave +
                               (gF1p[mu] - gF1m[mu]) / (2. * dx[1]) +
                               (gF2p[mu] - gF2m[mu]) / (2. * dx[2]) +
@@ -82,21 +82,21 @@ double Fcon_calc(double *prim, int mu, int nu, int i, int j, int k) {
   if (mu == nu)
     return 0.;
 
-  ucon_calc(prim, &(ggeom[i][j][CENT]), ucon);
-  lower(ucon, ggeom[i][j][CENT].gcov, ucov);
+  ucon_calc(prim, &(ggeom[i][j][newk][CENT]), ucon);
+  lower(ucon, ggeom[i][j][newk][CENT].gcov, ucov);
   bcon_calc(prim, ucon, ucov, bcon);
-  lower(bcon, ggeom[i][j][CENT].gcov, bcov);
+  lower(bcon, ggeom[i][j][newk][CENT].gcov, bcov);
 
   Fcon = 0.;
   for (int kap = 0; kap < NDIM; kap++) {
     for (int lam = 0; lam < NDIM; lam++) {
-      dFcon = (-1. / ggeom[i][j][CENT].g) * antisym(mu, nu, kap, lam) *
+      dFcon = (-1. / ggeom[i][j][newk][CENT].g) * antisym(mu, nu, kap, lam) *
               ucov[kap] * bcov[lam];
       Fcon += dFcon;
     }
   }
 
-  gFcon = Fcon * ggeom[i][j][CENT].g;
+  gFcon = Fcon * ggeom[i][j][newk][CENT].g;
 
   return gFcon;
 }

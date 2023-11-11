@@ -67,6 +67,20 @@
   ((N1 + 2 * NG) * (N2 + 2 * NG) * \
       (N3 + 2 * NG)) // total number of cells on a cpu
 
+// Third dimension length
+#if METRIC==NUMERICAL
+#define GN3 (N3 + 2*NG)
+#else
+#define GN3 (1)
+#endif
+
+// Loop variable for geom and conn
+#if METRIC == NUMERICAL
+#define newk k
+#else
+#define newk 0
+#endif
+
 // Fixup parameters
 // rho_flor = RHOMIN / pow(r, -FLOOR_POWER)
 #define FLR_POWER1 (2.)
@@ -627,11 +641,6 @@ extern conn_type conn;
 //#endif
 //extern grid_geom_type ggeom;
 
-#if METRIC==NUMERICAL
-#define GN3 (N3 + 2*NG)
-#else
-#define GN3 (1)
-#endif
 typedef struct of_geom grid_geom_type[N1 + 2 * NG][N2 + 2 * NG][GN3][NPG];
 extern grid_geom_type ggeom;
 
@@ -745,7 +754,7 @@ int  bl_i_of_r(double r);
 void cart_coord(const double X[NDIM], double Xcart[NDIM]);
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]);
 void set_metric(double X[NDIM], struct of_geom *g);
-void num_set_metric(struct of_geom *g);
+void num_set_metric(grid_geom_type ggeom);
 void set_points();
 void zero_arrays(void);
 void set_grid(void);
@@ -943,7 +952,7 @@ void get_dnz(grid_prim_type Prad, grid_eosvar_type extra);
 // metric.c
 double gcon_func(double lgcov[][NDIM], double lgcon[][NDIM]);
 void   conn_func(double *X, struct of_geom *geom, double conn[][NDIM][NDIM]);
-void   num_conn_func(struct of_geom *geom, double conn[][NDIM][NDIM], int i , int j, int k);
+void   num_conn_func(grid_geom_type ggeom, double conn[][NDIM][NDIM], int i , int j, int k);
 void   lower(double ucon[NDIM], double gcov[NDIM][NDIM], double ucov[NDIM]);
 void   raise(double ucov[NDIM], double gcon[NDIM][NDIM], double ucon[NDIM]);
 struct of_geom *get_geometry(int ii, int jj, int kk, int loc);
@@ -1031,7 +1040,7 @@ void   primtoflux(double *pr, struct of_state *q, int dir, int magnetic,
 void   bcon_calc(double *pr, double *ucon, double *ucov, double *bcon);
 void   mhd_calc(double *pr, int dir, int magnetic, struct of_state *q,
       double *extra, double *mhd);
-void   source(double *ph, struct of_geom *geom, int ii, int jj, double *dU,
+void   source(double *ph, struct of_geom *geom, int ii, int jj, int k, double *dU,
       double Dt, double *extra);
 double bsq_calc(double *pr, struct of_geom *geom);
 void   get_state(double *pr, struct of_geom *geom, struct of_state *q);

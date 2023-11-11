@@ -74,7 +74,7 @@ void make_superphotons(
           coord(i, j, k, CENT, X);
 
           make_tetrad(i, j, k, Ucon_grd[i][j][k], Bcon_grd[i][j][k],
-              ggeom[i][j][CENT].gcov, Econ, Ecov);
+              ggeom[i][j][newk][CENT].gcov, Econ, Ecov);
           get_dndlnu(i, j, k, dt, dndlnu, itp, &(m_grd[i][j][k]));
 
           // Create superphotons in pairs
@@ -222,7 +222,7 @@ void sample_photon(int i, int j, int k, double t, double dt, int type,
     if (!is_null(tmp[n]->Kcov[2], tmp[n]->Kcon[2], tmp[n]->Kcov[2][0], 0.,
             &(tmp[n]->KdotKprev))) {
       double gamma;
-      mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][CENT]), &gamma);
+      mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][newk][CENT]), &gamma);
       fprintf(stderr,
           "Error! K.K != 0 initially!\n"
           "K.K make err [%i %i %i] nu = %e w = %e n = %i K.K = %e\n"
@@ -243,8 +243,8 @@ void sample_photon(int i, int j, int k, double t, double dt, int type,
 #if RADIATION == RADTYPE_NEUTRINOS
     {
       double gamma, alpha, ucon0;
-      mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][CENT]), &gamma);
-      alpha = ggeom[i][j][CENT].alpha;
+      mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][newk][CENT]), &gamma);
+      alpha = ggeom[i][j][newk][CENT].alpha;
       ucon0 = gamma / alpha;
 
 #pragma omp atomic
@@ -262,7 +262,7 @@ void sample_photon(int i, int j, int k, double t, double dt, int type,
 #pragma omp atomic
     Jrad[0][i][j][k] -= (dt / DTd) * tmp[n]->Kcov[2][0] * kphys_to_num *
                         tmp[n]->w /
-                        (ggeom[i][j][CENT].g * dt * dx[1] * dx[2] * dx[3]);
+                        (ggeom[i][j][newk][CENT].g * dt * dx[1] * dx[2] * dx[3]);
 
 #pragma omp atomic
     Nem[i][j][k] += 1;
@@ -288,7 +288,7 @@ void get_dndlnu(int i, int j, int k, double dt, double dndlnu[NU_BINS + 1],
   double dndlnu_max = -1.e100;
   for (int n = 0; n <= NU_BINS; n++) {
     double Jsamp = Jnu(nusamp[n], type, m);
-    Jsamp *= dx[1] * dx[2] * dx[3] * pow(L_unit, 3.) * ggeom[i][j][CENT].g;
+    Jsamp *= dx[1] * dx[2] * dx[3] * pow(L_unit, 3.) * ggeom[i][j][newk][CENT].g;
 
     double wgt = get_wgt(nusamp[n], get_dtau(nusamp[n], type, dt, m));
 
@@ -329,7 +329,7 @@ void set_weight(grid_prim_type Prad, grid_eosvar_type extra) {
       get_fluid_zone(i, j, k, Prad, extra, &m, Ucon, Ucov, Bcon, Bcov);
       TYPELOOP {
         for (int n = 0; n <= NU_BINS; n++) {
-          Jtot += Jnu(nusamp[n], itp, &m) * zoneVol * ggeom[i][j][CENT].g;
+          Jtot += Jnu(nusamp[n], itp, &m) * zoneVol * ggeom[i][j][newk][CENT].g;
         }
       } // TYPELOOP
     }   // ZLOOP
@@ -408,7 +408,7 @@ void        get_dnz(grid_prim_type Prad, grid_eosvar_type extra) {
         result /= HPL;
         // result /= wgtC;
         result *= zoneVol;
-        result *= ggeom[i][j][CENT].g;
+        result *= ggeom[i][j][newk][CENT].g;
         result *= dt * T_unit;
 
         if (isnan(result / nthreads)) {

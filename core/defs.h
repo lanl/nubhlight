@@ -60,8 +60,8 @@ char               passive_name[NVAR_PASSIVE][STRLEN];
 passive_init_ftype do_passive_fixup[NVAR_PASSIVE];
 #endif
 
-double         conn[N1 + 2 * NG][N2 + 2 * NG][NDIM][NDIM][NDIM];
-struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][NPG];
+double         conn[N1 + 2 * NG][N2 + 2 * NG][GN3][NDIM][NDIM][NDIM];
+struct of_geom ggeom[N1 + 2 * NG][N2 + 2 * NG][GN3][NPG];
 #if RADIATION
 double                 dt_light[N1 + 2 * NG][N2 + 2 * NG], dt_light_min;
 struct of_microphysics m_grd[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG];

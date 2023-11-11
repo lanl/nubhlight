@@ -188,9 +188,9 @@ double advance(grid_prim_type Pi, grid_prim_type Pb, double Dt,
   timer_start(TIMER_UPDATE);
 #pragma omp parallel for schedule(guided) private(dU, qi, U) collapse(3)
   ZLOOP {
-    source(Pb[i][j][k], &(ggeom[i][j][CENT]), i, j, dU, Dt, extra[i][j][k]);
-    get_state(Pi[i][j][k], &(ggeom[i][j][CENT]), &qi);
-    primtoflux(Pi[i][j][k], &qi, 0, 0, &(ggeom[i][j][CENT]), U);
+    source(Pb[i][j][k], &(ggeom[i][j][newk][CENT]), i, j, k, dU, Dt, extra[i][j][k]);
+    get_state(Pi[i][j][k], &(ggeom[i][j][newk][CENT]), &qi);
+    primtoflux(Pi[i][j][k], &qi, 0, 0, &(ggeom[i][j][newk][CENT]), U);
 
     PLOOP {
       U[ip] +=
@@ -199,7 +199,7 @@ double advance(grid_prim_type Pi, grid_prim_type Pb, double Dt,
                    (F3[i][j][k + 1][ip] - F3[i][j][k][ip]) / dx[3] + dU[ip]);
     }
 
-    pflag[i][j][k] = Utoprim(U, &(ggeom[i][j][CENT]), Pf[i][j][k]);
+    pflag[i][j][k] = Utoprim(U, &(ggeom[i][j][newk][CENT]), Pf[i][j][k]);
     if (pflag[i][j][k])
       fail_save[i][j][k] = 1;
   } // ZLOOP
@@ -227,8 +227,8 @@ void apply_rad_force(grid_prim_type Pr, double Dt) {
     // Store primitive variables before cooling for supercooling diagnostics
     PLOOP psupersave[i][j][k][ip] = Pr[i][j][k][ip];
 
-    get_state(Pr[i][j][k], &(ggeom[i][j][CENT]), &q);
-    primtoflux(Pr[i][j][k], &q, 0, 0, &(ggeom[i][j][CENT]), U);
+    get_state(Pr[i][j][k], &(ggeom[i][j][newk][CENT]), &q);
+    primtoflux(Pr[i][j][k], &q, 0, 0, &(ggeom[i][j][newk][CENT]), U);
 
     for (int ip = 1; ip < 5; ip++) {
       U[ip] += Dt * radG[i][j][k][ip - 1];
@@ -246,7 +246,7 @@ void apply_rad_force(grid_prim_type Pr, double Dt) {
     }
 #endif
 
-    pflag[i][j][k] = Utoprim(U, &(ggeom[i][j][CENT]), Pr[i][j][k]);
+    pflag[i][j][k] = Utoprim(U, &(ggeom[i][j][newk][CENT]), Pr[i][j][k]);
     /*if (pflag[i][j][k] == 5) {
       Pr[i][j][k][UU] = 0.;
       pflag[i][j][k] = 0;
@@ -283,7 +283,7 @@ double fluxcalc(grid_prim_type Pr) {
 
         ISLOOP(0, N1) {
           lr_to_flux(
-              P_r[i - 1], P_l[i], &(ggeom[i][j][FACE1]), 1, F1[i][j][k], &cij);
+              P_r[i - 1], P_l[i], &(ggeom[i][j][newk][FACE1]), 1, F1[i][j][k], &cij);
           cmax1 = (cij > cmax1 ? cij : cmax1);
         } // ISLOOP
       }   // KSLOOP
@@ -299,7 +299,7 @@ double fluxcalc(grid_prim_type Pr) {
 
         JSLOOP(0, N2) {
           lr_to_flux(
-              P_r[j - 1], P_l[j], &(ggeom[i][j][FACE2]), 2, F2[i][j][k], &cij);
+              P_r[j - 1], P_l[j], &(ggeom[i][j][newk][FACE2]), 2, F2[i][j][k], &cij);
           cmax2 = (cij > cmax2 ? cij : cmax2);
         } // JSLOOP
       }   // KSLOOP
@@ -315,7 +315,7 @@ double fluxcalc(grid_prim_type Pr) {
 
         KSLOOP(0, N3) {
           lr_to_flux(
-              P_r[k - 1], P_l[k], &(ggeom[i][j][FACE3]), 3, F3[i][j][k], &cij);
+              P_r[k - 1], P_l[k], &(ggeom[i][j][newk][FACE3]), 3, F3[i][j][k], &cij);
           cmax3 = (cij > cmax3 ? cij : cmax3);
         } // KSLOOP
       }   // JSLOOP

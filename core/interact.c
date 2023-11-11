@@ -1,4 +1,5 @@
 /******************************************************************************
+/******************************************************************************
  *                                                                            *
  * INTERACT.C                                                                 *
  *                                                                            *
@@ -243,7 +244,7 @@ memcpy((void*)(&m), (void*)(&(m_grd[i][j][k])),
 
         if (nu <= 0 || is_practically_nan(nu)) {
           double gamma;
-          mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][CENT]), &gamma);
+          mhd_gamma_calc(P[i][j][k], &(ggeom[i][j][newk][CENT]), &gamma);
           fprintf(stderr,
               "Bad NU in interact [%i %i %i]\n"
               "\tNU    = %e\n"
@@ -365,7 +366,7 @@ memcpy((void*)(&m), (void*)(&(m_grd[i][j][k])),
 #if SCATTERING
         {
           double uph =
-              HPL * nu * ph->w / (ggeom[i][j][CENT].g * d3x * pow(L_unit, 3));
+              HPL * nu * ph->w / (ggeom[i][j][newk][CENT].g * d3x * pow(L_unit, 3));
           SCATTLOOP {
             dtau_scatt[iscatt] =
                 ((HPL * L_unit / (ME * CL * CL)) * dlam *
@@ -504,7 +505,7 @@ memcpy((void*)(&m), (void*)(&(m_grd[i][j][k])),
 #endif
 
           Jrad[1][i][j][k] += (dt / DTd) * ph->Kcov[2][0] * kphys_to_num *
-                              ph->w / (ggeom[i][j][CENT].g * dt * d3x);
+                              ph->w / (ggeom[i][j][newk][CENT].g * dt * d3x);
 
 #pragma omp atomic
           step_abs++;
@@ -646,7 +647,7 @@ memcpy((void*)(&m), (void*)(&(m_grd[i][j][k])),
           Jrad[nscatt + 2][i][j][k] -=
               (dt / DTd) *
               ((phscatt->Kcov[2][0] - Kcov[0]) * kphys_to_num * phscatt->w) /
-              (ggeom[i][j][CENT].g * dt * d3x);
+              (ggeom[i][j][newk][CENT].g * dt * d3x);
 
 #pragma omp atomic
           dtau_avg[scatt_to_do + 1][i][j][k] +=

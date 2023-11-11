@@ -14,7 +14,7 @@ void init_rad(grid_prim_type Prad) {
 
   ZLOOP {
     sim_vol +=
-        ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3] * L_unit * L_unit * L_unit;
+        ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3] * L_unit * L_unit * L_unit;
   }
   sim_vol = mpi_reduce(sim_vol);
 
@@ -321,14 +321,14 @@ void get_fluid_zone(int i, int j, int k, grid_prim_type Prad,
   VdotV = 0.;
   for (int l = 1; l < NDIM; l++) {
     for (int m = 1; m < NDIM; m++) {
-      VdotV += ggeom[i][j][CENT].gcov[l][m] * Vcon[l] * Vcon[m];
+      VdotV += ggeom[i][j][newk][CENT].gcov[l][m] * Vcon[l] * Vcon[m];
     }
   }
-  Vfac    = sqrt(-1. / ggeom[i][j][CENT].gcon[0][0] * (1. + fabs(VdotV)));
-  Ucon[0] = -Vfac * ggeom[i][j][CENT].gcon[0][0];
+  Vfac    = sqrt(-1. / ggeom[i][j][newk][CENT].gcon[0][0] * (1. + fabs(VdotV)));
+  Ucon[0] = -Vfac * ggeom[i][j][newk][CENT].gcon[0][0];
   for (int l = 1; l < NDIM; l++)
-    Ucon[l] = Vcon[l] - Vfac * ggeom[i][j][CENT].gcon[0][l];
-  lower(Ucon, ggeom[i][j][CENT].gcov, Ucov);
+    Ucon[l] = Vcon[l] - Vfac * ggeom[i][j][newk][CENT].gcon[0][l];
+  lower(Ucon, ggeom[i][j][newk][CENT].gcov, Ucov);
 
   // Get Bcon, Bcov, and B
   UdotBp = 0.;
@@ -337,7 +337,7 @@ void get_fluid_zone(int i, int j, int k, grid_prim_type Prad,
   Bcon[0] = UdotBp;
   for (int l = 1; l < NDIM; l++)
     Bcon[l] = (Bp[l] + Ucon[l] * UdotBp) / Ucon[0];
-  lower(Bcon, ggeom[i][j][CENT].gcov, Bcov);
+  lower(Bcon, ggeom[i][j][newk][CENT].gcov, Bcov);
 
   m->B = sqrt(Bcon[0] * Bcov[0] + Bcon[1] * Bcov[1] + Bcon[2] * Bcov[2] +
               Bcon[3] * Bcov[3]);
@@ -592,7 +592,7 @@ void set_Rmunu() {
       get_X_K_interp(ph, t, P, X, Kcov, Kcon);
       Xtoijk(X, &i, &j, &k);
 
-      double volume = ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3];
+      double volume = ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3];
 
 #pragma omp atomic
       Nsph[i][j][k] += 1;

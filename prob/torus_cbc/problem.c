@@ -368,7 +368,7 @@ void init_prob() {
   ZLOOP {
     if (disk_cell[i][j][k]) {
       double rho_integrand =
-          P[i][j][k][RHO] * ggeom[i][j][CENT].g * dx[1] * dx[2] * dx[3];
+          P[i][j][k][RHO] * ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3];
       mtot += rho_integrand;
 
       coord(i, j, k, CENT, X);
