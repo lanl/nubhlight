@@ -448,46 +448,46 @@ void num_set_metric(grid_geom_type ggeom){
     /* Check if interpolation of metric gone wrong*/
     if(!set_all_points_gxx) {
         fprintf(stderr, "Something went wrong with the interpolation gxx!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_gxy) {
         fprintf(stderr, "Something went wrong with the interpolation gxy!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_gxz) {
         fprintf(stderr, "Something went wrong with the interpolation gxz!");
-        return EXIT_FAILURE;
+        return;
     }if(!set_all_points_gyy) {
         fprintf(stderr, "Something went wrong with the interpolation gyy!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_gyz) {
         fprintf(stderr, "Something went wrong with the interpolation gyz!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_gzz) {
         fprintf(stderr, "Something went wrong with the interpolation gzz!");
-        return EXIT_FAILURE;
+        return;
     }
     
     /* Check if interpolation of lapse gone wrong*/
     if(!set_all_points_lapse) {
         fprintf(stderr, "Something went wrong with the interpolation lapse!");
-        return EXIT_FAILURE;
+        return;
     }
     
     /* Check if interpolation of shift gone wrong*/
     if(!set_all_points_betax) {
         fprintf(stderr, "Something went wrong with the interpolation betax!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_betay) {
         fprintf(stderr, "Something went wrong with the interpolation betay!");
-        return EXIT_FAILURE;
+        return;
     }
     if(!set_all_points_betaz) {
         fprintf(stderr, "Something went wrong with the interpolation betaz!");
-        return EXIT_FAILURE;
+        return;
     }
     //int iflat = 0;
     
@@ -688,14 +688,11 @@ void set_points() {
 }
 
 void set_grid() {
-  double X[NDIM];
 
   // Set up boundaries, steps in coordinate grid
   set_points();
   dV = dx[1] * dx[2] * dx[3];
 
-  for (int mu = 0; mu < NDIM; mu++)
-    X[mu] = 0.;
 
 #if RADIATION
   dt_light_min = 1. / SMALL;
@@ -715,6 +712,9 @@ void set_grid() {
         // Only required in zone center /* connection coefficient calculation */
         num_conn_func(ggeom, conn[i][j][newk], i , j , k);
 #else
+        double X[NDIM];
+        for (int mu = 0; mu < NDIM; mu++)
+          X[mu] = 0.;
   //ISLOOP(-NG, N1 - 1 + NG) {
     //JSLOOP(-NG, N2 - 1 + NG) {
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){

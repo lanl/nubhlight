@@ -135,14 +135,17 @@ int main(int argc, char *argv[]) {
 
   // Initial diagnostics
   diag(DIAG_INIT);
-
+    
+    
   if (mpi_io_proc())
     fprintf(stdout, "t = %e tf = %e\n", t, tf);
+  //printf("Sudi:it is a problem\n");
   if (!is_restart)
     diag(DIAG_DUMP);
-
   // Set up timers
+  //printf("Sudi:its a problem\n");
   time_init();
+  //printf("Sudi:it is a problem\n");
 
   if (EXIT_ON_INIT) { // TODO: make this a runtime parameter
     if (mpi_io_proc()) {
@@ -224,7 +227,6 @@ int main(int argc, char *argv[]) {
     count_leptons(P, dt, nstep);
 #endif
 #endif
-
     // File I/O with set frequencies
     if (t < tf) {
       if (t >= tdump) {

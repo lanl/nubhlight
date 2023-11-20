@@ -539,7 +539,7 @@ void dump_grid() {
     free(alpha);
   }
 
-#if METRIC == MKS
+#if METRIC == MKS // also add numerical
   {
 // connection coefficients
 #define RANK (6)
@@ -554,7 +554,7 @@ void dump_grid() {
     int n = 0;
     ZLOOP {
       DLOOP3 {
-        Gamma[n] = conn[i][j][n][mu][nu][sigma];
+        Gamma[n] = conn[i][j][newk][mu][nu][sigma];
         n++;
       }
     }
@@ -651,6 +651,7 @@ void dump() {
   if (mpi_io_proc()) {
     fprintf(stdout, "DUMP %s\n", name);
   }
+    //printf("Sudi:it is a problem init \n");
   hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
   H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);
   file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
@@ -658,17 +659,19 @@ void dump() {
     fprintf(stderr, "Could not create dump file! Exiting...\n");
     exit(-1);
   }
-  H5Pclose(plist_id);
 
+  H5Pclose(plist_id);
   WRITE_HDR(version, TYPE_STR);
+    printf("Sudi:it is a problem 1: init \n");
   WRITE_HDR(metric, TYPE_STR);
+    printf("Sudi:it is a problem 1: finish \n");
   WRITE_HDR(tracers, TYPE_INT);
   WRITE_HDR(eos, TYPE_STR);
   int gamma_fallback = GAMMA_FALLBACK;
   WRITE_HDR(gamma_fallback, TYPE_INT);
-
+    printf("Sudi:it is a problem 2: init \n");
   WRITE_HDR(nulnutype, TYPE_STR);
-
+    printf("Sudi:it is a problem 2: finish \n");
 #if METRIC == MKS
   int derefine_poles = DEREFINE_POLES;
   WRITE_HDR(derefine_poles, TYPE_INT);
@@ -805,6 +808,7 @@ void dump() {
 #undef RANK
   }
 #endif
+    
 
   WRITE_PRIM(P, TYPE_FLOAT);
 
@@ -980,7 +984,7 @@ void dump() {
 
   H5Fflush(file_id, H5F_SCOPE_GLOBAL);
   H5Fclose(file_id);
-
+    //printf("Sudi:it is a problem finish \n");
   if (mpi_io_proc()) {
     write_xml_file(dump_id, t, vnams);
   }
@@ -992,6 +996,7 @@ void dump() {
 }
 
 void restart_write(int restart_type) {
+    //printf("Sudi:its a problem\n");
   timer_start(TIMER_OUT);
 
   char name[STRLEN], fname[STRLEN];
