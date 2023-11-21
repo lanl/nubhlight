@@ -75,6 +75,15 @@ void set_core_params() {
     hslope = 1.;
   set_param("Rout", &Rout);
   set_param("Rout_vis", &Rout_vis);
+#elif METRIC == NUMERICAL
+  sprintf(metric, "NUMERICAL");
+  sprintf(nulnutype, "kstatistics");
+  set_param("x1Min", &x1Min);
+  set_param("x1Max", &x1Max);
+  set_param("x2Min", &x2Min);
+  set_param("x2Max", &x2Max);
+  set_param("x3Min", &x3Min);
+  set_param("x3Max", &x3Max);
 #if RADIATION
   set_param("Rout_rad", &Rout_rad);
 #endif // RADIATION
