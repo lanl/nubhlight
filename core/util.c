@@ -140,7 +140,7 @@ void set_units() {
   L_unit = GNEWT * Mbh / (CL * CL);
 #endif
 #if METRIC == NUMERICAL
-  L_unit = GNEWT * 2.* MSUN / (CL * CL);
+  L_unit = GNEWT * MSUN / (CL * CL);
   M_unit = RHO_unit * L_unit * L_unit * L_unit;
 #else
   RHO_unit = M_unit * pow(L_unit, -3.);

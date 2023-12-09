@@ -80,8 +80,8 @@ bhl.config.set_cparm('OPENMP', False)
 #bhl.config.set_cparm('OPENMP', True)
 
 # COORDINATES
-bhl.config.set_cparm('METRIC', 'NUMERICAL')
-#bhl.config.set_cparm('METRIC', 'MINKOWSKI')
+#bhl.config.set_cparm('METRIC', 'NUMERICAL')
+bhl.config.set_cparm('METRIC', 'MINKOWSKI')
 
 #EXIT AFTER GRID SETTING
 bhl.config.set_cparm('EXIT_ON_INIT', True)

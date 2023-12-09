@@ -77,7 +77,7 @@ void set_core_params() {
   set_param("Rout_vis", &Rout_vis);
 #elif METRIC == NUMERICAL
   sprintf(metric, "NUMERICAL");
-  sprintf(nulnutype, "kstatistics");
+  sprintf(nulnutype, "kstatistics"); // should it be kstatistics ?
   set_param("x1Min", &x1Min);
   set_param("x1Max", &x1Max);
   set_param("x2Min", &x2Min);

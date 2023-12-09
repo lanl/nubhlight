@@ -326,6 +326,7 @@ void set_metric(double X[NDIM], struct of_geom *g) {
   set_gcov(X, g->gcov);
   g->g     = gcon_func(g->gcov, g->gcon);
   g->alpha = 1.0 / sqrt(-(g->gcon[0][0]));
+   // printf("The set_metric is called \n");
 }
 
 /* Set numerical metric */
@@ -338,6 +339,8 @@ void num_set_metric(grid_geom_type ggeom){
     double betaxcon,betaycon,betazcon,beta2;
     
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG) * NPG;
+    
+    //int np = N1 * N2 * N3 * NPG;
     
     xp = malloc(np * sizeof(*xp));
     yp = malloc(np * sizeof(*yp));
@@ -358,17 +361,24 @@ void num_set_metric(grid_geom_type ggeom){
     betay = malloc(np * sizeof(*betay));
     betaz = malloc(np * sizeof(*betaz));
     
-    double X[NDIM];
+    
     int iflat = 0;
+    double X[NDIM];
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
+//    ZSLOOP(0, N1 - 1, 0, N2 - 1, 0, N3 - 1) {
       LOCLOOP {
         coord(i, j, k, loc, X);
+        //int const iflat = i * (N2 + 2. * NG) * (N3 + 2. * NG) + j * (N3 + 2. * NG) + k;
         xp[iflat] = X[1];
         yp[iflat] = X[2];
         zp[iflat] = X[3];
+        //printf("The value of coordinate tuple X[1]: %f, X[2]: %f, X[3] %f", xp[iflat], yp[iflat], zp[iflat]);
         iflat++;
       }
     }
+    
+    //printf("The value of coordinate tuple X[1]: %f, X[2]: %f, X[3] %f", xp[0], yp[0], zp[0]);
+
     
     /* Read metadata */
     cprof3d_file_t * dfile = cprof3d_open_file("3dprofile-QHC21A_D45M125_res231m.h5"); //TODO:pass through runtime arguments
@@ -489,9 +499,11 @@ void num_set_metric(grid_geom_type ggeom){
         fprintf(stderr, "Something went wrong with the interpolation betaz!");
         return;
     }
-    //int iflat = 0;
+    
+    iflat = 0;
     
     ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG) {
+//    ZSLOOP(0, N1 - 1, 0, N2 - 1, 0, N3 - 1) {
         LOCLOOP {
             struct of_geom *g = &ggeom[i][j][newk][loc];
             memset(g->gcov, 0, NDIM * NDIM * sizeof(double)); // initialization and memory allocation for gcov
@@ -569,6 +581,7 @@ void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]) {
   gcov[0][0] = -1.;
   for (int j = 1; j < NDIM; j++) {
     gcov[j][j] = 1.;
+      
   }
 #elif METRIC == SPHERICAL
   gcov[0][0] = -1.;
@@ -623,7 +636,7 @@ void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]) {
 
 // Establish X coordinates
 void set_points() {
-#if METRIC == MINKOWSKI || METRIC == SPHERICAL
+#if METRIC == MINKOWSKI || METRIC == SPHERICAL || METRIC == NUMERICAL
   startx[1] = x1Min;
   startx[2] = x2Min;
   startx[3] = x3Min;
@@ -707,10 +720,24 @@ void set_grid() {
     
     num_set_metric(ggeom);
     
-    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){
+    double X[NDIM];
+    
+    coord(16, 17, 18, CENT, X);
+    
+//    printf("Test ggeom gcov[3][0] %f %f %f %f\n", ggeom[16][17][18][CENT].gcov[3][0], X[1],X[2],X[3]);
+//    printf("Test ggeom gcov[3][1] %f %f %f %f\n", ggeom[16][17][18][CENT].gcov[3][1], X[1],X[2],X[3]);
+//    printf("Test ggeom gcov[3][2] %f %f %f %f\n", ggeom[16][17][18][CENT].gcov[3][2], X[1],X[2],X[3]);
+//    printf("Test ggeom gcov[3][3] %f %f %f %f\n", ggeom[16][17][18][CENT].gcov[3][3], X[1],X[2],X[3]);
+    
+    ZSLOOP(-NG, N1 - 1 + NG,-NG, N2 - 1 + NG,-NG, N3 - 1 + NG){ //Sudi: is this correct ??
+        
+    //ZSLOOP(-NG, N1 - 1,-NG, N2 - 1,-NG, N3 - 1){
 
         // Only required in zone center /* connection coefficient calculation */
-        num_conn_func(ggeom, conn[i][j][newk], i , j , k);
+        num_conn_func(ggeom, conn[i][j][newk], i , j , newk);
+        
+        //printf("Test ggeom %f \n", conn[i][j][newk][1][1][1]);
+        
 #else
         double X[NDIM];
         for (int mu = 0; mu < NDIM; mu++)
@@ -725,6 +752,7 @@ void set_grid() {
         
         // Only required in zone center
         conn_func(X, &ggeom[i][j][newk][CENT], conn[i][j][newk]); // why conn[i][j] ?? should I set k = 1 ?
+        
 #endif
         
 #if RADIATION

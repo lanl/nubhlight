@@ -539,7 +539,7 @@ void dump_grid() {
     free(alpha);
   }
 
-#if METRIC == MKS // also add numerical
+#if METRIC == MKS || METRIC == NUMERICAL
   {
 // connection coefficients
 #define RANK (6)
@@ -662,16 +662,16 @@ void dump() {
 
   H5Pclose(plist_id);
   WRITE_HDR(version, TYPE_STR);
-    printf("Sudi:it is a problem 1: init \n");
+    //printf("Sudi:it is a problem 1: init \n");
   WRITE_HDR(metric, TYPE_STR);
-    printf("Sudi:it is a problem 1: finish \n");
+    //printf("Sudi:it is a problem 1: finish \n");
   WRITE_HDR(tracers, TYPE_INT);
   WRITE_HDR(eos, TYPE_STR);
   int gamma_fallback = GAMMA_FALLBACK;
   WRITE_HDR(gamma_fallback, TYPE_INT);
-    printf("Sudi:it is a problem 2: init \n");
+    //printf("Sudi:it is a problem 2: init \n");
   WRITE_HDR(nulnutype, TYPE_STR);
-    printf("Sudi:it is a problem 2: finish \n");
+    //printf("Sudi:it is a problem 2: finish \n");
 #if METRIC == MKS
   int derefine_poles = DEREFINE_POLES;
   WRITE_HDR(derefine_poles, TYPE_INT);

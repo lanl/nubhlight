@@ -217,7 +217,7 @@ def build(PROBLEM, PATHS):
                           # this flag
       C_FLAGS += "-mcmodel=" + host['MEM_MODEL'] + ' '
   else:
-    C_FLAGS += "-mcmodel=medium "
+    C_FLAGS += "-mcmodel=medium"
   if DEBUG:
     C_FLAGS += host['DEBUG_FLAGS']
   else:
@@ -412,6 +412,13 @@ def build(PROBLEM, PATHS):
   set_rparm('tf', 'double')
   set_rparm('dt', 'double')
   if CPARMS['METRIC'] == 'MINKOWSKI':
+    set_rparm('x1Min', 'double', default = 0.)
+    set_rparm('x1Max', 'double', default = 1.)
+    set_rparm('x2Min', 'double', default = 0.)
+    set_rparm('x2Max', 'double', default = 1.)
+    set_rparm('x3Min', 'double', default = 0.)
+    set_rparm('x3Max', 'double', default = 1.)
+  if CPARMS['METRIC'] == 'NUMERICAL':
     set_rparm('x1Min', 'double', default = 0.)
     set_rparm('x1Max', 'double', default = 1.)
     set_rparm('x2Min', 'double', default = 0.)
@@ -649,6 +656,13 @@ def build(PROBLEM, PATHS):
       write_rparm(pf, 'dt')
 
       if CPARMS['METRIC'] == 'MINKOWSKI':
+        write_rparm(pf, 'x1Min')
+        write_rparm(pf, 'x1Max')
+        write_rparm(pf, 'x2Min')
+        write_rparm(pf, 'x2Max')
+        write_rparm(pf, 'x3Min')
+        write_rparm(pf, 'x3Max')
+      if CPARMS['METRIC'] == 'NUMERICAL':
         write_rparm(pf, 'x1Min')
         write_rparm(pf, 'x1Max')
         write_rparm(pf, 'x2Min')

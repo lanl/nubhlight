@@ -30,6 +30,7 @@ def get_options():
   local_root = os.path.join(os.environ['HOME'],'local','gcc')
   host['NAME']           = os.uname()[1]
   host['COMPILER']       = os.path.join('/opt/homebrew/opt/gcc/','bin','gcc-13')
+  #host['COMPILER']       = os.path.join('/opt/homebrew/opt/open-mpi/','bin','mpicc')
   host['COMPILER_FLAGS'] = flags_base + ' ' + '-O2'
   host['DEBUG_FLAGS']    = flags_base + ' ' + '-g -O0'
   host['GSL_DIR']        = os.path.join(local_root,'gsl')
