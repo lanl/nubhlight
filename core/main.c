@@ -340,4 +340,7 @@ void init_final() {
   dtsave   = dt;
 
   dump_grid();
+    
+//#if METRIC == NUMERICAL
+  dump_prim();
 }

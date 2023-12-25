@@ -54,6 +54,8 @@ test_all.txt
 sc_eos_gamma_*.h5
 hotcross.dat
 test/data.p
+*.h5
+*.txt
 
 # Build system
 TMP

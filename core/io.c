@@ -641,6 +641,129 @@ void dump_grid() {
   H5Fclose(file_id);
 }
 
+void dump_prim() {
+    char name[STRLEN], fname[STRLEN];
+    sprintf(fname, "prim.h5");
+    strcpy(name, dumpdir);
+    strcat(name, fname);
+    if (mpi_io_proc()) {
+        fprintf(stdout, "WRITING PRIMITIVE TO %s\n", name);
+    }
+
+    hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS);
+    H5Pset_fapl_mpio(plist_id, MPI_COMM_WORLD, MPI_INFO_NULL);
+    file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+    if (file_id < 0) {
+        fprintf(stderr, "Could not create prim file! Exiting...\n");
+        exit(-1);
+    }
+
+    {
+        double *rho = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            rho[n] = P[i][j][k][RHO];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(rho, TYPE_DBL);
+        free(rho);
+    }
+    
+    {
+        double *eps = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            eps[n] = P[i][j][k][UU];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(eps, TYPE_DBL);
+        free(eps);
+    }
+    
+    {
+        double *ye = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            ye[n] = P[i][j][k][RHO]; // Sudi: YE doesnot work ?
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(ye, TYPE_DBL);
+        free(ye);
+    }
+    
+    {
+        double *u1 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            u1[n] = P[i][j][k][U1];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(u1, TYPE_DBL);
+        free(u1);
+    }
+    
+    {
+        double *u2 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            u2[n] = P[i][j][k][U2];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(u2, TYPE_DBL);
+        free(u2);
+    }
+    
+    {
+        double *u3 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            u3[n] = P[i][j][k][U3];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(u3, TYPE_DBL);
+        free(u3);
+    }
+    
+    {
+        double *b1 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            b1[n] = P[i][j][k][B1];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(b1, TYPE_DBL);
+        free(b1);
+    }
+    
+    {
+        double *b2 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            b2[n] = P[i][j][k][B2];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(b2, TYPE_DBL);
+        free(b2);
+    }
+    
+    {
+        double *b3 = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        int     n     = 0;
+        ZLOOP {
+            b3[n] = P[i][j][k][B3];
+            n++;
+        }
+        WRITE_GRID_NO_GHOSTS(b3, TYPE_DBL);
+        free(b3);
+    }
+    
+
+    H5Fflush(file_id, H5F_SCOPE_GLOBAL);
+    H5Fclose(file_id);
+
+}
+
+
 void dump() {
   timer_start(TIMER_OUT);
 

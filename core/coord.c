@@ -22,7 +22,7 @@
  ******************************************************************************/
 
 #include "decs.h"
-#include "cprof3d.h"
+//#include "cprof3d.h"
 
 /*      ASSUMING X3 SYMMETRY IN COORDINATES AND SPACETIME
  *      -- given the indices i,j and location in the cell, return with

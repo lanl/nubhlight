@@ -26,6 +26,7 @@
 
 #include "constants.h"
 #include "params.h"
+#include "cprof3d.h" // for numerical metric
 
 /*******************************************************************************
       PRE-PROCESSOR MAGIC :
@@ -936,6 +937,7 @@ void dump_tracers();
 #endif
 #endif
 void dump_grid();
+void dump_prim();
 void dump();
 void restart_write(int restart_type);
 void restart_read(char *fname);
@@ -1052,6 +1054,7 @@ void   mhd_vchar(double *pr, struct of_state *q, struct of_geom *geom, int js,
 // problem.c
 void set_problem_params();
 void init_prob();
+void set_prim(grid_prim_type P); // added for numerical metric
 void bound_gas_prob_x1l(int i, int j, int k, grid_prim_type P);
 void bound_gas_prob_x1r(int i, int j, int k, grid_prim_type P);
 void bound_gas_prob_x2l(int i, int j, int k, grid_prim_type P);
