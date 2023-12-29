@@ -684,7 +684,7 @@ void dump_prim() {
         double *ye = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
         int     n     = 0;
         ZLOOP {
-            ye[n] = P[i][j][k][RHO]; // Sudi: YE doesnot work ?
+            ye[n] = P[i][j][k][YE];
             n++;
         }
         WRITE_GRID_NO_GHOSTS(ye, TYPE_DBL);

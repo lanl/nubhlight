@@ -75,9 +75,9 @@ if FORCE:
                          ### COMPILE TIME PARAMETERS ###
 
 # SPATIAL RESOLUTION AND MPI DECOMPOSITION
-bhl.config.set_cparm('N1TOT', 96)
-bhl.config.set_cparm('N2TOT', 96)
-bhl.config.set_cparm('N3TOT', 96)
+bhl.config.set_cparm('N1TOT', 32)
+bhl.config.set_cparm('N2TOT', 32)
+bhl.config.set_cparm('N3TOT', 32)
 bhl.config.set_cparm('N1CPU', 2 if MPI else 1)
 bhl.config.set_cparm('N2CPU', 2 if MPI else 1)
 bhl.config.set_cparm('N3CPU', 2 if MPI else 1)

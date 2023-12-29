@@ -19,9 +19,6 @@ void set_problem_params()
 
 void init_prob()
 {
-  double X[NDIM];
-  double extra[EOS_NUM_EXTRA];
-
   // Make problem nonrelativistic
   // double tscale = 1.e-2;
   tf /= tscale;
@@ -29,9 +26,12 @@ void init_prob()
   DTd /= tscale;
   DTl /= tscale;
 
+  #if METRIC != NUMERICAL
+  double extra[EOS_NUM_EXTRA];
+  double X[NDIM];
   ZLOOP {
     coord(i, j, k, CENT, X);
-
+      
     double rhogas = (X[1] < 0.5 || X[1] > 1.5) ? 1.0 : 0.125;
 
     // rescale pressure in relativistic case since
@@ -41,7 +41,6 @@ void init_prob()
 
     #if NVAR_PASSIVE > 0 || EOS == EOS_TYPE_TABLE
     double ye = (X[1] < 0.5 || X[1] > 1.5) ? 0.45 : 0.25;
-    double yedens = ye*rhogas;
     #endif
 
     #if EOS == EOS_TYPE_TABLE
@@ -53,24 +52,29 @@ void init_prob()
       extra[EOS_YE] = ye;
 
       #if NVAR_PASSIVE >= 4
+      double yedens = ye*rhogas;
       P[i][j][k][PASSIVE_START+3] = yedens;
       PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
       #endif
     }
     #endif
-//
-//    P[i][j][k][RHO] = rhogas;
-//    P[i][j][k][UU] = EOS_u_press(pgas, rhogas, extra);
-//    P[i][j][k][U1] = 0.;
-//    P[i][j][k][U2] = 0.;
-//    P[i][j][k][U3] = 0.;
-//    P[i][j][k][B1] = 0.;
-//    P[i][j][k][B2] = 0.;
-//    P[i][j][k][B3] = 0.;
-//
-  } // ZLOOP
+
+    P[i][j][k][RHO] = rhogas;
+    P[i][j][k][UU] = EOS_u_press(pgas, rhogas, extra);
+    P[i][j][k][U1] = 0.;
+    P[i][j][k][U2] = 0.;
+    P[i][j][k][U3] = 0.;
+    P[i][j][k][B1] = 0.;
+    P[i][j][k][B2] = 0.;
+    P[i][j][k][B3] = 0.;
     
-  set_prim(P);
+
+  } // ZLOOP
+#endif
+
+  #if METRIC == NUMERICAL
+  set_prim(P); // TODO:: read ye from profile
+  #endif
 
   // Rescale to make problem nonrelativistic
   ZLOOP {
@@ -90,12 +94,8 @@ void init_prob()
 void set_prim(grid_prim_type P){
     
     double *xp, *yp, *zp;
-    
-    double *rho, *eps, *velx, *vely, *velz; // *ye
-    
+    double *rho, *eps, *ye, *velx, *vely, *velz;
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG);
-    
-    //int np = N1 * N2 * N3 * NPG;
     
     xp = malloc(np * sizeof(*xp));
     yp = malloc(np * sizeof(*yp));
@@ -103,16 +103,13 @@ void set_prim(grid_prim_type P){
     
     rho = malloc(np * sizeof(*rho));
     eps = malloc(np * sizeof(*eps));
-    //ye = malloc(np * sizeof(*ye));
-
+    ye = malloc(np * sizeof(*ye));
     velx = malloc(np * sizeof(*velx));
     vely = malloc(np * sizeof(*vely));
     velz = malloc(np * sizeof(*velz));
     
-    
     int iflat = 0;
     double X[NDIM];
-    
     ZLOOP {
       coord(i, j, k, CENT, X);
         xp[iflat] = X[1];
@@ -122,13 +119,12 @@ void set_prim(grid_prim_type P){
       }
 
     /* Read metadata */
-    cprof3d_file_t * dfile = cprof3d_open_file("3dprofile-QHC21A_D45M125_res231m.h5"); //TODO:pass through runtime arguments
+    cprof3d_file_t * dfile = cprof3d_open_file("245414.h5"); //TODO:pass through runtime arguments
     
     /* Open dataset: rho, eps, ye, velx, vely, velz */
     cprof3d_dset_t * dset_rho = cprof3d_read_dset(dfile, "rho");
     cprof3d_dset_t * dset_eps = cprof3d_read_dset(dfile, "eps");
-    //cprof3d_dset_t * dset_ye = cprof3d_read_dset(dfile, "ye");
-    
+    cprof3d_dset_t * dset_ye = cprof3d_read_dset(dfile, "Ye");
     cprof3d_dset_t * dset_velx = cprof3d_read_dset(dfile, "velx");
     cprof3d_dset_t * dset_vely = cprof3d_read_dset(dfile, "vely");
     cprof3d_dset_t * dset_velz = cprof3d_read_dset(dfile, "velz");
@@ -145,11 +141,11 @@ void set_prim(grid_prim_type P){
             cprof3d_transf_default,
             np, xp, yp, zp,
             eps);
-//    bool set_all_points_ye = cprof3d_interp(dset_ye,
-//            cprof3d_cmap_reflecting_xy,
-//            cprof3d_transf_default,
-//            np, xp, yp, zp,
-//            ye);
+    bool set_all_points_ye = cprof3d_interp(dset_ye,
+            cprof3d_cmap_reflecting_xy,
+            cprof3d_transf_default,
+            np, xp, yp, zp,
+            ye);
     bool set_all_points_velx = cprof3d_interp(dset_velx,
             cprof3d_cmap_reflecting_xy,
             cprof3d_transf_default,
@@ -176,10 +172,10 @@ void set_prim(grid_prim_type P){
         fprintf(stderr, "Something went wrong with the interpolation eps!");
         return;
     }
-//    if(!set_all_points_ye) {
-//        fprintf(stderr, "Something went wrong with the interpolation ye!");
-//        return;
-//    }
+    if(!set_all_points_ye) {
+        fprintf(stderr, "Something went wrong with the interpolation ye!");
+        return;
+    }
     if(!set_all_points_velx) {
         fprintf(stderr, "Something went wrong with the interpolation velx!");
         return;
@@ -193,12 +189,27 @@ void set_prim(grid_prim_type P){
         return;
     }
     
-    
     iflat = 0;
-    
     ZLOOP{
             P[i][j][k][RHO] = rho[iflat];
             P[i][j][k][UU] = eps[iflat];
+        
+        
+            #if EOS == EOS_TYPE_TABLE
+            {
+                P[i][j][k][YE] = ye[iflat];
+                PASSTYPE(YE) = PASSTYPE_NUMBER;
+                P[i][j][k][YE_EM] = ye[iflat];
+
+                //extra[EOS_YE] = ye[iflat];
+
+                #if NVAR_PASSIVE >= 4
+                P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho[iflat];
+                PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
+                #endif
+            }
+            #endif
+        
             //P[i][j][k][YE] = ye[iflat];
             
             P[i][j][k][U1] = velx[iflat];
@@ -209,12 +220,12 @@ void set_prim(grid_prim_type P){
             P[i][j][k][B2] = 0.;
             P[i][j][k][B3] = 0.;
             iflat++;
-    } // ZSLOOP end
+    } // ZLOOP end
     
     /* Free memory */
     cprof3d_del_dset(dset_rho);
     cprof3d_del_dset(dset_eps);
-    //cprof3d_del_dset(dset_ye);
+    cprof3d_del_dset(dset_ye);
     cprof3d_del_dset(dset_velx);
     cprof3d_del_dset(dset_vely);
     cprof3d_del_dset(dset_velz);
@@ -223,7 +234,7 @@ void set_prim(grid_prim_type P){
     
     free(rho);
     free(eps);
-    //free(ye);
+    free(ye);
     free(velx);
     free(vely);
     free(velz);
