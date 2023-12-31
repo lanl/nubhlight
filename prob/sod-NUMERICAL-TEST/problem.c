@@ -94,15 +94,16 @@ void init_prob()
 void set_prim(grid_prim_type P){
     
     double *xp, *yp, *zp;
-    double *rho, *eps, *ye, *velx, *vely, *velz;
+    double *rho, *press, *ye, *velx, *vely, *velz;
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG);
+    double extra[EOS_NUM_EXTRA];
     
     xp = malloc(np * sizeof(*xp));
     yp = malloc(np * sizeof(*yp));
     zp = malloc(np * sizeof(*zp));
     
     rho = malloc(np * sizeof(*rho));
-    eps = malloc(np * sizeof(*eps));
+    press = malloc(np * sizeof(*press));
     ye = malloc(np * sizeof(*ye));
     velx = malloc(np * sizeof(*velx));
     vely = malloc(np * sizeof(*vely));
@@ -121,9 +122,9 @@ void set_prim(grid_prim_type P){
     /* Read metadata */
     cprof3d_file_t * dfile = cprof3d_open_file("245414.h5"); //TODO:pass through runtime arguments
     
-    /* Open dataset: rho, eps, ye, velx, vely, velz */
+    /* Open dataset: rho, press, ye, velx, vely, velz */
     cprof3d_dset_t * dset_rho = cprof3d_read_dset(dfile, "rho");
-    cprof3d_dset_t * dset_eps = cprof3d_read_dset(dfile, "eps");
+    cprof3d_dset_t * dset_press = cprof3d_read_dset(dfile, "press");
     cprof3d_dset_t * dset_ye = cprof3d_read_dset(dfile, "Ye");
     cprof3d_dset_t * dset_velx = cprof3d_read_dset(dfile, "velx");
     cprof3d_dset_t * dset_vely = cprof3d_read_dset(dfile, "vely");
@@ -136,11 +137,11 @@ void set_prim(grid_prim_type P){
             cprof3d_transf_default,
             np, xp, yp, zp,
             rho);
-    bool set_all_points_eps = cprof3d_interp(dset_eps,
+    bool set_all_points_press = cprof3d_interp(dset_press,
             cprof3d_cmap_reflecting_xy,
             cprof3d_transf_default,
             np, xp, yp, zp,
-            eps);
+            press);
     bool set_all_points_ye = cprof3d_interp(dset_ye,
             cprof3d_cmap_reflecting_xy,
             cprof3d_transf_default,
@@ -168,8 +169,8 @@ void set_prim(grid_prim_type P){
         fprintf(stderr, "Something went wrong with the interpolation rho!");
         return;
     }
-    if(!set_all_points_eps) {
-        fprintf(stderr, "Something went wrong with the interpolation eps!");
+    if(!set_all_points_press) {
+        fprintf(stderr, "Something went wrong with the interpolation press!");
         return;
     }
     if(!set_all_points_ye) {
@@ -192,8 +193,6 @@ void set_prim(grid_prim_type P){
     iflat = 0;
     ZLOOP{
             P[i][j][k][RHO] = rho[iflat];
-            P[i][j][k][UU] = eps[iflat];
-        
         
             #if EOS == EOS_TYPE_TABLE
             {
@@ -201,7 +200,7 @@ void set_prim(grid_prim_type P){
                 PASSTYPE(YE) = PASSTYPE_NUMBER;
                 P[i][j][k][YE_EM] = ye[iflat];
 
-                //extra[EOS_YE] = ye[iflat];
+                extra[EOS_YE] = ye[iflat];
 
                 #if NVAR_PASSIVE >= 4
                 P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho[iflat];
@@ -210,9 +209,11 @@ void set_prim(grid_prim_type P){
             }
             #endif
         
+            P[i][j][k][UU] = EOS_u_press(press[iflat], rho[iflat], extra);
+        
             //P[i][j][k][YE] = ye[iflat];
             
-            P[i][j][k][U1] = velx[iflat];
+            P[i][j][k][U1] = velx[iflat]; // Sudi: they are contravariant. is it okay ??
             P[i][j][k][U2] = vely[iflat];
             P[i][j][k][U3] = velz[iflat];
             
@@ -224,7 +225,7 @@ void set_prim(grid_prim_type P){
     
     /* Free memory */
     cprof3d_del_dset(dset_rho);
-    cprof3d_del_dset(dset_eps);
+    cprof3d_del_dset(dset_press);
     cprof3d_del_dset(dset_ye);
     cprof3d_del_dset(dset_velx);
     cprof3d_del_dset(dset_vely);
@@ -233,7 +234,7 @@ void set_prim(grid_prim_type P){
     cprof3d_close_file(dfile);
     
     free(rho);
-    free(eps);
+    free(press);
     free(ye);
     free(velx);
     free(vely);
