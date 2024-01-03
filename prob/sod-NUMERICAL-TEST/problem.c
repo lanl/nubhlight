@@ -94,7 +94,7 @@ void init_prob()
 void set_prim(grid_prim_type P){
     
     double *xp, *yp, *zp;
-    double *rho, *press, *ye, *velx, *vely, *velz;
+    double *rho, *press, *ye, *velx, *vely, *velz, *lapse, *betax, *betay, *betaz;
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG);
     double extra[EOS_NUM_EXTRA];
     
@@ -105,9 +105,15 @@ void set_prim(grid_prim_type P){
     rho = malloc(np * sizeof(*rho));
     press = malloc(np * sizeof(*press));
     ye = malloc(np * sizeof(*ye));
+    
     velx = malloc(np * sizeof(*velx));
     vely = malloc(np * sizeof(*vely));
     velz = malloc(np * sizeof(*velz));
+    
+    lapse = malloc(np * sizeof(*lapse));
+    betax = malloc(np * sizeof(*betax));
+    betay = malloc(np * sizeof(*betay));
+    betaz = malloc(np * sizeof(*betaz));
     
     int iflat = 0;
     double X[NDIM];
@@ -122,13 +128,18 @@ void set_prim(grid_prim_type P){
     /* Read metadata */
     cprof3d_file_t * dfile = cprof3d_open_file("245414.h5"); //TODO:pass through runtime arguments
     
-    /* Open dataset: rho, press, ye, velx, vely, velz */
+    /* Open dataset: rho, press, ye, velx, vely, velz,
+     lapse, betax,betay, betaz */
     cprof3d_dset_t * dset_rho = cprof3d_read_dset(dfile, "rho");
     cprof3d_dset_t * dset_press = cprof3d_read_dset(dfile, "press");
     cprof3d_dset_t * dset_ye = cprof3d_read_dset(dfile, "Ye");
     cprof3d_dset_t * dset_velx = cprof3d_read_dset(dfile, "velx");
     cprof3d_dset_t * dset_vely = cprof3d_read_dset(dfile, "vely");
     cprof3d_dset_t * dset_velz = cprof3d_read_dset(dfile, "velz");
+    cprof3d_dset_t * dset_lapse = cprof3d_read_dset(dfile, "lapse");
+    cprof3d_dset_t * dset_betax = cprof3d_read_dset(dfile, "betax");
+    cprof3d_dset_t * dset_betay = cprof3d_read_dset(dfile, "betay");
+    cprof3d_dset_t * dset_betaz = cprof3d_read_dset(dfile, "betaz");
     
 
     /* Interpolate on the grid*/
@@ -162,6 +173,26 @@ void set_prim(grid_prim_type P){
             cprof3d_transf_default,
             np, xp, yp, zp,
             velz);
+    bool set_all_points_lapse = cprof3d_interp(dset_lapse,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* lapse is a scalar */
+            np, xp, yp, zp,
+            lapse);
+    bool set_all_points_betax = cprof3d_interp(dset_betax,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betax);
+    bool set_all_points_betay = cprof3d_interp(dset_betay,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betay);
+    bool set_all_points_betaz = cprof3d_interp(dset_betaz,
+            cprof3d_cmap_reflecting_xy, /* default */
+            cprof3d_transf_default,     /* gzz is a scalar */
+            np, xp, yp, zp,
+            betaz);
 
     
     /* Check if interpolation of metric gone wrong*/
@@ -189,6 +220,22 @@ void set_prim(grid_prim_type P){
         fprintf(stderr, "Something went wrong with the interpolation velz!");
         return;
     }
+    if(!set_all_points_lapse) {
+        fprintf(stderr, "Something went wrong with the interpolation lapse!");
+        return;
+    }
+    if(!set_all_points_betax) {
+        fprintf(stderr, "Something went wrong with the interpolation betax!");
+        return;
+    }
+    if(!set_all_points_betay) {
+        fprintf(stderr, "Something went wrong with the interpolation betay!");
+        return;
+    }
+    if(!set_all_points_betaz) {
+        fprintf(stderr, "Something went wrong with the interpolation betaz!");
+        return;
+    }
     
     iflat = 0;
     ZLOOP{
@@ -213,9 +260,9 @@ void set_prim(grid_prim_type P){
         
             //P[i][j][k][YE] = ye[iflat];
             
-            P[i][j][k][U1] = velx[iflat]; // Sudi: they are contravariant. is it okay ??
-            P[i][j][k][U2] = vely[iflat];
-            P[i][j][k][U3] = velz[iflat];
+            P[i][j][k][U1] = lapse[iflat] * velx[iflat] - betax[iflat];
+            P[i][j][k][U2] = lapse[iflat] * vely[iflat] - betay[iflat];
+            P[i][j][k][U3] = lapse[iflat] * velz[iflat] - betaz[iflat];
             
             P[i][j][k][B1] = 0.;
             P[i][j][k][B2] = 0.;
@@ -231,6 +278,11 @@ void set_prim(grid_prim_type P){
     cprof3d_del_dset(dset_vely);
     cprof3d_del_dset(dset_velz);
     
+    cprof3d_del_dset(dset_lapse);
+    cprof3d_del_dset(dset_betax);
+    cprof3d_del_dset(dset_betay);
+    cprof3d_del_dset(dset_betaz);
+    
     cprof3d_close_file(dfile);
     
     free(rho);
@@ -239,6 +291,11 @@ void set_prim(grid_prim_type P){
     free(velx);
     free(vely);
     free(velz);
+    
+    free(lapse);
+    free(betax);
+    free(betay);
+    free(betaz);
     
     free(zp);
     free(yp);
