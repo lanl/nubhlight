@@ -24,7 +24,7 @@ RHO_UNIT = 6.17244*1e17   # c^6 /(G^3 * MSun^2) in cgs (2.99792458*10^10)^6/((6.
 T_UNIT = 1.e-3
 
 #Grid extension
-x1Min = -256.0
+x1Min = 32.0
 x1Max = 256.0
 x2Min = -256.0
 x2Max = 256.0
@@ -35,6 +35,9 @@ EOS = "EOS_TYPE_TABLE" if TABLE or RELTABLE else "EOS_TYPE_GAMMA"
 NVAR_PASSIVE = 3 if TABLE or RELTABLE else 0
 RELTABLENAME = "Hempel_DD2EOS_rho234_temp180_ye60_version_1.1_20120817.h5"
 RELTABLEPATH = "../../data/"+RELTABLENAME
+
+CARPETPROFNAME = "245414.h5"
+CARPETPROFPATH = "../../data/"+CARPETPROFNAME
 
 RHOMIN, RHOMAX, NRHO =  1e-4, 1e1, 234
 UMIN, UMAX, NU = TSCALE/1e5, 1e4, 136
@@ -128,6 +131,8 @@ bhl.config.set_rparm('x2Min', 'double', default = x2Min)
 bhl.config.set_rparm('x2Max', 'double', default = x2Max)
 bhl.config.set_rparm('x3Min', 'double', default = x3Min)
 bhl.config.set_rparm('x3Max', 'double', default = x3Max)
+
+bhl.config.set_rparm('carpetprofpath', 'string', default = CARPETPROFPATH)
 
 
 #EOS

@@ -125,7 +125,7 @@ void set_prim(grid_prim_type P){
       }
 
     /* Read metadata */
-    cprof3d_file_t * dfile = cprof3d_open_file("245414.h5"); //TODO:pass through runtime arguments
+    cprof3d_file_t * dfile = cprof3d_open_file(carpetprofpath); //TODO:pass through runtime arguments
     
     /* Open dataset: rho, press, ye, velx, vely, velz,
      lapse, betax,betay, betaz */
@@ -264,7 +264,7 @@ void set_prim(grid_prim_type P){
             P[i][j][k][B2] = 0.;
             P[i][j][k][B3] = 0.;
             iflat++;
-    } // ZLOOP end
+    } // ZLOOPALL end
     
     printf("%.16lf\n", rho[0]);
     printf("%lf\n", velx[0]);
