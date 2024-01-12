@@ -114,6 +114,11 @@ void set_core_params() {
   sprintf(eos, "TABLE");
   set_param("eospath", &eospath);
 #endif // EOS
+    
+//carpetprofile
+#if METRIC == NUMERICAL
+  set_param("carpetprofpath", &carpetprofpath);
+#endif
 
 #if NEED_UNITS
 #if METRIC == MINKOWSKI

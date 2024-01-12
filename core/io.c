@@ -670,14 +670,14 @@ void dump_prim() {
     }
     
     {
-        double *eps = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+        double *uu = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
         int     n     = 0;
         ZLOOP {
-            eps[n] = P[i][j][k][UU];
+            uu[n] = P[i][j][k][UU];
             n++;
         }
-        WRITE_GRID_NO_GHOSTS(eps, TYPE_DBL);
-        free(eps);
+        WRITE_GRID_NO_GHOSTS(uu, TYPE_DBL);
+        free(uu);
     }
     
     {
@@ -866,6 +866,10 @@ void dump() {
 #if EOS == EOS_TYPE_TABLE
   WRITE_HDR(eospath, TYPE_STR);
 #endif // TABLE
+    
+#if METRIC == NUMERICAL
+  WRITE_HDR(carpetprofpath, TYPE_STR);
+#endif // carpetprofile
 
 #if ELECTRONS
   WRITE_HDR(game, TYPE_DBL);
@@ -1119,7 +1123,6 @@ void dump() {
 }
 
 void restart_write(int restart_type) {
-    //printf("Sudi:its a problem\n");
   timer_start(TIMER_OUT);
 
   char name[STRLEN], fname[STRLEN];
@@ -1236,6 +1239,10 @@ void restart_write(int restart_type) {
 #elif EOS == EOS_TYPE_TABLE
   WRITE_HDR(eospath, TYPE_STR);
 #endif // EOS
+    
+#if METRIC == NUMERICAL
+  WRITE_HDR(carpetprofpath, TYPE_STR);
+#endif // carpetprofile
 
 // Units
 #if NEED_UNITS

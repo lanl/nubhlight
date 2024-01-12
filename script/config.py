@@ -691,6 +691,8 @@ def build(PROBLEM, PATHS):
         write_rparm(pf, 'gam')
       if CPARMS['EOS'] == 'EOS_TYPE_TABLE':
         write_rparm(pf, 'eospath')
+      if CPARMS['METRIC'] == 'NUMERICAL':
+        write_rparm(pf, 'carpetprofpath')
 
       if util.parm_is_active(CPARMS, 'ELECTRONS'):
         pf.write("\n# ELECTRONS\n")

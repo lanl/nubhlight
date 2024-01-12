@@ -85,6 +85,11 @@ int  tracers;
 char eospath[STRLEN];
 #endif
 
+// path for carpetprofile
+#if METRIC == NUMERICAL
+char carpetprofpath[STRLEN];
+#endif
+
 // opacity table paths
 #if RADIATION
 #if (RADIATION == RADTYPE_NEUTRINOS)

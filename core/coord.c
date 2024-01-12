@@ -381,7 +381,7 @@ void num_set_metric(grid_geom_type ggeom){
 
     
     /* Read metadata */
-    cprof3d_file_t * dfile = cprof3d_open_file("245414.h5"); //TODO:pass through runtime arguments
+    cprof3d_file_t * dfile = cprof3d_open_file(carpetprofpath); //TODO:pass through runtime arguments
     
     /* Open dataset: gxx,gxy,gxz,gyy,gyz,gzz */
     cprof3d_dset_t * dset_gxx = cprof3d_read_dset(dfile, "gxx");
