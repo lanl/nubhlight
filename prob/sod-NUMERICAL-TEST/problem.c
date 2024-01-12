@@ -7,7 +7,6 @@
  ******************************************************************************/
 
 #include "decs.h"
-//#include "cprof3d.h"
 
 static double tscale;
 static double pscale;
@@ -76,16 +75,16 @@ void init_prob()
   set_prim(P); // TODO:: read ye from profile
   #endif
 
-  // Rescale to make problem nonrelativistic
-  ZLOOP {
-    P[i][j][k][UU] *= tscale*tscale;
-    P[i][j][k][U1] *= tscale;
-    P[i][j][k][U2] *= tscale;
-    P[i][j][k][U3] *= tscale;
-    P[i][j][k][B1] *= tscale;
-    P[i][j][k][B2] *= tscale;
-    P[i][j][k][B3] *= tscale;
-  }
+//  // Rescale to make problem nonrelativistic
+//  ZLOOP {
+//    P[i][j][k][UU] *= tscale*tscale;
+//    P[i][j][k][U1] *= tscale;
+//    P[i][j][k][U2] *= tscale;
+//    P[i][j][k][U3] *= tscale;
+//    P[i][j][k][B1] *= tscale;
+//    P[i][j][k][B2] *= tscale;
+//    P[i][j][k][B3] *= tscale;
+//  }
 }
 
 
@@ -117,7 +116,7 @@ void set_prim(grid_prim_type P){
     
     int iflat = 0;
     double X[NDIM];
-    ZLOOP {
+    ZLOOPALL {
       coord(i, j, k, CENT, X);
         xp[iflat] = X[1];
         yp[iflat] = X[2];
@@ -142,7 +141,7 @@ void set_prim(grid_prim_type P){
     cprof3d_dset_t * dset_betaz = cprof3d_read_dset(dfile, "betaz");
     
 
-    /* Interpolate on the grid*/
+    //Interpolate on the grid
     bool set_all_points_rho = cprof3d_interp(dset_rho,
             cprof3d_cmap_reflecting_xy,
             cprof3d_transf_default,
@@ -238,9 +237,9 @@ void set_prim(grid_prim_type P){
     }
     
     iflat = 0;
-    ZLOOP{
+    ZLOOPALL{
             P[i][j][k][RHO] = rho[iflat];
-        
+
             #if EOS == EOS_TYPE_TABLE
             {
                 P[i][j][k][YE] = ye[iflat];
@@ -255,20 +254,24 @@ void set_prim(grid_prim_type P){
                 #endif
             }
             #endif
-        
+
             P[i][j][k][UU] = EOS_u_press(press[iflat], rho[iflat], extra);
-        
-            //P[i][j][k][YE] = ye[iflat];
-            
             P[i][j][k][U1] = lapse[iflat] * velx[iflat] - betax[iflat];
             P[i][j][k][U2] = lapse[iflat] * vely[iflat] - betay[iflat];
             P[i][j][k][U3] = lapse[iflat] * velz[iflat] - betaz[iflat];
-            
+                
             P[i][j][k][B1] = 0.;
             P[i][j][k][B2] = 0.;
             P[i][j][k][B3] = 0.;
             iflat++;
     } // ZLOOP end
+    
+    printf("%.16lf\n", rho[0]);
+    printf("%lf\n", velx[0]);
+    printf("%lf\n", betax[0]);
+    printf("%lf\n", lapse[0] * velx[0] - betax[0]);
+    printf("%lf\n", P[0][25][25][U1]);
+    
     
     /* Free memory */
     cprof3d_del_dset(dset_rho);
@@ -301,4 +304,3 @@ void set_prim(grid_prim_type P){
     free(yp);
     free(xp);
 } // set_prim end
-
