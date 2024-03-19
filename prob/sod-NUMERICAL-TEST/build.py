@@ -20,7 +20,7 @@ PSCALE = 0.25 if RELTABLE else 1.
 TFINAL = 0.75 if RELTABLE else 0.25
 
 CL = 2.99792458e10
-RHO_UNIT = 6.17244*1e17   # c^6 /(G^3 * MSun^2) in cgs (2.99792458*10^10)^6/((6.6742*10^-8)^3*(1.989*10^33)^2)
+RHO_UNIT =  6.17244*1e17 # 11357801703.091352 c^6 /(G^3 * MSun^2) in cgs (2.99792458*10^10)^6/((6.6742*10^-8)^3*(1.989*10^33)^2)
 T_UNIT = 1.e-3
 
 #Grid extension

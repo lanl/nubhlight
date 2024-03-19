@@ -84,9 +84,21 @@
 
 // Fixup parameters
 // rho_flor = RHOMIN / pow(r, -FLOOR_POWER)
+
+#if METRIC == NUMERICAL
+#define FLR_POWER1 (0.)
+#define FLR_POWER2 (3.)
+#define FLR_R0 (450.) // TODO change this?
+#else
 #define FLR_POWER1 (2.)
 #define FLR_POWER2 (2.)
 #define FLR_R0 (50.) // TODO change this?
+#endif
+
+
+//#define FLR_POWER1 (2.)
+//#define FLR_POWER2 (2.)
+//#define FLR_R0 (50.) // TODO change this?
 #define RHOMINLIMIT (1.e-17)
 #define UUMINLIMIT (1.e-3 * RHOMINLIMIT)
 #define RHOMIN (1.e-5)

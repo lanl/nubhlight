@@ -7,6 +7,7 @@
  ******************************************************************************/
 
 #include "decs.h"
+#include "hdf5.h"
 
 static double tscale;
 static double pscale;
@@ -18,58 +19,58 @@ void set_problem_params()
 
 void init_prob()
 {
-  // Make problem nonrelativistic
-  // double tscale = 1.e-2;
-  tf /= tscale;
-  dt /= tscale;
-  DTd /= tscale;
-  DTl /= tscale;
-
-  #if METRIC != NUMERICAL
-  double extra[EOS_NUM_EXTRA];
-  double X[NDIM];
-  ZLOOP {
-    coord(i, j, k, CENT, X);
-      
-    double rhogas = (X[1] < 0.5 || X[1] > 1.5) ? 1.0 : 0.125;
-
-    // rescale pressure in relativistic case since
-    // P must produce subluminal speeds
-    double pgas = (X[1] < 0.5 || X[1] > 1.5) ? 1.0 : 0.1;
-    pgas *= pscale;
-
-    #if NVAR_PASSIVE > 0 || EOS == EOS_TYPE_TABLE
-    double ye = (X[1] < 0.5 || X[1] > 1.5) ? 0.45 : 0.25;
-    #endif
-
-    #if EOS == EOS_TYPE_TABLE
-    {
-      P[i][j][k][YE] = ye;
-      PASSTYPE(YE) = PASSTYPE_NUMBER;
-      P[i][j][k][YE_EM] = ye;
-
-      extra[EOS_YE] = ye;
-
-      #if NVAR_PASSIVE >= 4
-      double yedens = ye*rhogas;
-      P[i][j][k][PASSIVE_START+3] = yedens;
-      PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
-      #endif
-    }
-    #endif
-
-    P[i][j][k][RHO] = rhogas;
-    P[i][j][k][UU] = EOS_u_press(pgas, rhogas, extra);
-    P[i][j][k][U1] = 0.;
-    P[i][j][k][U2] = 0.;
-    P[i][j][k][U3] = 0.;
-    P[i][j][k][B1] = 0.;
-    P[i][j][k][B2] = 0.;
-    P[i][j][k][B3] = 0.;
-    
-
-  } // ZLOOP
-#endif
+//  // Make problem nonrelativistic
+//  // double tscale = 1.e-2;
+//  tf /= tscale;
+//  dt /= tscale;
+//  DTd /= tscale;
+//  DTl /= tscale;
+//
+//  #if METRIC != NUMERICAL
+//  double extra[EOS_NUM_EXTRA];
+//  double X[NDIM];
+//  ZLOOP {
+//    coord(i, j, k, CENT, X);
+//
+//    double rhogas = (X[1] < 0.5 || X[1] > 1.5) ? 1.0 : 0.125;
+//
+//    // rescale pressure in relativistic case since
+//    // P must produce subluminal speeds
+//    double pgas = (X[1] < 0.5 || X[1] > 1.5) ? 1.0 : 0.1;
+//    pgas *= pscale;
+//
+//    #if NVAR_PASSIVE > 0 || EOS == EOS_TYPE_TABLE
+//    double ye = (X[1] < 0.5 || X[1] > 1.5) ? 0.45 : 0.25;
+//    #endif
+//
+//    #if EOS == EOS_TYPE_TABLE
+//    {
+//      P[i][j][k][YE] = ye;
+//      PASSTYPE(YE) = PASSTYPE_NUMBER;
+//      P[i][j][k][YE_EM] = ye;
+//
+//      extra[EOS_YE] = ye;
+//
+//      #if NVAR_PASSIVE >= 4
+//      double yedens = ye*rhogas;
+//      P[i][j][k][PASSIVE_START+3] = yedens;
+//      PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
+//      #endif
+//    }
+//    #endif
+//
+//    P[i][j][k][RHO] = rhogas;
+//    P[i][j][k][UU] = EOS_u_press(pgas, rhogas, extra);
+//    P[i][j][k][U1] = 0.;
+//    P[i][j][k][U2] = 0.;
+//    P[i][j][k][U3] = 0.;
+//    P[i][j][k][B1] = 0.;
+//    P[i][j][k][B2] = 0.;
+//    P[i][j][k][B3] = 0.;
+//
+//
+//  } // ZLOOP
+//#endif
 
   #if METRIC == NUMERICAL
   set_prim(P); // TODO:: read ye from profile
@@ -96,6 +97,9 @@ void set_prim(grid_prim_type P){
     double *rho, *press, *ye, *velx, *vely, *velz, *lapse, *betax, *betay, *betaz;
     int np = (N1 + 2. * NG) * (N2 + 2. * NG) * (N3 + 2. * NG);
     double extra[EOS_NUM_EXTRA];
+    
+    double momendensx[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG], momendensy[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG], momendensz[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG];
+    
     
     xp = malloc(np * sizeof(*xp));
     yp = malloc(np * sizeof(*yp));
@@ -125,7 +129,7 @@ void set_prim(grid_prim_type P){
       }
 
     /* Read metadata */
-    cprof3d_file_t * dfile = cprof3d_open_file(carpetprofpath); //TODO:pass through runtime arguments
+    cprof3d_file_t * dfile = cprof3d_open_file(carpetprofpath);
     
     /* Open dataset: rho, press, ye, velx, vely, velz,
      lapse, betax,betay, betaz */
@@ -238,7 +242,7 @@ void set_prim(grid_prim_type P){
     
     iflat = 0;
     ZLOOPALL{
-            P[i][j][k][RHO] = rho[iflat];
+        P[i][j][k][RHO] = rho[iflat];// * (6.17244e+17 / (11357801703.091352)) ; // 1 rest-mass density unit in Cactus= 6.17747e+17 g/cm^3
 
             #if EOS == EOS_TYPE_TABLE
             {
@@ -255,22 +259,114 @@ void set_prim(grid_prim_type P){
             }
             #endif
 
-            P[i][j][k][UU] = EOS_u_press(press[iflat], rho[iflat], extra);
-            P[i][j][k][U1] = lapse[iflat] * velx[iflat] - betax[iflat];
-            P[i][j][k][U2] = lapse[iflat] * vely[iflat] - betay[iflat];
-            P[i][j][k][U3] = lapse[iflat] * velz[iflat] - betaz[iflat];
-                
-            P[i][j][k][B1] = 0.;
-            P[i][j][k][B2] = 0.;
-            P[i][j][k][B3] = 0.;
-            iflat++;
+        P[i][j][k][UU] = EOS_u_press(press[iflat], rho[iflat], extra);
+        P[i][j][k][B1] = 0.;
+        P[i][j][k][B2] = 0.;
+        P[i][j][k][B3] = 0.;
+        
+        //the velocities in nubhlight are U^i = u^i/u^0 where u^\mu is the contravariant four-velocity
+        //v^i = u^i / W + beta^i / alpha; v^i is the Carpet profile velocity
+        //W = alpha * u^t,so U^i = u^i / u^0 = alpha * v^i - beta^i.
+        
+        P[i][j][k][U1] = lapse[iflat] * velx[iflat] - betax[iflat];
+        P[i][j][k][U2] = lapse[iflat] * vely[iflat] - betay[iflat];
+        P[i][j][k][U3] = lapse[iflat] * velz[iflat] - betaz[iflat];
+    
+        momendensx[i][j][k] = P[i][j][k][RHO] * P[i][j][k][U1];
+        momendensy[i][j][k] = P[i][j][k][RHO] * P[i][j][k][U2];
+        momendensz[i][j][k] = P[i][j][k][RHO] * P[i][j][k][U3];
+    
+    
+        iflat++;
     } // ZLOOPALL end
     
-    printf("%.16lf\n", rho[0]);
-    printf("%lf\n", velx[0]);
-    printf("%lf\n", betax[0]);
-    printf("%lf\n", lapse[0] * velx[0] - betax[0]);
-    printf("%lf\n", P[0][25][25][U1]);
+//    printf("%.16lf\n", P[0][0][0][RHO]);
+//    printf("%.16lf\n", momendensx[12][14][13]);
+//    printf("%lf\n", betax[0]);
+//    printf("%lf\n", lapse[0] * velx[0] - betax[0]);
+//    printf("%lf\n", P[0][25][25][U1]);
+    
+    double *p_x = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double)), *p_y = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double)), *p_z = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+    double *ux = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double)), *uy = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double)), *uz = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+    
+    double *rhodens = safe_malloc((size_t)N1 * N2 * N3 * sizeof(double));
+    
+    int n   = 0;
+    ZLOOP {
+    
+      p_x[n] =  momendensx[i][j][k];
+      p_y[n] =  momendensy[i][j][k];
+      p_z[n] =  momendensz[i][j][k];
+        
+      ux[n] = P[i][j][k][U1];
+      uy[n] = P[i][j][k][U2];
+      uz[n] = P[i][j][k][U3];
+        
+      rhodens[n] = P[i][j][k][RHO];
+    
+      n++;
+    }
+
+    //printf("%.16lf\n", p_x[12]);
+    
+    
+    // Create an HDF5 file
+    hid_t file = H5Fcreate("momendens.h5", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    
+    int np3 = N1 * N2 * N3;
+
+    // Create a dataspace for the dataset
+    hsize_t dims[1] = {np3};
+    hid_t dataspace = H5Screate_simple(1, dims, NULL);
+
+    // Create dataset for px
+    hid_t dataset;
+    dataset = H5Dcreate2(file, "px", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, p_x);
+    H5Dclose(dataset);
+
+    // Create dataset for py
+    dataset = H5Dcreate2(file, "py", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, p_y);
+    H5Dclose(dataset);
+//
+    // Create dataset for pz
+    dataset = H5Dcreate2(file, "pz", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, p_z);
+    H5Dclose(dataset);
+    
+    // Create dataset for ux
+    dataset = H5Dcreate2(file, "ux", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, ux);
+    H5Dclose(dataset);
+
+    // Create dataset for uy
+    dataset = H5Dcreate2(file, "uy", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, uy);
+    H5Dclose(dataset);
+//
+    // Create dataset for pz
+    dataset = H5Dcreate2(file, "uz", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, uz);
+    H5Dclose(dataset);
+    
+    // Create dataset for rhodens
+    dataset = H5Dcreate2(file, "rhodens", H5T_NATIVE_DOUBLE, dataspace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    H5Dwrite(dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, rhodens);
+    H5Dclose(dataset);
+    
+    // Close everything
+    H5Sclose(dataspace);
+    //H5Gclose(group);  // optional
+    H5Fclose(file);
+    
+    free(p_x);
+    free(p_y);
+    free(p_z);
+    
+    free(ux);
+    free(uy);
+    free(uz);
     
     
     /* Free memory */

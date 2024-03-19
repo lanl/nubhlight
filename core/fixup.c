@@ -104,9 +104,9 @@ double get_scale(int i, int j, int k) {
     r = sqrtf(X[1]*X[1] + X[2]*X[2] + X[3]*X[3]);
 
     if (r <= FLR_R0) {
-      scale = pow(r, -FLR_POWER1);
+        scale = pow(FLR_R0, -FLR_POWER2); //Sudi: choose scale such that scale * RHOMIN ~ 10^-13
     } else {
-      scale = pow(FLR_R0, FLR_POWER2 - FLR_POWER1) * pow(r, -FLR_POWER2);
+        scale = pow(r, -FLR_POWER2); // pow(FLR_R0, FLR_POWER2 - FLR_POWER1) * 1e-10;//
     }
     return scale;
   }
@@ -143,7 +143,7 @@ void fixup1zone(
   double rhosave = pv[RHO];
 #endif // POLYTROPE_FALLBACK
 
-  if (rhoflr > pv[RHO] || uflr > pv[UU]) { // Apply floors
+    if (rhoflr > pv[RHO] || uflr > pv[UU]) { // Apply floors (false){//
     fixup_required[i][j][k] = 1;
     double trans =
         10. * bsq / (MY_MIN(fabs(pv[RHO]), fabs(pv[UU])) + SMALL) - 1.;
