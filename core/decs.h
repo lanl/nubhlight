@@ -87,7 +87,7 @@
 
 #if METRIC == NUMERICAL
 #define FLR_POWER1 (0.)
-#define FLR_POWER2 (3.)
+#define FLR_POWER2 (4.)
 #define FLR_R0 (450.) // TODO change this?
 #else
 #define FLR_POWER1 (2.)

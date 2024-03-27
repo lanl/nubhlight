@@ -104,9 +104,9 @@ double get_scale(int i, int j, int k) {
     r = sqrtf(X[1]*X[1] + X[2]*X[2] + X[3]*X[3]);
 
     if (r <= FLR_R0) {
-        scale = pow(FLR_R0, -FLR_POWER2); //Sudi: choose scale such that scale * RHOMIN ~ 10^-13
+        scale = 1e-8;//pow(FLR_R0, -FLR_POWER2); //Sudi: choose scale such that scale * RHOMIN ~ 10^-13
     } else {
-        scale = pow(r, -FLR_POWER2); // pow(FLR_R0, FLR_POWER2 - FLR_POWER1) * 1e-10;//
+        scale = 1e-8;//pow(r, -FLR_POWER2); // pow(FLR_R0, FLR_POWER2 - FLR_POWER1) * 1e-10;//
     }
     return scale;
   }

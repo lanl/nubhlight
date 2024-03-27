@@ -240,9 +240,15 @@ void set_prim(grid_prim_type P){
         return;
     }
     
+    double rho_cactus2cgs = 6.17747e+17; // 1 Cactus unit = 6.17747e+17 gm / cm^3
+    double uu_cactus2cgs = 5.30986e+38; // 1 dyn / cm^2 = 1 erg / cm^3 = 5.59378e-55 / (6.6721e-6)^3 Cactus unit
+    
     iflat = 0;
     ZLOOPALL{
-        P[i][j][k][RHO] = rho[iflat];// * (6.17244e+17 / (11357801703.091352)) ; // 1 rest-mass density unit in Cactus= 6.17747e+17 g/cm^3
+        double rho_code = rho[iflat] *  rho_cactus2cgs / RHO_unit;
+        double press_code = press[iflat] * uu_cactus2cgs / U_unit;
+        
+        P[i][j][k][RHO] = rho_code; //* (6.17244e+17 / (11357801703.091352)) ; // 1 rest-mass density unit in Cactus= 6.17747e+17 g/cm^3
 
             #if EOS == EOS_TYPE_TABLE
             {
@@ -253,13 +259,13 @@ void set_prim(grid_prim_type P){
                 extra[EOS_YE] = ye[iflat];
 
                 #if NVAR_PASSIVE >= 4
-                P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho[iflat];
+                P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho_code;
                 PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
                 #endif
             }
             #endif
 
-        P[i][j][k][UU] = EOS_u_press(press[iflat], rho[iflat], extra);
+        P[i][j][k][UU] = EOS_u_press(press_code, rho_code, extra);
         P[i][j][k][B1] = 0.;
         P[i][j][k][B2] = 0.;
         P[i][j][k][B3] = 0.;
