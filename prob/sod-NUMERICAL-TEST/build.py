@@ -20,7 +20,7 @@ PSCALE = 0.25 if RELTABLE else 1.
 TFINAL = 0.75 if RELTABLE else 0.25
 
 CL = 2.99792458e10
-RHO_UNIT =  6.17244*1e17 * 2e-08 #/ 2e-08 factor is used to normalize density  #c^6 /(G^3 * MSun^2) in cgs (2.99792458*10^10)^6/((6.6742*10^-8)^3*(1.989*10^33)^2)
+RHO_UNIT =  6.17244*1e17 * 1.85e-08 #/ 1.85e-08 factor is used to normalize density; it is important to note that this RHO_UNIT is not applied before primitives are writen to prim.h5 #c^6 /(G^3 * MSun^2) in cgs (2.99792458*10^10)^6/((6.6742*10^-8)^3*(1.989*10^33)^2) TODO: get this normalization factor runtime
 T_UNIT = 1.e-3
 
 #Grid extension
