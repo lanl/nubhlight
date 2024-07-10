@@ -195,7 +195,8 @@ def build(PROBLEM, PATHS):
   CLEAN   = not NOCLEAN
   WRITE_PARAM = not NOPARAM
   KEEP_SRC = '-src' in sys.argv
-  REMOVE_SRC = not KEEP_SRC
+  NOKEEP_SRC = '-nosrc'
+  REMOVE_SRC = not NOKEEP_SRC
 
   # get version
   VERSION = get_version()
@@ -386,6 +387,12 @@ def build(PROBLEM, PATHS):
     util.gentle_warn("Setting OUTPUT_EOSVARS = True.")
     set_cparm("OUTPUT_EOSVARS", 1)
     print_config("OUTPUT_EOSVARS", CPARMS["OUTPUT_EOSVARS"])
+
+  if util.parm_is_active(CPARMS, 'RADIATION'):
+    if util.parm_is_active(CPARMS, 'LOCAL_ANGULAR_DISTRIBUTIONS'):
+      print_config('LOCAL_ANGULAR_DISTRIBUTIONS', CPARMS['LOCAL_ANGULAR_DISTRIBUTIONS'])
+    else:
+      set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', 0)
 
   NEED_UNITS = (util.parm_is_active(CPARMS, 'RADIATION') or
                 util.parm_is_active(CPARMS, 'COULOMB') or
