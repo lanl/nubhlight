@@ -63,7 +63,9 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM], double w, int type,
   int icosth1 = costh1 / local_dx_costh;
   int icosth2 = costh2 / local_dx_costh;
 
+  #pragma omp atomic
   local_angles[0][ix1][ix2][type][icosth1] += w;
+  #pragma omp atomic
   local_angles[1][ix1][ix2][type][icosth2] += w;
 }
 
