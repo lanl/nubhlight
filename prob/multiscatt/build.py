@@ -144,6 +144,11 @@ bhl.config.set_cparm('X2R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 
+bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
+bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
+bhl.config.set_cparm('LOCAL_ANGLES_NX1', 12)
+bhl.config.set_cparm('LOCAL_ANGLES_NX2', 12)
+
                            ### RUNTIME PARAMETERS ###
 
 bhl.config.set_rparm('tf', 'double', default = TF)

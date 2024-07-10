@@ -368,6 +368,14 @@ extern grid_radtype_type Nem_phys, Nabs_phys, radtype_buf;
 extern grid_int_type    Nsuper;
 extern grid_double_type Esuper;
 extern grid_prim_type   psupersave;
+
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+typedef double grid_local_angles_type[2][LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2]
+                                     [RAD_NUM_TYPES][LOCAL_ANGLES_NMU];
+extern grid_local_angles_type local_angles;
+extern double local_dx1_rad, local_dx2_rad, local_dx_costh;
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
 #endif // RADIATION
 
 // Default initialization is 0, which in this case is
@@ -981,6 +989,11 @@ double Jnu_hdf(double nu, int type, const struct of_microphysics *m);
 double int_jnudnudOmega_hdf(const struct of_microphysics *m);
 double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 #endif // HDF opacities
+
+// oscillations.c
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+void accumulate_local_angles();
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
 
 // passive.c

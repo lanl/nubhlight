@@ -975,6 +975,32 @@ void dump() {
       WRITE_ARRAY(nuLnu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
+
+    // local angle histograms
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+    {
+      accumulate_local_angles();
+#define RANK (5)
+      hsize_t fdims[RANK]  = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
+          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t fstart[RANK] = {0, 0, 0, 0, 0};
+      hsize_t fcount[RANK] = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
+          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t mdims[RANK]  = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
+          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t mstart[RANK] = {0, 0, 0, 0, 0};
+      if (!mpi_io_proc()) {
+        fcount[0] = 0;
+        fcount[1] = 0;
+        fcount[2] = 0;
+        fcount[3] = 0;
+        fcount[4] = 0;
+      }
+      WRITE_ARRAY(
+          local_angles, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#undef RANK
+    }
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
   }
 

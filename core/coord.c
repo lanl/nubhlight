@@ -402,7 +402,12 @@ void set_points() {
   stopx_rad[1]  = startx_rad[1] + N1TOT * dx[1];
   stopx_rad[2]  = startx_rad[2] + N2TOT * dx[2];
   stopx_rad[3]  = startx_rad[3] + N3TOT * dx[3];
-#endif
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+  local_dx1_rad = (stopx_rad[1] - startx_rad[1]) / (LOCAL_ANGLES_NX1 + 1.);
+  local_dx2_rad = (stopx_rad[2] - startx_rad[2]) / (LOCAL_ANGLES_NX2 + 1.);
+  local_dx_costh = 2. / (LOCAL_ANGLES_NMU + 1.);
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
+#endif // RADIATION
 #elif METRIC == MKS
   // Calculate some radii determined by the geometry
   Reh = 1. + sqrt(1. - a * a);

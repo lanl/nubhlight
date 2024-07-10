@@ -42,6 +42,13 @@ def print_config(key, var):
 def set_cparm(name, value):
   CPARMS[name] = value
 
+def set_cparm_if_active(name, value):
+  if util.parm_is_active(CPARMS, name):
+    print_config(name + ' ', CPARMS[name])
+  else:
+    set_cparm(name, value)
+  return
+
 # SET RUNTIME PARAMETER. DO NOT OVERWRITE DEFAULT VALUES, AS THIS IS CALLED BY
 # PROBLEM FILE BEFORE CORE ROUTINE
 def set_rparm(name, datatype, default=None):
@@ -390,7 +397,12 @@ def build(PROBLEM, PATHS):
 
   if util.parm_is_active(CPARMS, 'RADIATION'):
     if util.parm_is_active(CPARMS, 'LOCAL_ANGULAR_DISTRIBUTIONS'):
-      print_config('LOCAL_ANGULAR_DISTRIBUTIONS', CPARMS['LOCAL_ANGULAR_DISTRIBUTIONS'])
+      print_config('LOCAL_ANGULAR_DISTRIBUTIONS ',
+                   CPARMS['LOCAL_ANGULAR_DISTRIBUTIONS'])
+      # TODO(JMM): What should defaults be?
+      set_cparm_if_active('LOCAL_ANGLES_NMU', 64)
+      set_cparm_if_active('LOCAL_ANGLES_NX1', 64)
+      set_cparm_if_active('LOCAL_ANGLES_NX2', 64)
     else:
       set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', 0)
 
