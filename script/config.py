@@ -195,8 +195,8 @@ def build(PROBLEM, PATHS):
   CLEAN   = not NOCLEAN
   WRITE_PARAM = not NOPARAM
   KEEP_SRC = '-src' in sys.argv
-  NOKEEP_SRC = '-nosrc'
-  REMOVE_SRC = not NOKEEP_SRC
+  NOKEEP_SRC = '-nosrc' in sys.argv
+  REMOVE_SRC = NOKEEP_SRC
 
   # get version
   VERSION = get_version()
