@@ -17,8 +17,17 @@ double EOS_Gamma_pressure_rho0_w(double rho, double w) {
   return ((w - rho) * (gam - 1.) / gam);
 }
 
-double EOS_Gamma_entropy_rho0_u(double rho, double u) {
+double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u) {  
   return (gam - 1.0) * EOS_Gamma_adiabatic_constant_rho0_u(rho, u);
+}
+
+double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u) {
+  //double a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
+  double u_cgs = u * U_unit;
+  double rho_cgs = rho * RHO_unit;
+  double entropy_cgs = pow((64./3) * AR * (pow(u_cgs, 3)*pow(gam, 3)/pow(rho_cgs, 4)) * pow((gam -1)/gam, 3), 1./4);
+  //return pow((64./3) * a * (pow(u, 3)*pow(gam, 3)/pow(rho, 4)) * pow((gam -1)/gam, 3), 1./4);
+  return entropy_cgs / (KBOL / MP);
 }
 
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u) { return rho + u * gam; }
@@ -62,8 +71,16 @@ double EOS_Gamma_sound_speed_rho0_u(double rho, double u) {
 double EOS_Gamma_u_press(double press) { return press / (gam - 1.); }
 
 double EOS_Gamma_temp(double rho, double u) {
-  // return TEMP_unit*(gam - 1.)*u/rho;
-  return (gam - 1.) * u / rho;
+  #if EOS_GAMMA == RADPRESS
+    double press_cgs = (gam - 1.) * u * U_unit;
+    double temp_cgs = pow((3 * press_cgs)/AR, 1./4);
+    double temp = temp_cgs * KBOL / MEV;
+    //double temp = pow((3 * press), 1./4);
+  #else
+    // return TEMP_unit*(gam - 1.)*u/rho;
+    double temp = (gam - 1.) * u / rho;
+  #endif
+  return temp;
 }
 
 #if RADIATION
