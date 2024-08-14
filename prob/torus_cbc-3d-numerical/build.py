@@ -16,7 +16,7 @@ import bhlight as bhl
 from bhlight import cgs
 from units import UnitSystem
 from math import log10,ceil
-PROB = 'torus_cbc'
+PROB = 'torus_cbc-numerical'
 
 DO_GAMMA = '-gamma' in sys.argv # No table
 GAMTABLE = '-gamtable' in sys.argv # fake table
@@ -40,8 +40,6 @@ SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
-N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
-N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
 
 LIMIT_RAD = '-limit' in sys.argv
 MORE_RAD = '-morenu' in sys.argv
@@ -49,23 +47,6 @@ MORE_RAD = '-morenu' in sys.argv
 HPC = '-hpc' in sys.argv # used only for 2d runs
 QUAD = '-quad' in sys.argv # quadrant symmetry
 KILL = '-kill' in sys.argv # kill all packets
-
-ENT_FROM_CLI  = '-ent' in sys.argv
-RHO_FROM_CLI  = '-rho' in sys.argv
-RIN_FROM_CLI  = '-rin' in sys.argv
-RMAX_FROM_CLI = '-rmax' in sys.argv
-MBH_FROM_CLI  = '-M' in sys.argv
-ABH_FROM_CLI  = '-a' in sys.argv
-YE_FROM_CLI   = '-Ye' in sys.argv
-BETA_FROM_CLI = '-beta' in sys.argv
-NPH_FROM_CLI  = '-nph' in sys.argv
-TFINAL_FROM_CLI = '-tfinal' in sys.argv
-N1CPU_FROM_CLI = '-n1cpu' in sys.argv
-N2CPU_FROM_CLI = '-n2cpu' in sys.argv
-N3CPU_FROM_CLI = '-n3cpu' in sys.argv
-N1TOT_FROM_CLI = '-n1tot' in sys.argv
-N2TOT_FROM_CLI = '-n2tot' in sys.argv
-N3TOT_FROM_CLI = '-n3tot' in sys.argv
 
 EMISS = not NOEMISS
 SCATT = not (NOSCATT or KILL)
@@ -76,12 +57,6 @@ TRACERS = not NOTRACE
 USE_TABLE = GAMTABLE or RELTABLE
 USE_GAMMA = GAMTABLE or not USE_TABLE
 RENORM = not NORENORM
-TWOD = not THREED
-
-if any([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]) and not N1N2N3CPU_FROM_CLI:
-    raise ValueError("Must turn on the -n1n2n3cpu flag if inputting -n1cpu, -n2cpu, -n3cpu")
-if any([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]) and not N1N2N3TOT_FROM_CLI:
-    raise ValueError("Must turn on the -n1n2n3tot flag if inputting -n1tot, -n2tot, -n3tot")
 
 if NOB:
     BFIELD = "none"
@@ -110,8 +85,6 @@ else:
     RADIATION = False
     
 TABLEPATH = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
-#TABLEPATH = "Hempel_DD2EOS_rho234_temp180_ye60_version_1.1_20120817.h5"
-#TABLEPATH = "HShenEOS_rho220_temp180_ye65_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+TABLEPATH
 
 CARPETPROFNAME = "245414.h5"
@@ -129,32 +102,19 @@ OPACPARAM = "../../data/"+OPACPARAM
 # Parameters from
 # arXiv 1409.4426
 # arXiv 1705.05473
-if MBH_FROM_CLI:
-    MBH = float(sys.argv[sys.argv.index('-M') + 1])
-else:
-    MBH = 2.8
-if ABH_FROM_CLI:
-    ABH = float(sys.argv[sys.argv.index('-a') + 1])
-else:
-    ABH = 0.8
-if YE_FROM_CLI:
-    YE = float(sys.argv[sys.argv.index('-Ye') + 1])
-else:
-    YE = 0.1
-if BETA_FROM_CLI:
-    BETA = float(sys.argv[sys.argv.index('-beta') + 1])
-else:
-    BETA = 1e2
+
+MBH = 2.8
+ABH = 0.8
+YE = 0.1
+BETA = 1e2
 
 bhl.report_var('MBH',MBH)
 bhl.report_var('ABH',ABH)
+
 if USE_TABLE:
     bhl.report_var('Disk Ye',YE)
 
-if ENT_FROM_CLI:
-    ENTROPY = float(sys.argv[sys.argv.index('-ent') + 1])
-else:
-    ENTROPY = 4
+ENTROPY = 4
 bhl.report_var('ENTROPY',ENTROPY)
 
 if CLASSIC: # classic harm disk
@@ -169,27 +129,15 @@ else:
     # RHO_unit chosen so peak desity is unity
     # Varies slightly between 2D and 3D.
     bhl.report_var('DISK_TYPE','CBC')
-    if RIN_FROM_CLI:
-        Rin = float(sys.argv[sys.argv.index('-rin') + 1])
-    else:
-        Rin = 3.7
-    if RMAX_FROM_CLI:
-        Rmax = float(sys.argv[sys.argv.index('-rmax') + 1])
-    else:
-        Rmax = 9.268 if THREED else 9.03
-    if RHO_FROM_CLI:
-        RHO_unit = float(sys.argv[sys.argv.index('-rho') + 1])
-    else:
-        RHO_unit = 6.9*10.**11 if THREED else 3.6*10.**11
+    Rin = 3.7
+    Rmax = 9.268 if THREED else 9.03
+    RHO_unit = 6.9*10.**11 if THREED else 3.6*10.**11
 
 # Note that if scattering is enabled,
 # you'll get twice as many photons
 # per cell as this number
 # (unchanged for legacy reasons)
-if NPH_FROM_CLI:
-    NPH_PER_CELL = float(sys.argv[sys.argv.index('-nph') + 1])
-else:
-    NPH_PER_CELL = 10
+NPH_PER_CELL = 10
 
 bhl.report_var('Rin',Rin)
 bhl.report_var('Rmax',Rmax)
@@ -222,9 +170,7 @@ L_unit = cgs['GNEWT']*cgs['MSOLAR']*MBH/(cgs['CL']**2)
 M_UNIT = RHO_unit*(L_unit**3)
 
 # final time
-if TFINAL_FROM_CLI:
-    TFINAL = float(sys.argv[sys.argv.index('-tfinal') + 1])
-elif NOB and not INITIAL:
+if NOB and not INITIAL:
     TFINAL = 500.
 elif INITIAL:
     TFINAL = 1.e-2
@@ -233,7 +179,7 @@ elif THREED or FAKETHREED:
 else:
     TFINAL = 2000.
 # Toroidal fields grow slowly
-if TOROIDALB and not TFINAL_FROM_CLI:
+if TOROIDALB:
     TFINAL *= 2
 
 # time when radiation resolution controls turn on
@@ -252,63 +198,51 @@ DTl = 1.e-2 if INITIAL else 5.e-1
 DTr = 100
 DNr = 50 if RESTARTTEST else 1000
 
-if N1N2N3TOT_FROM_CLI:
-    if not all([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]):
-        raise ValueError("If using -n1n2n3tot flag, should input -n1tot -n2tot -n3tot")
-    N1TOT = int(sys.argv[sys.argv.index('-n1tot') + 1])
-    N2TOT = int(sys.argv[sys.argv.index('-n2tot') + 1])
-    N3TOT = int(sys.argv[sys.argv.index('-n3tot') + 1])
-else:
-    if TRACERTEST or RESTARTTEST:
-        N1TOT = 36
-        N2TOT = 36
-        N3TOT = 24
-    elif FAKETHREED:
+
+if TRACERTEST or RESTARTTEST:
+    N1TOT = 36
+    N2TOT = 36
+    N3TOT = 24
+elif FAKETHREED:
+    N1TOT = 96 if SMALL else 192 # 192
+    N2TOT = 96 if SMALL else 128 # 192
+    N3TOT = 1
+elif THREED: # 3D
+    if QUAD:
         N1TOT = 96 if SMALL else 192 # 192
         N2TOT = 96 if SMALL else 128 # 192
-        N3TOT = 1
-    elif THREED: # 3D
-        if QUAD:
-            N1TOT = 96 if SMALL else 192 # 192
-            N2TOT = 96 if SMALL else 128 # 192
-            N3TOT = 16
-        else:
-            N1TOT = 96 if SMALL else 192 # 192
-            N2TOT = 96 if SMALL else 128 # 192
-            N3TOT = 64 if SMALL else 66  # 96
-    else: # 2D
-        N1TOT = 112 if SMALL else 256
-        N2TOT = 112 if SMALL else 256
-        N3TOT = 1
+        N3TOT = 16
+    else:
+        N1TOT = 96 if SMALL else 192 # 192
+        N2TOT = 96 if SMALL else 128 # 192
+        N3TOT = 64 if SMALL else 66  # 96
+else: # 2D
+    N1TOT = 112 if SMALL else 256
+    N2TOT = 112 if SMALL else 256
+    N3TOT = 1
 
-if N1N2N3CPU_FROM_CLI:
-    if not all([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]):
-        raise ValueError("If using -n1n2n3cpu flag, should input -n1cpu -n2cpu -n3cpu")
-    N1CPU = int(sys.argv[sys.argv.index('-n1cpu') + 1])
-    N2CPU = int(sys.argv[sys.argv.index('-n2cpu') + 1])
-    N3CPU = int(sys.argv[sys.argv.index('-n3cpu') + 1])
-else:
-    if TRACERTEST:
+
+if TRACERTEST:
+    N1CPU = 1
+    N2CPU = 1
+    N3CPU = 4
+elif FAKETHREED:
+    N1CPU = 1 if RADIATION else 2
+    N2CPU = 1 if RADIATION and not HPC else 2
+    N3CPU = 1
+elif THREED: # 3D
+    if QUAD:
         N1CPU = 1
-        N2CPU = 1
-        N3CPU = 4
-    elif FAKETHREED:
-        N1CPU = 1 if RADIATION else 2
-        N2CPU = 1 if RADIATION and not HPC else 2
-        N3CPU = 1
-    elif THREED: # 3D
-        if QUAD:
-            N1CPU = 1
-            N2CPU = 2
-            N3CPU = 2
-        else:
-            N1CPU = 1
-            N2CPU = 2  # 2
-            N3CPU = 11 # 16
-    else: # 2D
-        N1CPU = 1 if RADIATION else 2
-        N2CPU = 1 if RADIATION and not HPC else 2
-        N3CPU = 1
+        N2CPU = 2
+        N3CPU = 2
+    else:
+        N1CPU = 1
+        N2CPU = 2  # 2
+        N3CPU = 11 # 16
+else: # 2D
+    N1CPU = 1 if RADIATION else 2
+    N2CPU = 1 if RADIATION and not HPC else 2
+    N3CPU = 1
 
 NCPU_TOT     = N1CPU*N2CPU*N3CPU
 NCELL_TOT    = N1TOT*N2TOT*N3TOT
