@@ -341,6 +341,7 @@ void init_final() {
 
   dump_grid();
     
-//#if METRIC == NUMERICAL
+#if METRIC == NUMERICAL
   dump_prim();
+#endif
 }

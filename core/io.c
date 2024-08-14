@@ -641,6 +641,7 @@ void dump_grid() {
   H5Fclose(file_id);
 }
 
+#if METRIC == NUMERICAL
 void dump_prim() {
     char name[STRLEN], fname[STRLEN];
     sprintf(fname, "prim.h5");
@@ -762,7 +763,7 @@ void dump_prim() {
     H5Fclose(file_id);
 
 }
-
+#endif
 
 void dump() {
   timer_start(TIMER_OUT);

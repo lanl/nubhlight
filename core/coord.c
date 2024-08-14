@@ -329,6 +329,8 @@ void set_metric(double X[NDIM], struct of_geom *g) {
    // printf("The set_metric is called \n");
 }
 
+#if METRIC == NUMERICAL // we need to add this if statement in order to avoid
+// compilation failure for non-numerical metric
 /* Set numerical metric */
 void num_set_metric(grid_geom_type ggeom){
     
@@ -573,6 +575,8 @@ void num_set_metric(grid_geom_type ggeom){
     free(yp);
     free(xp);
 } // num_set_metric end
+
+#endif
 
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]) {
   memset(gcov, 0, NDIM * NDIM * sizeof(double));
