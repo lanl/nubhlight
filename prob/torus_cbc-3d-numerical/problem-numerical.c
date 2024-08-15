@@ -78,7 +78,6 @@ void init_prob() {
     // scale angle
     double thdsqr = 0.0;
     
-    
     set_prim(P);
     
 #if EOS == EOS_TYPE_TABLE

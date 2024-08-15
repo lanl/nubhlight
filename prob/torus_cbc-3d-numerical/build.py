@@ -16,7 +16,7 @@ import bhlight as bhl
 from bhlight import cgs
 from units import UnitSystem
 from math import log10,ceil
-PROB = 'torus_cbc-numerical'
+PROB = 'torus_cbc-3dnumerical'
 
 DO_GAMMA = '-gamma' in sys.argv # No table
 GAMTABLE = '-gamtable' in sys.argv # fake table
