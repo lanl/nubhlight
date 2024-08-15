@@ -8,6 +8,9 @@
 
 #include "decs.h"
 
+// Local functions
+void   coord_transform(double *Pr, int i, int j);
+
 static char   bfield_type[STRLEN];
 static int    renormalize_densities;
 static double rin;
@@ -61,7 +64,7 @@ void init_prob() {
 #endif
     
     // Magnetic field
-    double rho_av, rhomax, umax, pressmax, bsq_ij, bsq_max, q;
+    double rho_av, rhomax, umax, pressmax, hm1max, bsq_ij, bsq_max, q;
     
     // total mass
     double mtot = 0.0;
@@ -116,10 +119,13 @@ void init_prob() {
     pressmax = -INFINITY;
     hm1max   = -INFINITY;
     ZSLOOP(-1, N1, -1, N2, -1, N3) {
+        coord(i, j, k, CENT, X);
+        bl_coord(X, &r, &th);
         // regions outside torus
         if (r < rin) {
             disk_cell[i][j][k] = 0;
         }
+        // regions inside torus
         else {
             disk_cell[i][j][k] = 1;
             
@@ -133,6 +139,7 @@ void init_prob() {
                 lrho0 = lrho_guess;
             // if (lrho0 > log10(1e2*RHO_unit)) lrho0 = lrho_guess;
             EOS_SC_isoentropy_hm1(hm1, &adiabat, &lrho0, &rho, &u);
+            //SUDI: how values of rho and u are feed to this function ?
 #else
             fprintf(stderr, "[Torus]: Bad EOS chosen.\n");
             exit(1);
@@ -145,12 +152,19 @@ void init_prob() {
                 umax = u;
             if (hm1 > hm1max)
               hm1max = hm1;
+              P[i][j][k][UU] *= (1. + 4.e-2 * (get_rand() - 0.5));
+            //SUDI: what is it doing ?
+            
+            // Convert from 4-velocity to 3-velocity
+            coord_transform(P[i][j][k], i, j);
+            //SUDI: We need to get 3-vel, right ?
         }
+    }//ZSLOOP
         
 #if EOS == EOS_TYPE_TABLE && !GAMMA_FALLBACK
-        EOS_SC_adiabat_free(&adiabat);
+    EOS_SC_adiabat_free(&adiabat);
 #endif
-    }//ZSLOOP
+    
 
     // get rhomax, umax globally
     // DEBUG
@@ -172,16 +186,14 @@ void init_prob() {
       if (renormalize_densities) {
         P[i][j][k][RHO] /= rhomax;
         P[i][j][k][UU] /= rhomax;
-        PsaveLocal[i][j][k][RHO] /= rhomax;
-        PsaveLocal[i][j][k][UU] /= rhomax;
       }
 
       if (r > rin) {
   #if EOS == EOS_TYPE_TABLE
-        EOS_SC_fill(PsaveLocal[i][j][k], extra[i][j][k]);
+        EOS_SC_fill(P[i][j][k], extra[i][j][k]);
   #endif
         press = EOS_pressure_rho0_u(
-            PsaveLocal[i][j][k][RHO], PsaveLocal[i][j][k][UU], extra[i][j][k]);
+            P[i][j][k][RHO], P[i][j][k][UU], extra[i][j][k]);
         if (press > pressmax)
           pressmax = press;
       }
@@ -201,6 +213,19 @@ void init_prob() {
       fprintf(stdout, "Beginning fixup.\n"); // debug
     }
     fixup(P, extra); // SUDI: is it required ?
+    
+//    // initialize hot atmosphere, SUDI: is it required?
+//    // Broken.
+//    #if EOS == EOS_TYPE_TABLE //&& !COLD_FLOORS
+//      ZLOOP {
+//        if (P[i][j][k][ATM] < ATM_THRESH) {
+//          coord(i, j, k, CENT, X);
+//          bl_coord(X, &r, &th);
+//          P[i][j][k][UU] = P[i][j][k][RHO] / r;
+//        }
+//      }
+//      fixup(P, extra);
+//    #endif
     
 // SUDI: is bound_prim required ?
 //    if (mpi_io_proc()) {
@@ -261,11 +286,6 @@ void init_prob() {
 
 #if RADIATION && TRACERS
   {
-    if (r < rin) {
-    disk_cell[i][j][k] = 0;
-    else {
-    disk_cell[i][j][k] = 1;
-
     if (mpi_io_proc()) {
       fprintf(stdout, "Setting up tracers\n");
     }
@@ -283,6 +303,8 @@ void init_prob() {
 #endif // TRACERS
 
 // SUDI: magnetic field config should be tested
+    //possibly classic and toroidal won't work in this setup
+    //needs to be revised
   // If we're just testing initial data with no B-fields,
   // we're done.
   if (strcmp(bfield_type, "none") == 0) {
@@ -346,7 +368,7 @@ void init_prob() {
         if (bsq_ij > bsq_max)
           bsq_max = bsq_ij;
       }
-    } else if (strcmp(bfield_type, "uniformZ") == 0) {
+    } else if (strcmp(bfield_type, "uniformz") == 0) {
     // Magnetic field scales with rho/rhomax.
     // Loop in z is safe b/c initial data is axisymmetric
     bsq_max = 0.;
@@ -395,6 +417,81 @@ void init_prob() {
     printf("MAX bsq = %e Pmax = %e\n", bsq_max, pressmax);
     printf("FINAL BETA: %e\n", pressmax / (0.5 * bsq_max));
   }
+}
+      
+// Convert Boyer-Lindquist four-velocity to MKS 3-velocity
+void coord_transform(double *Pr, int ii, int jj) {
+    double          X[NDIM], r, th, ucon[NDIM], trans[NDIM][NDIM], tmp[NDIM];
+    double          AA, BB, CC, discr;
+    double          alpha, gamma, beta[NDIM];
+    struct of_geom *geom, blgeom;
+
+    coord(ii, jj, 0, CENT, X);
+    bl_coord(X, &r, &th);
+    blgset(ii, jj, &blgeom);
+
+    ucon[1] = Pr[U1];
+    ucon[2] = Pr[U2];
+    ucon[3] = Pr[U3];
+
+    AA = blgeom.gcov[0][0];
+    BB = 2. * (blgeom.gcov[0][1] * ucon[1] + blgeom.gcov[0][2] * ucon[2] +
+                  blgeom.gcov[0][3] * ucon[3]);
+    CC = 1. + blgeom.gcov[1][1] * ucon[1] * ucon[1] +
+         blgeom.gcov[2][2] * ucon[2] * ucon[2] +
+         blgeom.gcov[3][3] * ucon[3] * ucon[3] +
+         2. * (blgeom.gcov[1][2] * ucon[1] * ucon[2] +
+                  blgeom.gcov[1][3] * ucon[1] * ucon[3] +
+                  blgeom.gcov[2][3] * ucon[2] * ucon[3]);
+
+    discr   = BB * BB - 4. * AA * CC;
+    ucon[0] = (-BB - sqrt(discr)) / (2. * AA);
+    // This is ucon in BL coords
+
+    // transform to Kerr-Schild
+    // Make transform matrix
+    memset(trans, 0, 16 * sizeof(double));
+    for (int mu = 0; mu < NDIM; mu++) {
+      trans[mu][mu] = 1.;
+    }
+    trans[0][1] = 2. * r / (r * r - 2. * r + a * a);
+    trans[3][1] = a / (r * r - 2. * r + a * a);
+
+    // Transform from BL to KS coordinates
+    for (int mu = 0; mu < NDIM; mu++)
+      tmp[mu] = 0.;
+    for (int mu = 0; mu < NDIM; mu++) {
+      for (int nu = 0; nu < NDIM; nu++) {
+        tmp[mu] += trans[mu][nu] * ucon[nu];
+      }
+    }
+    for (int mu = 0; mu < NDIM; mu++)
+      ucon[mu] = tmp[mu];
+
+    // Transform from KS to MKS coordinates
+    set_dxdX(X, trans);
+    for (int mu = 0; mu < NDIM; mu++)
+      tmp[mu] = 0.;
+    for (int mu = 0; mu < NDIM; mu++) {
+      for (int nu = 0; nu < NDIM; nu++) {
+        tmp[mu] += trans[mu][nu] * ucon[nu];
+      }
+    }
+    for (int mu = 0; mu < NDIM; mu++)
+      ucon[mu] = tmp[mu];
+
+    // Solve for v. Use same u^t, unchanged under KS -> KS'
+    geom  = get_geometry(ii, jj, 0, CENT);
+    alpha = 1.0 / sqrt(-geom->gcon[0][0]);
+    gamma = ucon[0] * alpha;
+
+    beta[1] = alpha * alpha * geom->gcon[0][1];
+    beta[2] = alpha * alpha * geom->gcon[0][2];
+    beta[3] = alpha * alpha * geom->gcon[0][3];
+
+    Pr[U1] = ucon[1] + beta[1] * gamma / alpha;
+    Pr[U2] = ucon[2] + beta[2] * gamma / alpha;
+    Pr[U3] = ucon[3] + beta[3] * gamma / alpha;
 }
 
 #if METRIC == NUMERICAL

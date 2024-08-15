@@ -24,7 +24,7 @@ RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
 NOB = '-nob' in sys.argv # or INITIAL # no B fields
 TOROIDALB = '-toroidalb' in sys.argv
-UNIFORMZB = '-uniformZ' in sys.argv
+UNIFORMZB = '-uniformz' in sys.argv
 RENORM = '-renorm' in sys.argv
 NORENORM = '-norenorm' in sys.argv or (not RENORM)
 CLASSIC = '-classic' in sys.argv
@@ -66,7 +66,7 @@ elif TOROIDALB:
 else CLASSIC:
     BFIELD = "classic"
 else UNIFORMZB:
-    BFIELD = "uniformZ"
+    BFIELD = "uniformz"
 
 if RELTABLE:
     bhl.report_var('EOS','RELTABLE')
@@ -132,7 +132,7 @@ else:
     bhl.report_var('DISK_TYPE','CBC')
     Rin = 3.7
     Rmax = 9.268 if THREED else 9.03
-    RHO_unit = 6.17244*1e17 * 1.85e-08 if THREED else 6.17244*1e17 * 1.85e-08
+    RHO_unit = 6.17244*1e17 if
 
 # Note that if scattering is enabled,
 # you'll get twice as many photons
