@@ -61,12 +61,12 @@ RENORM = not NORENORM
 
 if NOB:
     BFIELD = "none"
+elif UNIFORMZB:
+    BFIELD = "uniformz"
 elif TOROIDALB:
     BFIELD = "toroidal"
-else CLASSIC:
+else:
     BFIELD = "classic"
-else UNIFORMZB:
-    BFIELD = "uniformz"
 
 if RELTABLE:
     bhl.report_var('EOS','RELTABLE')
@@ -312,6 +312,9 @@ bhl.config.set_cparm('OPENMP', OPENMP)
 bhl.config.set_cparm('METRIC', 'NUMERICAL')
 bhl.config.set_cparm('DEREFINE_POLES', THREED or FAKETHREED)
 
+#EXIT AFTER GRID SETTING
+bhl.config.set_cparm('EXIT_ON_INIT', True)
+
 # ELECTRONS. DO NOT USE THESE HERE!
 bhl.config.set_cparm('ELECTRONS', False)
 
@@ -331,7 +334,7 @@ bhl.config.set_cparm('X3L_INFLOW', False)
 bhl.config.set_cparm('X3R_INFLOW', False)
 bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
 
-# EOS
+#EOS
 bhl.config.set_cparm("EOS", EOS)
 bhl.config.set_cparm('NVAR_PASSIVE', NVAR_PASSIVE)
 bhl.config.set_cparm('GAMMA_FALLBACK', GAMMA_FALLBACK)
@@ -387,6 +390,8 @@ bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt)
 bhl.config.set_rparm('a', 'double', default = ABH)
 bhl.config.set_rparm('mbh', 'double', default = MBH)
 bhl.config.set_rparm('M_unit', 'double', default = M_UNIT)
+if RELTABLE:
+    bhl.config.set_rparm('RHO_unit',  'double', default = RHO_unit)
 bhl.config.set_rparm("bfield", 'string', default = BFIELD)
 bhl.config.set_rparm("rin", "double", default = Rin)
 bhl.config.set_rparm("rmax", "double", default = Rmax)

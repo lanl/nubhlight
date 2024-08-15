@@ -19,9 +19,12 @@ static double beta;
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 static double kappa_eos;
 #endif
+#if EOS == EOS_TYPE_TABLE
+static double const_ye; // if > 0, set ye this way
 #if !GAMMA_FALLBACK
 static double entropy;
 static double lrho_guess;
+#endif
 #endif
 #if RADIATION && TRACERS
 static int ntracers;
@@ -41,9 +44,12 @@ void set_problem_params() {
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
   set_param("kappa_eos", &kappa_eos);
 #endif
+#if EOS == EOS_TYPE_TABLE
+  set_param("const_ye", &const_ye);
 #if !GAMMA_FALLBACK
   set_param("entropy", &entropy);
   set_param("lrho_guess", &lrho_guess);
+#endif
 #endif
 #if RADIATION && TRACERS
   set_param("ntracers", &ntracers);
@@ -56,7 +62,7 @@ void init_prob() {
     struct of_geom *geom;
     
     // Disk interior
-    double hm1;
+    double hm1 = 0.;
     
     // Diagnostics for entropy
 #if EOS == EOS_TYPE_TABLE
@@ -71,6 +77,7 @@ void init_prob() {
 
     // scale angle
     double thdsqr = 0.0;
+    
     
     set_prim(P);
     
@@ -129,7 +136,7 @@ void init_prob() {
         else {
             disk_cell[i][j][k] = 1;
             
-            hm1 = exp(c[i][j][k]) - 1.;
+//            hm1 = exp(lnh[i][j][k]) - 1.; // SUDI: How to compute hm1 for our case ?
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
             rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
             u   = kappa_eos * pow(rho, gam) / (gam - 1.);
@@ -144,15 +151,15 @@ void init_prob() {
             fprintf(stderr, "[Torus]: Bad EOS chosen.\n");
             exit(1);
 #endif
-            rho = P[i][j][k][RHO]
+            rho = P[i][j][k][RHO];
             if (rho > rhomax)
                 rhomax = rho;
-            u = P[i][j][k][UU]
+            u = P[i][j][k][UU];
             if (u > umax)
                 umax = u;
             if (hm1 > hm1max)
               hm1max = hm1;
-              P[i][j][k][UU] *= (1. + 4.e-2 * (get_rand() - 0.5));
+            P[i][j][k][UU] *= (1. + 4.e-2 * (get_rand() - 0.5));
             //SUDI: what is it doing ?
             
             // Convert from 4-velocity to 3-velocity

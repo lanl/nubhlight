@@ -671,6 +671,9 @@ def build(PROBLEM, PATHS):
         write_rparm(pf, 'x3Max')
       if CPARMS['METRIC'] == 'MKS':
         write_rparm(pf, 'Rout')
+      #added by SUDI
+      if CPARMS['METRIC'] == 'NUMERICAL':
+        write_rparm(pf, 'Rout')
         if util.parm_is_active(CPARMS, 'RADIATION'):
           write_rparm(pf, 'Rout_rad')
 
@@ -682,6 +685,10 @@ def build(PROBLEM, PATHS):
         if CPARMS['METRIC'] == 'MKS':
           write_rparm(pf, 'mbh')
           write_rparm(pf, 'M_unit')
+        #added by SUDI
+#        if CPARMS['METRIC'] == 'NUMERICAL':
+#          write_rparm(pf, 'mbh')
+#          write_rparm(pf, 'M_unit')
 
       pf.write("\n# FLUID\n")
       write_rparm(pf, 'cour')
