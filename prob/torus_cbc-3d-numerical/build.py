@@ -132,7 +132,7 @@ else:
     bhl.report_var('DISK_TYPE','CBC')
     Rin = 3.7
     Rmax = 9.268 if THREED else 9.03
-    RHO_unit = 6.17244*1e17 if
+    RHO_unit = 6.17244*1e17 if THREED else 6.17244*1e17
 
 # Note that if scattering is enabled,
 # you'll get twice as many photons
