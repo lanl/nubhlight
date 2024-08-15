@@ -13,7 +13,13 @@ static int    renormalize_densities;
 static double rin;
 static double rmax;
 static double beta;
-
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+static double kappa_eos;
+#endif
+#if !GAMMA_FALLBACK
+static double entropy;
+static double lrho_guess;
+#endif
 #if RADIATION && TRACERS
 static int ntracers;
 #endif
@@ -29,6 +35,13 @@ void set_problem_params() {
   set_param("rmax", &rmax);
   set_param("beta", &beta);
   set_param("renorm_dens", &renormalize_densities);
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+  set_param("kappa_eos", &kappa_eos);
+#endif
+#if !GAMMA_FALLBACK
+  set_param("entropy", &entropy);
+  set_param("lrho_guess", &lrho_guess);
+#endif
 #if RADIATION && TRACERS
   set_param("ntracers", &ntracers);
 #endif
@@ -39,10 +52,212 @@ void init_prob() {
     double r, th, u, rho, press, X[NDIM];
     struct of_geom *geom;
     
+    // Disk interior
+    double hm1;
+    
+    // Diagnostics for entropy
+#if EOS == EOS_TYPE_TABLE
+      double ent, entmax;
+#endif
+    
     // Magnetic field
     double rho_av, rhomax, umax, pressmax, bsq_ij, bsq_max, q;
     
+    // total mass
+    double mtot = 0.0;
+
+    // scale angle
+    double thdsqr = 0.0;
+    
     set_prim(P);
+    
+#if EOS == EOS_TYPE_TABLE
+#if !GAMMA_FALLBACK
+  // guesses. Should be function local.
+  double lrho0 = lrho_guess;
+  // find constant entropy isocontour in table
+  struct of_adiabat adiabat;
+  int status = EOS_SC_find_adiabat_1d(entropy, const_ye, &adiabat);
+    // SUDI: how to change const_ye ?
+
+  if (status != ROOT_SUCCESS) {
+    fprintf(stderr,
+        "[Torus]: "
+        "Failed to find isocontour for entropy\n"
+        "\ts        = %e\n"
+        "\tye       = %e\n",
+        entropy, const_ye); // SUDI: how to change const_ye ?
+    exit(1);
+  }
+
+  double hm1_min = EOS_SC_hm1_min_adiabat(&adiabat);
+  // DEBUG
+  if (mpi_io_proc()) {
+    fprintf(stderr,
+        "\nADIABAT FOUND!\n"
+        "hm1_min     = %e\n"
+        "hm1_min_cgs = %e\n"
+        "lrho_min    = %e\n"
+        "lrho_max    = %e\n"
+        "\n",
+        hm1_min, hm1_min * CL * CL, adiabat.lrho_min, adiabat.lrho_max);
+    sleep(1);
+    // EOS_SC_print_adiabat(&adiabat);
+    // sleep(1);
+    fprintf(stderr, "\n");
+  }
+// sleep(1);
+// exit(1);
+#endif
+#endif // EOS_TYPE_TABLE
+    
+    rhomax   = -INFINITY;
+    umax     = -INFINITY;
+    pressmax = -INFINITY;
+    hm1max   = -INFINITY;
+    ZSLOOP(-1, N1, -1, N2, -1, N3) {
+        // regions outside torus
+        if (r < rin) {
+            disk_cell[i][j][k] = 0;
+        }
+        else {
+            disk_cell[i][j][k] = 1;
+            
+            hm1 = exp(c[i][j][k]) - 1.;
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+            rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
+            u   = kappa_eos * pow(rho, gam) / (gam - 1.);
+#elif EOS == EOS_TYPE_TABLE
+            hm1 += hm1_min;
+            if (lrho0 < EOS_SC_get_min_lrho())
+                lrho0 = lrho_guess;
+            // if (lrho0 > log10(1e2*RHO_unit)) lrho0 = lrho_guess;
+            EOS_SC_isoentropy_hm1(hm1, &adiabat, &lrho0, &rho, &u);
+#else
+            fprintf(stderr, "[Torus]: Bad EOS chosen.\n");
+            exit(1);
+#endif
+            rho = P[i][j][k][RHO]
+            if (rho > rhomax)
+                rhomax = rho;
+            u = P[i][j][k][UU]
+            if (u > umax)
+                umax = u;
+            if (hm1 > hm1max)
+              hm1max = hm1;
+        }
+        
+#if EOS == EOS_TYPE_TABLE && !GAMMA_FALLBACK
+        EOS_SC_adiabat_free(&adiabat);
+#endif
+    }//ZSLOOP
+
+    // get rhomax, umax globally
+    // DEBUG
+    umax   = mpi_max(umax);
+    rhomax = mpi_max(rhomax);
+    hm1max = mpi_max(hm1max);
+
+    if (mpi_io_proc()) {
+      fprintf(stdout, "rhomax   = %f\n", rhomax);
+      fprintf(stdout, "umax     = %f\n", umax);
+      fprintf(stdout, "hm1max   = %f\n", hm1max);
+    }
+    
+    // Normalize densities
+    ZSLOOP(-1, N1, -1, N2, -1, N3) {
+      coord(i, j, k, CENT, X);
+      bl_coord(X, &r, &th);
+
+      if (renormalize_densities) {
+        P[i][j][k][RHO] /= rhomax;
+        P[i][j][k][UU] /= rhomax;
+        PsaveLocal[i][j][k][RHO] /= rhomax;
+        PsaveLocal[i][j][k][UU] /= rhomax;
+      }
+
+      if (r > rin) {
+  #if EOS == EOS_TYPE_TABLE
+        EOS_SC_fill(PsaveLocal[i][j][k], extra[i][j][k]);
+  #endif
+        press = EOS_pressure_rho0_u(
+            PsaveLocal[i][j][k][RHO], PsaveLocal[i][j][k][UU], extra[i][j][k]);
+        if (press > pressmax)
+          pressmax = press;
+      }
+    }
+    
+    // print diagnostics
+    pressmax = mpi_max(pressmax);
+    if (mpi_io_proc()) {
+      fprintf(stdout, "After renormalization:\n");
+      fprintf(stdout, "\tpressmax = %e\n", pressmax);
+    }
+    if (renormalize_densities) {
+      umax /= rhomax;
+      rhomax = 1.;
+    }
+    if (mpi_io_proc()) {
+      fprintf(stdout, "Beginning fixup.\n"); // debug
+    }
+    fixup(P, extra); // SUDI: is it required ?
+    
+// SUDI: is bound_prim required ?
+//    if (mpi_io_proc()) {
+//      fprintf(stdout, "Bounding prim.\n"); // debug
+//    }
+//    bound_prim(P);
+//    if (mpi_io_proc()) {
+//      fprintf(stdout, "Fixup finished.\n"); // debug
+//    }
+    
+    
+    ZLOOP {
+      if (disk_cell[i][j][k]) {
+        double rho_integrand =
+            P[i][j][k][RHO] * ggeom[i][j][newk][CENT].g * dx[1] * dx[2] * dx[3];
+        mtot += rho_integrand;
+
+        coord(i, j, k, CENT, X);
+        bl_coord(X, &r, &th);
+        thdsqr += rho_integrand * (th - M_PI / 2) * (th - M_PI / 2);
+      }
+    }
+    mtot       = mpi_reduce(mtot);
+    thdsqr     = mpi_reduce(thdsqr);
+    double thd = sqrtf(thdsqr / mtot);
+    if (mpi_io_proc()) {
+      printf("TOTAL MASS:\n"
+             "\tcode units = %g\n"
+             "\tcgs        = %g\n"
+             "\tMsun       = %g\n",
+          mtot, mtot * M_unit, mtot * M_unit / MSUN);
+      printf("Opening angle of initial torus:\n"
+             "\tthd        = %g\n",
+          thd);
+    }
+    
+// debug
+#if EOS == EOS_TYPE_TABLE
+    if (mpi_io_proc()) {
+    fprintf(stdout, "Calculating max entropy:\n");
+    }
+    entmax = -1.0;
+    ZLOOP {
+    coord(i, j, k, CENT, X);
+    bl_coord(X, &r, &th);
+    if (r > rin) {
+      EOS_SC_fill(P[i][j][k], extra[i][j][k]);
+      ent = EOS_entropy_rho0_u(P[i][j][k][RHO], P[i][j][k][UU], extra[i][j][k]);
+      if (ent > entmax)
+        entmax = ent;
+    }
+    }
+    entmax = mpi_max(entmax);
+    if (mpi_io_proc()) {
+    fprintf(stdout, "Maximum entropy in disk = %e\n", entmax);
+    }
+#endif
 
 #if RADIATION && TRACERS
   {
@@ -67,6 +282,7 @@ void init_prob() {
   }
 #endif // TRACERS
 
+// SUDI: magnetic field config should be tested
   // If we're just testing initial data with no B-fields,
   // we're done.
   if (strcmp(bfield_type, "none") == 0) {

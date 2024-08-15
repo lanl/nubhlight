@@ -23,7 +23,8 @@ GAMTABLE = '-gamtable' in sys.argv # fake table
 RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
 NOB = '-nob' in sys.argv # or INITIAL # no B fields
-TOROIDALB = "-toroidalb" in sys.argv
+TOROIDALB = '-toroidalb' in sys.argv
+UNIFORMZB = '-uniformZ' in sys.argv
 RENORM = '-renorm' in sys.argv
 NORENORM = '-norenorm' in sys.argv or (not RENORM)
 CLASSIC = '-classic' in sys.argv
@@ -62,9 +63,9 @@ if NOB:
     BFIELD = "none"
 elif TOROIDALB:
     BFIELD = "toroidal"
-else:
+else CLASSIC:
     BFIELD = "classic"
-else:
+else UNIFORMZB:
     BFIELD = "uniformZ"
 
 if RELTABLE:
@@ -131,7 +132,7 @@ else:
     bhl.report_var('DISK_TYPE','CBC')
     Rin = 3.7
     Rmax = 9.268 if THREED else 9.03
-    RHO_unit = 6.9*10.**11 if THREED else 3.6*10.**11
+    RHO_unit = 6.17244*1e17 * 1.85e-08 if THREED else 6.17244*1e17 * 1.85e-08
 
 # Note that if scattering is enabled,
 # you'll get twice as many photons
@@ -198,7 +199,6 @@ DTl = 1.e-2 if INITIAL else 5.e-1
 DTr = 100
 DNr = 50 if RESTARTTEST else 1000
 
-
 if TRACERTEST or RESTARTTEST:
     N1TOT = 36
     N2TOT = 36
@@ -220,7 +220,6 @@ else: # 2D
     N1TOT = 112 if SMALL else 256
     N2TOT = 112 if SMALL else 256
     N3TOT = 1
-
 
 if TRACERTEST:
     N1CPU = 1
@@ -267,7 +266,7 @@ OPENMP = True
 RHOMIN, RHOMAX, NRHO =  1e-8, 1e8, 200
 UMIN, UMAX, NU = 1e-8, 1e8, 200
 YEMIN, YEMAX, NYE = 0.0, 0.6, 50
-CRASH_ON_SOUND_SPEED = False # is it okay ?
+CRASH_ON_SOUND_SPEED = False
 
 if RELTABLE:
     tablepath = TABLEPATH
@@ -281,6 +280,8 @@ if GAMTABLE:
                      units,  GAMMA,  tablepath,
                      CRASH_ON_SOUND_SPEED)
 print("Make sure to move the generated table to your run directory!")
+
+tablepath = TABLEPATH
 
 # Radiation units
 NUMIN_MEV = 1.0
