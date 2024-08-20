@@ -443,6 +443,9 @@ def build(PROBLEM, PATHS):
     if CPARMS['METRIC'] == 'MKS':
       set_rparm('M_unit', 'double')
       set_rparm('mbh', 'double', default = 1.989e34)
+#    if CPARMS['METRIC'] == 'NUMERICAL':
+#      set_rparm('L_unit', 'double')
+#      set_rparm('M_unit', 'double')
   
   if CPARMS['EOS'] == 'EOS_TYPE_GAMMA':
     set_rparm('gam', 'double', default = 5./3.)
@@ -671,9 +674,9 @@ def build(PROBLEM, PATHS):
         write_rparm(pf, 'x3Max')
       if CPARMS['METRIC'] == 'MKS':
         write_rparm(pf, 'Rout')
-      #added by SUDI
-      if CPARMS['METRIC'] == 'NUMERICAL':
-        write_rparm(pf, 'Rout')
+#      #added by SUDI
+#      if CPARMS['METRIC'] == 'NUMERICAL':
+#        write_rparm(pf, 'Rout')
         if util.parm_is_active(CPARMS, 'RADIATION'):
           write_rparm(pf, 'Rout_rad')
 

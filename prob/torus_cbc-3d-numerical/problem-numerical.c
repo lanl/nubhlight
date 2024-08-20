@@ -20,7 +20,6 @@ static int ntracers;
 
 // Make global so it ends on heap
 static double           A[N1 + 2 * NG][N2 + 2 * NG];
-static grid_int_type    disk_cell;
 
 void set_problem_params() {
   // supports: none, toroidal, classic
@@ -109,7 +108,7 @@ void init_prob() {
     }
     bound_prim(P);
     
-// debug
+//// debug
     if (mpi_io_proc()) {
     fprintf(stdout, "Calculating max entropy:\n");
     }
@@ -117,13 +116,13 @@ void init_prob() {
     ZLOOP {
     coord(i, j, k, CENT, X);
     bl_coord(X, &r, &th);
-      
+
     EOS_SC_fill(P[i][j][k], extra[i][j][k]);
     ent = EOS_entropy_rho0_u(P[i][j][k][RHO], P[i][j][k][UU], extra[i][j][k]);
       if (ent > entmax)
         entmax = ent;
     }
-    
+
     entmax = mpi_max(entmax);
     if (mpi_io_proc()) {
     fprintf(stdout, "Maximum entropy in disk = %e\n", entmax);
@@ -247,7 +246,7 @@ void init_prob() {
 }
 
 
-#if METRIC == NUMERICAL
+//#if METRIC == NUMERICAL
 /* Set primitive from Carpet 3d profile */
 void set_prim(grid_prim_type P){
     
@@ -405,21 +404,19 @@ void set_prim(grid_prim_type P){
         
         P[i][j][k][RHO] = rho_code; //* (6.17244e+17 / (11357801703.091352)) ; // 1 rest-mass density unit in Cactus= 6.17747e+17 g/cm^3
 
-            #if EOS == EOS_TYPE_TABLE
-            {
-                P[i][j][k][YE] = ye[iflat];
-                PASSTYPE(YE) = PASSTYPE_NUMBER;
-                P[i][j][k][YE_EM] = ye[iflat];
-                P[i][j][k][ATM] = NOT_ATM;
+            
+        P[i][j][k][YE] = ye[iflat];
+        PASSTYPE(YE) = PASSTYPE_NUMBER;
+        P[i][j][k][YE_EM] = ye[iflat];
+        P[i][j][k][ATM] = NOT_ATM;
 
-                extra[EOS_YE] = ye[iflat];
+        extra[EOS_YE] = ye[iflat];
 
-                #if NVAR_PASSIVE >= 4
-                P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho_code;
-                PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
-                #endif
-            }
-            #endif
+        #if NVAR_PASSIVE >= 4
+        P[i][j][k][PASSIVE_START+3] = ye[iflat] * rho_code;
+        PASSTYPE(PASSIVE_START+3) = PASSTYPE_INTRINSIC;
+        #endif
+            
 
         P[i][j][k][UU] = EOS_u_press(press_code, rho_code, extra);
         P[i][j][k][B1] = 0.;
@@ -475,4 +472,4 @@ void set_prim(grid_prim_type P){
     free(yp);
     free(xp);
 } // set_prim end
-#endif
+//#endif

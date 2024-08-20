@@ -42,7 +42,6 @@ HDF = '-hdf' in sys.argv
 LIMIT_RAD = '-limit' in sys.argv
 MORE_RAD = '-morenu' in sys.argv
 
-HPC = '-hpc' in sys.argv # used only for 2d runs
 QUAD = '-quad' in sys.argv # quadrant symmetry
 KILL = '-kill' in sys.argv # kill all packets
 
@@ -70,8 +69,9 @@ if NEUTRINOS:
 else:
     RADIATION = False
     
-TABLEPATH = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
-TABLEPATH = "../../data/"+TABLEPATH
+EOSNAME = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
+TABLEPATH = "../../data/"+EOSNAME
+#TABLEPATH = EOSNAME
 
 CARPETPROFNAME = "245414.h5"
 CARPETPROFPATH = "../../data/"+CARPETPROFNAME
@@ -105,7 +105,7 @@ bhl.report_var('RHO_unit',RHO_unit)
 # in code units
 
 L_UNIT = cgs['GNEWT']*cgs['MSOLAR']*1/(cgs['CL']**2) # M = 1*M_Sun
-M_UNIT = RHO_unit*(L_unit**3)
+M_UNIT = RHO_unit*(L_UNIT**3)
 
 # final time
 if NOB and not INITIAL:
@@ -121,12 +121,12 @@ if TOROIDALB:
     TFINAL *= 2
 
 Rout = 1000.
-Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
-Rout_vis = Rout
-
-# time when radiation resolution controls turn on
-t0_tune_emiss = Rout_rad if LIMIT_RAD else -1.
-t0_tune_scatt = 2.*max(Rout_rad,t0_tune_emiss)
+#Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
+#Rout_vis = Rout
+#
+## time when radiation resolution controls turn on
+#t0_tune_emiss = Rout_rad if LIMIT_RAD else -1.
+#t0_tune_scatt = 2.*max(Rout_rad,t0_tune_emiss)
 
 if LIMIT_RAD:
     tune_emiss = 1.
@@ -141,13 +141,13 @@ DTl = 1.e-2 if INITIAL else 5.e-1
 DTr = 100
 DNr = 50 if RESTARTTEST else 1000
 
-N1TOT = 192
-N2TOT = 128
-N3TOT = 16
+N1TOT = 32
+N2TOT = 32
+N3TOT = 1
 
 N1CPU = 1
-N2CPU = 2
-N3CPU = 2
+N2CPU = 1
+N3CPU = 1
     
 NCPU_TOT     = N1CPU*N2CPU*N3CPU
 NCELL_TOT    = N1TOT*N2TOT*N3TOT
@@ -162,9 +162,6 @@ NVP0 = 3
 NVAR_PASSIVE = NVP0 if RELTABLE else 0
 #OPENMP = not DEBUG
 OPENMP = True
-
-if RELTABLE:
-    tablepath = TABLEPATH
 
 tablepath = TABLEPATH
 
@@ -242,6 +239,8 @@ bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 
+bhl.config.set_cparm("EXIT_ON_INIT", True)
+
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
     bhl.config.set_cparm("EXIT_ON_INIT", True)
@@ -253,20 +252,22 @@ bhl.config.set_rparm('carpetprofpath', 'string', default = CARPETPROFPATH)
 # generic
 bhl.config.set_rparm('tf', 'double', default = TFINAL)
 bhl.config.set_rparm('dt', 'double', default = 1.e-6)
+bhl.config.set_rparm('Rout', 'double', default = Rout)
 # Maybe this should be something further out. Fine for test.
-bhl.config.set_rparm('Rout_rad', 'double', default = Rout_rad)
-bhl.config.set_rparm('Rout_vis', 'double', default = Rout_vis)
+#bhl.config.set_rparm('Rout_rad', 'double', default = Rout_rad)
+#bhl.config.set_rparm('Rout_vis', 'double', default = Rout_vis)
 bhl.config.set_rparm('DTd', 'double', default = DTd)
 bhl.config.set_rparm('DTl', 'double', default = DTl)
 bhl.config.set_rparm('DTr', 'double', default = DTr)
 bhl.config.set_rparm('DNr', 'integer', default = DNr)
 bhl.config.set_rparm('tune_emiss', 'double', default = tune_emiss)
-bhl.config.set_rparm('t0_tune_emiss', 'double', default = t0_tune_emiss)
-bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt) 
+#bhl.config.set_rparm('t0_tune_emiss', 'double', default = t0_tune_emiss)
+#bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt) 
 
 # problem
 bhl.config.set_rparm('M_unit', 'double', default = M_UNIT)
 bhl.config.set_rparm('L_unit', 'double', default = L_UNIT)
+bhl.config.set_rparm('RHO_unit', 'double', default = RHO_unit)
 bhl.config.set_rparm("bfield", 'string', default = BFIELD)
 bhl.config.set_rparm("beta", "double", default = BETA)
 bhl.config.set_rparm("renorm_dens", "int", default = int(RENORM))
