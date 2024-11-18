@@ -420,6 +420,11 @@ bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
 
+bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
+bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
+bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
+bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
+
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
     bhl.config.set_cparm("EXIT_ON_INIT", True)
