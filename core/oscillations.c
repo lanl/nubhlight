@@ -22,16 +22,16 @@ void accumulate_local_angles() {
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
     while (ph != NULL) {
-      if (ph->type == TYPE_TRACER)
-        continue;
-
-      double X[NDIM];
-      double Kcov[NDIM];
-      double Kcon[NDIM];
-      int i, j, k;
-      get_X_K_interp(ph, t, P, X, Kcov, Kcon);
-      Xtoijk(X, &i, &j, &k);
-      local_accum_superph(X, Kcov, ph->w, ph->type, ggeom[i][j][CENT].gcon, local_angles);
+      if (ph->type != TYPE_TRACER) {
+        double X[NDIM];
+        double Kcov[NDIM];
+        double Kcon[NDIM];
+        int i, j, k;
+        get_X_K_interp(ph, t, P, X, Kcov, Kcon);
+        Xtoijk(X, &i, &j, &k);
+        local_accum_superph(X, Kcov, ph->w, ph->type,
+                            ggeom[i][j][CENT].gcon, local_angles);
+      }
       ph = ph->next;
     }
   }
