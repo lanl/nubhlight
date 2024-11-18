@@ -31,17 +31,17 @@ flags_base = '-Wall -Werror -fdiagnostics-color -fopenmp'
 
 def matches_host():
   host = os.uname()[1]
-  return 'darwin-fe' in host
+  return 'darwin-fe' in host# or 'cn' in host
 
 def get_options():
   host = {}
 
-  local_root = os.path.join(os.environ['HOME'],'local','gcc')
+  local_root = os.path.join(os.environ['HOME'],'local','skylake-gold')
   host['NAME']           = os.uname()[1]
-  host['COMPILER']       = os.path.join(local_root,'hdf5-parallel','bin','h5pcc')
+  host['COMPILER']       = os.path.join(local_root,'bin','h5pcc')
   host['COMPILER_FLAGS'] = flags_base + ' ' + '-O3 -march=native'
   host['DEBUG_FLAGS']    = flags_base + ' ' + '-g -O0'
-  host['GSL_DIR']        = os.path.join(local_root,'gsl')
+  host['GSL_DIR']        = os.path.join(local_root,'lib')
 
   return host
 
