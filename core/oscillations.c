@@ -10,8 +10,10 @@
 #if RADIATION
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
-void local_accum_superph(double X[NDIM], double Kcov[NDIM], double w, int type,
-                         double gcon[NDIM][NDIM], grid_local_angles_type local_angles);
+void local_accum_superph(double X[NDIM], double Kcov[NDIM],
+                         double w, int type,
+                         struct of_geom *pgeom,
+                         grid_local_angles_type local_angles);
 
 void accumulate_local_angles() {
   static const int LOCAL_ANGLES_SIZE = 2 * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 *
@@ -29,15 +31,8 @@ void accumulate_local_angles() {
         int i, j, k;
         get_X_K_interp(ph, t, P, X, Kcov, Kcon);
         Xtoijk(X, &i, &j, &k);
-        printf("i, j, k = %d %d %d\n"
-               "gcon diag = %.14e %.14e %.14e %.14e\n",
-               i,j,k,
-               ggeom[i][j][CENT].gcon[0][0],
-               ggeom[i][j][CENT].gcon[1][1],
-               ggeom[i][j][CENT].gcon[2][2],
-               ggeom[i][j][CENT].gcon[3][3]);
         local_accum_superph(X, Kcov, ph->w, ph->type,
-                            ggeom[i][j][CENT].gcon, local_angles);
+                            &ggeom[i][j][CENT], local_angles);
       }
       ph = ph->next;
     }
@@ -46,18 +41,20 @@ void accumulate_local_angles() {
   mpi_dbl_allreduce_array((double*)local_angles, LOCAL_ANGLES_SIZE);
 }
 
-void local_accum_superph(double X[NDIM], double Kcov[NDIM], double w, int type,
-                         double gcon[NDIM][NDIM], grid_local_angles_type local_angles) {
+void local_accum_superph(double X[NDIM], double Kcov[NDIM],
+                         double w, int type,
+                         struct of_geom *pgeom,
+                         grid_local_angles_type local_angles) {
   if (type == TYPE_TRACER)
     return;
 
   // JMM: If we use more complicated bases this is more complicated
-  double X1norm = sqrt(abs(gcon[1][1]));
-  double X2norm = sqrt(abs(gcon[2][2]));
+  double X1norm = sqrt(abs(pgeom->gcon[1][1]));
+  double X2norm = sqrt(abs(pgeom->gcon[2][2]));
   // change this for other basis vectors
   // does not work behind horizon
-  double X1vec[NDIM] = {0, 1. / X1norm, 0, 0};
-  double X2vec[NDIM] = {0, 0, 1. / X2norm, 0};
+  double X1vec[NDIM] = {0, 1. / (X1norm + SMALL), 0, 0};
+  double X2vec[NDIM] = {0, 0, 1. / (X2norm + SMALL), 0};
 
   double costh1 = 0;
   double costh2 = 0;
