@@ -48,9 +48,6 @@ void local_accum_superph(double X[NDIM],
                          struct of_geom *pgeom,
                          grid_local_angles_type local_angles) {
   if (type == TYPE_TRACER) return;
-  // does not work behind horizon or the ergosphere. Exclude.
-  if ((pgeom->gcov[1][1] < 0) || (pgeom->gcov[3][3] < 0)) return;
-
   // JMM: If we use more complicated bases this is more complicated
   // change this for other basis vectors
   double X1norm = sqrt(fabs(pgeom->gcov[1][1]));
@@ -73,14 +70,8 @@ void local_accum_superph(double X[NDIM],
       knorm += fabs((pgeom->gcov[mu][nu])*Kcon[mu]*Kcon[mu]);
     }
   }
-  // this is the same, I'm being paranoid
-  // TODO: REMOVE
-  double ktime = 1 + fabs(Kcon[0]*Kcov[0]);
-  SDLOOP {
-    ktime += 2*fabs((pgeom->gcov[0][mu])*Kcon[0]*Kcon[mu]);
-  }
   // sqrt the inner product and lets go
-  knorm = sqrt(fabs(MY_MAX(knorm, ktime)));
+  knorm = sqrt(knorm);
   knorm = 1./(fabs(knorm) + SMALL);
   costh1 *= knorm;
   costh2 *= knorm;
@@ -89,8 +80,6 @@ void local_accum_superph(double X[NDIM],
   int ix2     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX2 - 1, (X[2] - startx_rad[2]) / local_dx2_rad));
   int icosth1 = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh1 + 1) / local_dx_costh));
   int icosth2 = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh2 + 1) / local_dx_costh));
-  printf("X[1], X[2], ix1, ix2, costh1, costh2 = %.14e %.14e %d %d %.14e %.14e\n",
-         X[1], X[2], ix1, ix2, costh1, costh2);
 
   #pragma omp atomic
   local_angles[0][ix1][ix2][type][icosth1] += w;
