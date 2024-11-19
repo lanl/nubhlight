@@ -29,6 +29,13 @@ void accumulate_local_angles() {
         int i, j, k;
         get_X_K_interp(ph, t, P, X, Kcov, Kcon);
         Xtoijk(X, &i, &j, &k);
+        printf("i, j, k = %d %d %d\n"
+               "gcon diag = %.14e %.14e %.14e %.14e\n",
+               i,j,k,
+               ggeom[i][j][CENT].gcon[0][0],
+               ggeom[i][j][CENT].gcon[1][1],
+               ggeom[i][j][CENT].gcon[2][2],
+               ggeom[i][j][CENT].gcon[3][3]);
         local_accum_superph(X, Kcov, ph->w, ph->type,
                             ggeom[i][j][CENT].gcon, local_angles);
       }
