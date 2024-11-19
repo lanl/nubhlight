@@ -68,9 +68,19 @@ void local_accum_superph(double X[NDIM],
   // |e| = 1 by construction, but K must be normalized
   // note we want to normalize the SPATIAL part of K
   double knorm = 0;
-  SDLOOP {
-    knorm += Kcov[mu]*Kcon[mu];
+  for (int mu = 1; mu < NDIM; ++mu) {
+    for (int nu = 1; nu < NDIM; ++nu) {
+      knorm += fabs((pgeom->gcov[mu][nu])*Kcon[mu]*Kcon[mu]);
+    }
   }
+  // this is the same, I'm being paranoid
+  // TODO: REMOVE
+  double ktime = 1 + fabs(Kcon[0]*Kcov[0]);
+  SDLOOP {
+    ktime += 2*fabs((pgeom->gcov[0][mu])*Kcon[0]*Kcon[i]);
+  }
+  // sqrt the inner product and lets go
+  knorm = sqrt(fabs(MY_MAX(knorm, ktime)));
   knorm = 1./(fabs(knorm) + SMALL);
   costh1 *= knorm;
   costh2 *= knorm;
