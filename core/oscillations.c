@@ -47,14 +47,14 @@ void local_accum_superph(double X[NDIM],
                          double w, int type,
                          struct of_geom *pgeom,
                          grid_local_angles_type local_angles) {
-  if (type == TYPE_TRACER)
-    return;
+  if (type == TYPE_TRACER) return;
+  // does not work behind horizon or the ergosphere. Exclude.
+  if ((pgeom->gcov[1][1] < 0) || (pgeom->gcov[3][3] < 0)) return;
 
   // JMM: If we use more complicated bases this is more complicated
+  // change this for other basis vectors
   double X1norm = sqrt(fabs(pgeom->gcon[1][1]));
   double X2norm = sqrt(fabs(pgeom->gcon[2][2]));
-  // change this for other basis vectors
-  // does not work behind horizon
   double X1vec[NDIM] = {0, 1. / (X1norm + SMALL), 0, 0};
   double X2vec[NDIM] = {0, 0, 1. / (X2norm + SMALL), 0};
 
@@ -71,8 +71,9 @@ void local_accum_superph(double X[NDIM],
   SDLOOP {
     knorm += Kcov[mu]*Kcon[mu];
   }
-  costh1 *= 1./(fabs(knorm) + SMALL);
-  costh2 *= 1./(fabs(knorm) + SMALL);
+  knorm = 1./(fabs(knorm) + SMALL);
+  costh1 *= knorm;
+  costh2 *= knorm;
 
   int ix1     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX1 - 1, (X[1] - startx_rad[1]) / local_dx1_rad));
   int ix2     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX2 - 1, (X[2] - startx_rad[2]) / local_dx2_rad));
