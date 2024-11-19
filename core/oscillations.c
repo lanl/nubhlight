@@ -10,7 +10,8 @@
 #if RADIATION
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
-void local_accum_superph(double X[NDIM], double Kcov[NDIM],
+void local_accum_superph(double X[NDIM],
+                         double Kcov[NDIM], double Kcon[NDIM],
                          double w, int type,
                          struct of_geom *pgeom,
                          grid_local_angles_type local_angles);
@@ -31,7 +32,7 @@ void accumulate_local_angles() {
         int i, j, k;
         get_X_K_interp(ph, t, P, X, Kcov, Kcon);
         Xtoijk(X, &i, &j, &k);
-        local_accum_superph(X, Kcov, ph->w, ph->type,
+        local_accum_superph(X, Kcov, Kcon, ph->w, ph->type,
                             &ggeom[i][j][CENT], local_angles);
       }
       ph = ph->next;
@@ -41,7 +42,8 @@ void accumulate_local_angles() {
   mpi_dbl_allreduce_array((double*)local_angles, LOCAL_ANGLES_SIZE);
 }
 
-void local_accum_superph(double X[NDIM], double Kcov[NDIM],
+void local_accum_superph(double X[NDIM],
+                         double Kcov[NDIM], double Kcon[NDIM],
                          double w, int type,
                          struct of_geom *pgeom,
                          grid_local_angles_type local_angles) {
@@ -63,9 +65,14 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM],
     costh2 += X2vec[mu] * Kcov[mu]; // X2^a K_a
   }
   // cos(th) = e^a K_a / |e| |K|
-  // but |e| = 1 and |K| = -1
-  costh1 *= -1;
-  costh2 *= -1;
+  // |e| = 1 by construction, but K must be normalized
+  // note we want to normalize the SPATIAL part of K
+  double knorm = 0;
+  SDLOOP {
+    knorm += Kcov[mu]*Kcon[mu];
+  }
+  costh1 *= 1./(fabs(knorm) + SMALL);
+  costh2 *= 1./(fabs(knorm) + SMALL);
 
   int ix1     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX1 - 1, (X[1] - startx_rad[1]) / local_dx1_rad));
   int ix2     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX2 - 1, (X[2] - startx_rad[2]) / local_dx2_rad));
