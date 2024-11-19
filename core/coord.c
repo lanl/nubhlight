@@ -403,9 +403,9 @@ void set_points() {
   stopx_rad[2]  = startx_rad[2] + N2TOT * dx[2];
   stopx_rad[3]  = startx_rad[3] + N3TOT * dx[3];
 #if LOCAL_ANGULAR_DISTRIBUTIONS
-  local_dx1_rad = (stopx_rad[1] - startx_rad[1]) / (LOCAL_ANGLES_NX1 + 1.);
-  local_dx2_rad = (stopx_rad[2] - startx_rad[2]) / (LOCAL_ANGLES_NX2 + 1.);
-  local_dx_costh = 2. / (LOCAL_ANGLES_NMU + 1.);
+  local_dx1_rad = (stopx_rad[1] - startx_rad[1]) / (LOCAL_ANGLES_NX1);
+  local_dx2_rad = (stopx_rad[2] - startx_rad[2]) / (LOCAL_ANGLES_NX2);
+  local_dx_costh = 2. / (LOCAL_ANGLES_NMU);
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
 #elif METRIC == MKS
@@ -441,9 +441,9 @@ void set_points() {
   stopx_rad[2]  = startx[2] + N2TOT * dx[2];
   stopx_rad[3]  = startx[3] + N3TOT * dx[3];
 #if LOCAL_ANGULAR_DISTRIBUTIONS
-  local_dx1_rad = (stopx_rad[1] - startx_rad[1]) / (LOCAL_ANGLES_NX1 + 1.);
-  local_dx2_rad = (stopx_rad[2] - startx_rad[2]) / (LOCAL_ANGLES_NX2 + 1.);
-  local_dx_costh = 2. / (LOCAL_ANGLES_NMU + 1.);
+  local_dx1_rad = (stopx_rad[1] - startx_rad[1]) / (LOCAL_ANGLES_NX1);
+  local_dx2_rad = (stopx_rad[2] - startx_rad[2]) / (LOCAL_ANGLES_NX2);
+  local_dx_costh = 2. / (LOCAL_ANGLES_NMU);
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif
   poly_norm     = 0.5 * M_PI * 1. /

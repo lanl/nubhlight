@@ -45,9 +45,10 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM], double w, int type,
     return;
 
   // JMM: If we use more complicated bases this is more complicated
-  double X1norm = gcon[1][1];
-  double X2norm = gcon[2][2];
+  double X1norm = sqrt(abs(gcon[1][1]));
+  double X2norm = sqrt(abs(gcon[2][2]));
   // change this for other basis vectors
+  // does not work behind horizon
   double X1vec[NDIM] = {0, 1. / X1norm, 0, 0};
   double X2vec[NDIM] = {0, 0, 1. / X2norm, 0};
 
@@ -57,7 +58,13 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM], double w, int type,
     costh1 += X1vec[mu] * Kcov[mu]; // X1^a K_a
     costh2 += X2vec[mu] * Kcov[mu]; // X2^a K_a
   }
+  // cos(th) = e^a K_a / |e| |K|
+  // but |e| = 1 and |K| = -1
+  costh1 *= -1;
+  costh2 *= -1;
 
+  printf("X[1], X[2], ix1, ix2, costh1, costh2 = %.14e %.14e %d %d %.14e %.14e\n",
+         X[1], X[2], ix1, ix2, costh1, costh2);
   int ix1     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX1 - 1, (X[1] - startx_rad[1]) / local_dx1_rad));
   int ix2     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX2 - 1, (X[2] - startx_rad[2]) / local_dx2_rad));
   int icosth1 = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh1 + 1) / local_dx_costh));
