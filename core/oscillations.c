@@ -71,8 +71,8 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM],
   int ix2     = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NX2 - 1, (X[2] - startx_rad[2]) / local_dx2_rad));
   int icosth1 = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh1 + 1) / local_dx_costh));
   int icosth2 = MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh2 + 1) / local_dx_costh));
-  printf("X[1], X[2], ix1, ix2, X1norm, X2norm, Kcov[1], Kcov[2] = %.14e %.14e %d %d %.14e %.14e %.14e %.14e\n",
-         X[1], X[2], ix1, ix2, X1norm, X2norm, Kcov[1], Kcov[2]);
+  printf("X[1], X[2], ix1, ix2, costh1, costh2 = %.14e %.14e %d %d %.14e %.14e\n",
+         X[1], X[2], ix1, ix2, costh1, costh2);
 
   #pragma omp atomic
   local_angles[0][ix1][ix2][type][icosth1] += w;
