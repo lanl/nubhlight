@@ -77,7 +77,7 @@ void local_accum_superph(double X[NDIM],
   // TODO: REMOVE
   double ktime = 1 + fabs(Kcon[0]*Kcov[0]);
   SDLOOP {
-    ktime += 2*fabs((pgeom->gcov[0][mu])*Kcon[0]*Kcon[i]);
+    ktime += 2*fabs((pgeom->gcov[0][mu])*Kcon[0]*Kcon[mu]);
   }
   // sqrt the inner product and lets go
   knorm = sqrt(fabs(MY_MAX(knorm, ktime)));
