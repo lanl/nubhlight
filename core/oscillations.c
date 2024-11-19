@@ -49,8 +49,8 @@ void local_accum_superph(double X[NDIM], double Kcov[NDIM],
     return;
 
   // JMM: If we use more complicated bases this is more complicated
-  double X1norm = sqrt(abs(pgeom->gcon[1][1]));
-  double X2norm = sqrt(abs(pgeom->gcon[2][2]));
+  double X1norm = sqrt(fabs(pgeom->gcon[1][1]));
+  double X2norm = sqrt(fabs(pgeom->gcon[2][2]));
   // change this for other basis vectors
   // does not work behind horizon
   double X1vec[NDIM] = {0, 1. / (X1norm + SMALL), 0, 0};
