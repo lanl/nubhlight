@@ -53,8 +53,8 @@ void local_accum_superph(double X[NDIM],
 
   // JMM: If we use more complicated bases this is more complicated
   // change this for other basis vectors
-  double X1norm = sqrt(fabs(pgeom->gcon[1][1]));
-  double X2norm = sqrt(fabs(pgeom->gcon[2][2]));
+  double X1norm = sqrt(fabs(pgeom->gcov[1][1]));
+  double X2norm = sqrt(fabs(pgeom->gcov[2][2]));
   double X1vec[NDIM] = {0, 1. / (X1norm + SMALL), 0, 0};
   double X2vec[NDIM] = {0, 0, 1. / (X2norm + SMALL), 0};
 
