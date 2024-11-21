@@ -637,6 +637,92 @@ void dump_grid() {
     free(Lambda_h2cart_cov);
   }
 
+#if RADIATION
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+  {
+    double *local_angles_Xharm =
+      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+#if METRIC == MKS
+    double *local_angles_Xbl =
+      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+#endif // MKS
+    double *local_angles_Xcart =
+      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+    int n = 0;
+    double X[NDIM], Xcart[NDIM], r, th;
+    for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
+      X[1] = startx_rad[1] + (i + 0.5)*local_dx1_rad; // startx is a face
+      for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
+        X[2] = startx_rad[2] + (j + 0.5)*local_dx2_rad;
+        cart_coord(X, Xcart);
+
+        local_angles_Xharm[n + 0] = 0;
+        local_angles_Xharm[n + 1] = X[1];
+        local_angles_Xharm[n + 2] = X[2];
+
+#if METRIC == MKS
+        bl_coord(X, &r, &th);
+        local_angles_Xbl[n + 0] = 0;
+        local_angles_Xbl[n + 1] = r;
+        local_angles_Xbl[n + 2] = th;
+#endif // MKS
+
+        local_angles_Xcart[n + 0] = 0;
+        local_angles_Xcart[n + 1] = Xcart[1];
+        local_angles_Xcart[n + 2] = Xcart[2];
+
+        n += (NDIM - 1);
+      }
+    }
+#define RANK (3)
+    hsize_t fdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
+    hsize_t fstart[RANK] = {0, 0, 0};
+    hsize_t fcount[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
+    hsize_t mdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
+    hsize_t mstart[RANK] = {0, 0, 0};
+    if (!mpi_io_proc()) {
+      fcount[0] = 0;
+      fcount[1] = 0;
+      fcount[2] = 0;
+    }
+    WRITE_ARRAY(
+                local_angles_Xharm, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    free(local_angles_Xharm);
+
+    WRITE_ARRAY(
+                local_angles_Xcart, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    free(local_angles_Xcart);
+
+#if METRIC == MKS
+    WRITE_ARRAY(
+              local_angles_Xbl, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    free(local_angles_Xbl);
+#endif // MKS
+#undef RANK
+  }
+
+  {
+    double *local_angles_mu = safe_malloc(LOCAL_ANGLES_NMU*sizeof(double));
+    for (int i = 0; i < LOCAL_ANGLES_NMU; ++i) {
+      local_angles_mu[i] = -1 + (i+0.5)*local_dx_costh;
+    }
+#define RANK (1)
+    hsize_t fdims[RANK]  = {LOCAL_ANGLES_NMU};
+    hsize_t fstart[RANK] = {0};
+    hsize_t fcount[RANK] = {LOCAL_ANGLES_NMU};
+    hsize_t mdims[RANK]  = {LOCAL_ANGLES_NMU};
+    hsize_t mstart[RANK] = {0};
+    if (!mpi_io_proc()) {
+      fcount[0] = 0;
+    }
+    WRITE_ARRAY(local_angles_mu,
+                RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#undef RANK
+    free(local_angles_mu);
+  }
+#endif // RADIATION
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
   H5Fflush(file_id, H5F_SCOPE_GLOBAL);
   H5Fclose(file_id);
 }
