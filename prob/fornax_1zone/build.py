@@ -27,7 +27,8 @@ TABLEPATH = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+TABLEPATH
 OPACPARAM = "opacbin.LS220.evan.param"
 if HDF:
-    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+    OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
+    #OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
 else:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 OPACPATH = "../../data/"+OPACPATH
@@ -120,6 +121,7 @@ bhl.config.set_cparm('X2R_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('X3L_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('X3R_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('KILL_ALL_PACKETS', KILL_ALL_PACKETS)
+bhl.config.set_cparm("RAD_NUM_TYPES", 4)
 
                            ### RUNTIME PARAMETERS ###
 
