@@ -337,8 +337,17 @@ def build(PROBLEM, PATHS):
       print_config("HDF5_OPACITIES", CPARMS["HDF5_OPACITIES"])
     else:
       set_cparm("HDF5_OPACITIES", 0)
+    if util.parm_is_active(CPARMS, "RAD_NUM_TYPES"):
+      print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
+    else:
+      if CPARMS['RADIATION'] == 1:
+        set_cparm("RAD_NUM_TYPES", 1)
+      else:
+        set_cparm("RAD_NUM_TYPES", 3)
+      print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
   else:
     set_cparm("RADIATION", 0)
+    set_cparm("RAD_NUM_TYPES", 0)
   if util.parm_is_active(CPARMS, 'ELECTRONS'):
     print_config("ELECTRONS", CPARMS['ELECTRONS'])
   else:

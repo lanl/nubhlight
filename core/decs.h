@@ -165,10 +165,10 @@
 #define RAD_TYPE_START (0)
 #define TYPE_TRACER (-1)
 #if RADIATION == RADTYPE_NEUTRINOS
-#define RAD_NUM_TYPES (3)
 #define NU_ELECTRON (0)
 #define ANTINU_ELECTRON (1)
 #define NU_HEAVY (2)
+#define ANTINU_HEAVY (3)
 #if MULTISCATT_TEST
 #define RAD_SCATT_TYPES (3)
 #else
@@ -183,12 +183,10 @@
 #define RADG_YE (4)
 #define RADG_YE_EM (5)
 #elif RADIATION == RADTYPE_LIGHT
-#define RAD_NUM_TYPES (1)
 #define RAD_SCATT_TYPES (1)
 #define NRADCOMP (0)
 #define PHOTON (0)
 #else
-#define RAD_NUM_TYPES (0)
 #define RAD_SCATT_TYPES (0)
 #define NRADCOMP (0)
 #endif
@@ -1078,6 +1076,7 @@ void   set_cooling_time(
 void record_lepton_flux(const struct of_photon *ph);
 void check_nu_type(const char *location);
 int  get_lepton_sign(const struct of_photon *ph);
+int  nu_is_heavy(const int radtype);
 #endif // NEUTRINOS
 #endif // RADIATION
 
