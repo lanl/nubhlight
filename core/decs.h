@@ -368,10 +368,19 @@ extern grid_double_type Esuper;
 extern grid_prim_type   psupersave;
 
 #if LOCAL_ANGULAR_DISTRIBUTIONS
-typedef double grid_local_angles_type[2][LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2]
-                                     [RAD_NUM_TYPES][LOCAL_ANGLES_NMU];
+#define LOCAL_NUM_BASES (2)
+typedef double grid_local_angles_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
+                                     [LOCAL_ANGLES_NX2][RAD_NUM_TYPES]
+                                     [LOCAL_ANGLES_NMU];
+typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
+                            [LOCAL_ANGLES_NX2][LOCAL_ANGLES_NMU];
+typedef double grid_local_moment_type[LOCAL_NUM_BASES][2][LOCAL_ANGLES_NX1]
+                                     [LOCAL_ANGLES_NX2];
+
 extern grid_local_angles_type local_angles;
-extern double local_dx1_rad, local_dx2_rad, local_dx_costh;
+extern grid_Gnu_type          Gnu;
+extern grid_local_moment_type local_moments;
+extern double                 local_dx1_rad, local_dx2_rad, local_dx_costh;
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 #endif // RADIATION
@@ -990,6 +999,8 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 
 // oscillations.c
 #if LOCAL_ANGULAR_DISTRIBUTIONS
+void get_local_angle_bins(
+    struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
