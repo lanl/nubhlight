@@ -25,6 +25,7 @@ void accumulate_local_angles() {
 #pragma omp atomic
         local_angles[0][ix1][ix2][ph->type][icosth1] += ph->w;
 #pragma omp atomic
+        // local_angles global
         local_angles[1][ix1][ix2][ph->type][icosth2] += ph->w;
       }
       ph = ph->next;
@@ -32,6 +33,12 @@ void accumulate_local_angles() {
   } // omp parallel
 
   mpi_dbl_allreduce_array((double *)local_angles, LOCAL_ANGLES_SIZE);
+
+  // Gnu, local_moments are global
+#if RAD_NUM_TYPES >= 4
+  compute_local_gnu(local_angles, Gnu);
+  compute_local_moments(Gnu, local_moments);
+#endif // RAD_NUM_TYPES >= 4
 }
 
 void get_local_angle_bins(
@@ -80,6 +87,51 @@ void get_local_angle_bins(
   *pmu2 =
       MY_MAX(0, MY_MIN(LOCAL_ANGLES_NMU - 1, (costh2 + 1) / local_dx_costh));
 }
+
+#if RAD_NUM_TYPES >= 4
+void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type gnu) {
+#pragma omp parallel for collapse(4)
+  for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
+    for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
+      for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
+        for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu) {
+          // TODO(JMM): Generalize this for six species?
+          double ELN =
+              (f[b][i][j][NU_ELECTRON][imu] - f[b][i][j][ANTINU_ELECTRON][imu]);
+          double XLN =
+              (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
+          gnu[b][i][j][imu] = ELN - XLN;
+        }
+      }
+    }
+  }
+}
+
+// JMM: We can also compute, e.g., the average bin momentum if we need
+// to, e.g., compute higher moment integrands
+void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
+  // We are reducing over mu, but if we just parallel loop over b,i,j,
+  // there is no danger of index collisions.
+  for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu) {
+#pragma omp parallel for collapse (3)
+    for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
+      for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
+        for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
+          if (gnu[b][i][j][imu] < 0) {
+            // TODO(JMM): Pretty sure this atomic isn't needed
+#pragma omp atomic
+            moments[b][MOMENTS_A][i][j] += gnu[b][i][j][imu];
+          } else if (gnu[b][i][j][imu] > 0) {
+            // TODO(JMM): Pretty sure this atomic isn't needed
+#pragma omp atomic
+            moments[b][MOMENTS_B][i][j] += gnu[b][i][j][imu];
+          } // else nada. We don't care about == 0.
+        }
+      }
+    }
+  }
+}
+#endif // RAD_NUM_TYPES >= 4
 
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION

@@ -52,9 +52,11 @@ grid_prim_type   psupersave;
 
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 grid_local_angles_type local_angles;
+double local_dx1_rad, local_dx2_rad, local_dx_costh;
+#if RAD_NUM_TYPES >= 4
 grid_Gnu_type Gnu;
 grid_local_moment_type local_moments;
-double local_dx1_rad, local_dx2_rad, local_dx_costh;
+#endif //  RAD_NUM_TYPES
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
 

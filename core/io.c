@@ -359,7 +359,7 @@ void track_ph() {
       hsize_t dims[1] = {num_tracked_buf};
       hid_t   space   = H5Screate_simple(1, dims, NULL);
       ph_dsets[n]     = H5Dcreate(file_id, dsetnam, trackphfiletype, space,
-              H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
       H5Sclose(space);
     }
     if (num_tracked > 0)
@@ -640,20 +640,20 @@ void dump_grid() {
 #if RADIATION
 #if LOCAL_ANGULAR_DISTRIBUTIONS
   {
-    double *local_angles_Xharm =
-      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+    double *local_angles_Xharm = safe_malloc(
+        (NDIM - 1) * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * sizeof(double));
 #if METRIC == MKS
-    double *local_angles_Xbl =
-      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+    double *local_angles_Xbl = safe_malloc(
+        (NDIM - 1) * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * sizeof(double));
 #endif // MKS
-    double *local_angles_Xcart =
-      safe_malloc((NDIM-1)*LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
-    int n = 0;
+    double *local_angles_Xcart = safe_malloc(
+        (NDIM - 1) * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * sizeof(double));
+    int    n = 0;
     double X[NDIM], Xcart[NDIM], r, th;
     for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
-      X[1] = startx_rad[1] + (i + 0.5)*local_dx1_rad; // startx is a face
+      X[1] = startx_rad[1] + (i + 0.5) * local_dx1_rad; // startx is a face
       for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
-        X[2] = startx_rad[2] + (j + 0.5)*local_dx2_rad;
+        X[2] = startx_rad[2] + (j + 0.5) * local_dx2_rad;
         cart_coord(X, Xcart);
 
         local_angles_Xharm[n + 0] = 0;
@@ -675,36 +675,36 @@ void dump_grid() {
       }
     }
 #define RANK (3)
-    hsize_t fdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
+    hsize_t fdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM - 1};
     hsize_t fstart[RANK] = {0, 0, 0};
-    hsize_t fcount[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
-    hsize_t mdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM-1};
+    hsize_t fcount[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM - 1};
+    hsize_t mdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2, NDIM - 1};
     hsize_t mstart[RANK] = {0, 0, 0};
     if (!mpi_io_proc()) {
       fcount[0] = 0;
       fcount[1] = 0;
       fcount[2] = 0;
     }
-    WRITE_ARRAY(
-                local_angles_Xharm, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    WRITE_ARRAY(local_angles_Xharm, RANK, fdims, fstart, fcount, mdims, mstart,
+        TYPE_DBL);
     free(local_angles_Xharm);
 
-    WRITE_ARRAY(
-                local_angles_Xcart, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    WRITE_ARRAY(local_angles_Xcart, RANK, fdims, fstart, fcount, mdims, mstart,
+        TYPE_DBL);
     free(local_angles_Xcart);
 
 #if METRIC == MKS
     WRITE_ARRAY(
-              local_angles_Xbl, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+        local_angles_Xbl, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
     free(local_angles_Xbl);
 #endif // MKS
 #undef RANK
   }
 
   {
-    double *local_angles_mu = safe_malloc(LOCAL_ANGLES_NMU*sizeof(double));
+    double *local_angles_mu = safe_malloc(LOCAL_ANGLES_NMU * sizeof(double));
     for (int i = 0; i < LOCAL_ANGLES_NMU; ++i) {
-      local_angles_mu[i] = -1 + (i+0.5)*local_dx_costh;
+      local_angles_mu[i] = -1 + (i + 0.5) * local_dx_costh;
     }
 #define RANK (1)
     hsize_t fdims[RANK]  = {LOCAL_ANGLES_NMU};
@@ -715,8 +715,8 @@ void dump_grid() {
     if (!mpi_io_proc()) {
       fcount[0] = 0;
     }
-    WRITE_ARRAY(local_angles_mu,
-                RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    WRITE_ARRAY(
+        local_angles_mu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     free(local_angles_mu);
   }
@@ -902,7 +902,7 @@ void dump() {
     hsize_t str_dims[1] = {NVAR};
     hid_t   prim_space  = H5Screate_simple(1, str_dims, NULL);
     hid_t   str_attr    = H5Acreate(
-             prim_dset, "vnams", strtype, prim_space, H5P_DEFAULT, H5P_DEFAULT);
+        prim_dset, "vnams", strtype, prim_space, H5P_DEFAULT, H5P_DEFAULT);
     H5Awrite(str_attr, strtype, vnams);
     H5Aclose(str_attr);
     H5Sclose(prim_space);
@@ -1064,16 +1064,16 @@ void dump() {
 
     // local angle histograms
 #if LOCAL_ANGULAR_DISTRIBUTIONS
+    accumulate_local_angles();
     {
-      accumulate_local_angles();
 #define RANK (5)
-      hsize_t fdims[RANK]  = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
-          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t fdims[RANK]  = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
       hsize_t fstart[RANK] = {0, 0, 0, 0, 0};
-      hsize_t fcount[RANK] = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
-          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
-      hsize_t mdims[RANK]  = {2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2,
-          RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t fcount[RANK] = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
+      hsize_t mdims[RANK]  = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, RAD_NUM_TYPES, LOCAL_ANGLES_NMU};
       hsize_t mstart[RANK] = {0, 0, 0, 0, 0};
       if (!mpi_io_proc()) {
         fcount[0] = 0;
@@ -1084,6 +1084,47 @@ void dump() {
       }
       WRITE_ARRAY(
           local_angles, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#undef RANK
+    }
+
+    {
+#define RANK (4)
+      hsize_t fdims[RANK]  = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, LOCAL_ANGLES_NMU};
+      hsize_t fstart[RANK] = {0, 0, 0, 0};
+      hsize_t fcount[RANK] = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, LOCAL_ANGLES_NMU};
+      hsize_t mdims[RANK]  = {LOCAL_NUM_BASES, LOCAL_ANGLES_NX1,
+          LOCAL_ANGLES_NX2, LOCAL_ANGLES_NMU};
+      hsize_t mstart[RANK] = {0, 0, 0, 0};
+      if (!mpi_io_proc()) {
+        fcount[0] = 0;
+        fcount[1] = 0;
+        fcount[2] = 0;
+        fcount[3] = 0;
+      }
+      WRITE_ARRAY(Gnu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#undef RANK
+    }
+
+    {
+#define RANK (4)
+      hsize_t fdims[RANK] = {
+          LOCAL_NUM_BASES, 2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t fstart[RANK] = {0, 0, 0, 0};
+      hsize_t fcount[RANK] = {
+          LOCAL_NUM_BASES, 2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t mdims[RANK] = {
+          LOCAL_NUM_BASES, 2, LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t mstart[RANK] = {0, 0, 0, 0};
+      if (!mpi_io_proc()) {
+        fcount[0] = 0;
+        fcount[1] = 0;
+        fcount[2] = 0;
+        fcount[3] = 0;
+      }
+      WRITE_ARRAY(
+          local_moments, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
@@ -1383,8 +1424,8 @@ void restart_write(int restart_type) {
     hsize_t fcount[RANK]     = {1};
     hsize_t mdims[RANK]      = {1};
     hsize_t mstart[RANK]     = {0};
-    int    *particle_offsets = safe_malloc(1 * sizeof(int));
-    int    *particle_counts  = safe_malloc(1 * sizeof(int));
+    int *   particle_offsets = safe_malloc(1 * sizeof(int));
+    int *   particle_counts  = safe_malloc(1 * sizeof(int));
     particle_offsets[0]      = npart_offset;
     particle_counts[0]       = npart_local;
     WRITE_ARRAY(
@@ -1637,8 +1678,8 @@ void restart_read(char *fname) {
     hsize_t fcount[RANK]     = {1};
     hsize_t mdims[RANK]      = {1};
     hsize_t mstart[RANK]     = {0};
-    int    *particle_offsets = safe_malloc(1 * sizeof(int));
-    int    *particle_counts  = safe_malloc(1 * sizeof(int));
+    int *   particle_offsets = safe_malloc(1 * sizeof(int));
+    int *   particle_counts  = safe_malloc(1 * sizeof(int));
     READ_ARRAY(
         particle_offsets, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_INT);
     READ_ARRAY(
@@ -1886,9 +1927,9 @@ void dump_tracers() {
   WRITE_HDR(ntracers, TYPE_INT);
 
   // arrays to fil
-  int    *id     = safe_malloc(ntracers_local * sizeof(int));
-  int    *it     = safe_malloc(ntracers_local * sizeof(int));
-  int    *active = safe_malloc(ntracers_local * sizeof(int));
+  int *   id     = safe_malloc(ntracers_local * sizeof(int));
+  int *   it     = safe_malloc(ntracers_local * sizeof(int));
+  int *   active = safe_malloc(ntracers_local * sizeof(int));
   double *time   = safe_malloc(ntracers_local * sizeof(double));
   double *mass   = safe_malloc(ntracers_local * sizeof(double));
   double *Xharm  = safe_malloc(3 * ntracers_local * sizeof(double));
@@ -2184,7 +2225,7 @@ void write_array(void *data, const char *name, hsize_t rank, hsize_t *fdims,
     H5Tset_size(string_type, strlen(data));
     plist_id = H5Pcreate(H5P_DATASET_CREATE);
     dset_id  = H5Dcreate(file_id, name, string_type, filespace, H5P_DEFAULT,
-         plist_id, H5P_DEFAULT);
+        plist_id, H5P_DEFAULT);
     H5Pclose(plist_id);
     plist_id = H5Pcreate(H5P_DATASET_XFER);
     H5Dwrite(dset_id, string_type, memspace, filespace, plist_id, data);

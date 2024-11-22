@@ -148,6 +148,7 @@ bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
 bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
 bhl.config.set_cparm('LOCAL_ANGLES_NX1', NTOT)
 bhl.config.set_cparm('LOCAL_ANGLES_NX2', NTOT)
+bhl.config.set_cparm('RAD_NUM_TYPES', 4)
 
                            ### RUNTIME PARAMETERS ###
 

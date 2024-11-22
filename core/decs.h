@@ -369,18 +369,22 @@ extern grid_prim_type   psupersave;
 
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 #define LOCAL_NUM_BASES (2)
+#define MOMENTS_A (0)
+#define MOMENTS_B (1)
 typedef double grid_local_angles_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
                                      [LOCAL_ANGLES_NX2][RAD_NUM_TYPES]
                                      [LOCAL_ANGLES_NMU];
+extern grid_local_angles_type local_angles;
+extern double                 local_dx1_rad, local_dx2_rad, local_dx_costh;
+
+#if RAD_NUM_TYPES >= 4
 typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
                             [LOCAL_ANGLES_NX2][LOCAL_ANGLES_NMU];
 typedef double grid_local_moment_type[LOCAL_NUM_BASES][2][LOCAL_ANGLES_NX1]
                                      [LOCAL_ANGLES_NX2];
-
-extern grid_local_angles_type local_angles;
 extern grid_Gnu_type          Gnu;
 extern grid_local_moment_type local_moments;
-extern double                 local_dx1_rad, local_dx2_rad, local_dx_costh;
+#endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 #endif // RADIATION
@@ -1002,6 +1006,10 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 void get_local_angle_bins(
     struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
+#if RAD_NUM_TYPES >= 4
+void compute_local_gnu(grid_local_angles_type local_angles, grid_Gnu_type gnu);
+void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
+#endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
 
