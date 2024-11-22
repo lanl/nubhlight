@@ -115,7 +115,8 @@ TABLEPATH = "../../data/"+TABLEPATH
 if FORTRAN:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 else:
-    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+    #OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+    OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
 OPACPARAM = "opacbin.LS220.evan.param"
 OPACPATH = "../../data/"+OPACPATH
 OPACPARAM = "../../data/"+OPACPARAM
@@ -344,8 +345,8 @@ if GAMTABLE:
 print("Make sure to move the generated table to your run directory!")
 
 # Radiation units
-NUMIN_MEV = 1.0
-NUMAX_MEV = 100
+NUMIN_MEV = 0.1
+NUMAX_MEV = 500
 NUMIN = NUMIN_MEV*cgs['MEV']/cgs['HPL']
 NUMAX = NUMAX_MEV*cgs['MEV']/cgs['HPL']
 if RADIATION:
@@ -406,7 +407,7 @@ if KILL:
     bhl.config.set_cparm('KILL_ALL_PACKETS', True)
 bhl.config.set_cparm('BURROWS_OPACITIES', FORTRAN)
 bhl.config.set_cparm('HDF5_OPACITIES', HDF)
-bhl.config.set_cparm('NU_BINS', 200)
+bhl.config.set_cparm('NU_BINS', 61)
 bhl.config.set_cparm('ESTIMATE_THETAE', False)
 bhl.config.set_cparm('GRAYABSORPTION',  False)
 bhl.config.set_cparm('BREMSSTRAHLUNG',  False)
@@ -424,6 +425,7 @@ bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
 bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
 bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
 bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
+bhl.config.set_cparm('RAD_NUM_TYPES', 4)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:

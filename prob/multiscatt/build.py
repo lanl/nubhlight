@@ -59,8 +59,8 @@ else:
   L_UNIT = rhol/RHO_UNIT
   M_UNIT = RHO_UNIT*(L_UNIT**3)
 
-print("rhol = {:.5}".format(rhol))
-print("RHO_UNIT = {:.5}".format(RHO_UNIT))
+  print("rhol = {:.5}".format(rhol))
+  print("RHO_UNIT = {:.5}".format(RHO_UNIT))
 print("L_UNIT = {:.5}".format(L_UNIT))
 print("M_UNIT = {:.5}".format(M_UNIT))
 
