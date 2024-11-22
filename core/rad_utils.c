@@ -740,6 +740,10 @@ double get_min_dt_cool(grid_prim_type P, grid_eosvar_type extra) {
     double dtc_zone = get_dt_cool_rad_zone(P[i][j][k][UU], &m);
     if (dtc_zone < dt_cool)
       dt_cool = dtc_zone;
+    if (dtc_zone < 1e-10) {
+      printf("TINY cooling time! %d %d %d: %.14e %.14e\n",
+             i, j, k, fabs(get_J(&m)));
+    }
   }
   dt_cool = mpi_min(dt_cool);
   return dt_cool;

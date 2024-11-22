@@ -7,7 +7,7 @@
  ******************************************************************************/
 #include "decs.h"
 
-#if RADIATION
+#if RADIATION == RADTYPE_NEUTRINOS
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
 void accumulate_local_angles() {
@@ -126,7 +126,7 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
 #pragma omp atomic
             moments[b][MOMENTS_B][i][j] += gnu[b][i][j][imu];
           } // else nada. We don't care about == 0.
-        }
+         }
       }
     }
   }

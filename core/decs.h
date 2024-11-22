@@ -1002,7 +1002,7 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 #endif // HDF opacities
 
 // oscillations.c
-#if LOCAL_ANGULAR_DISTRIBUTIONS
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
 void get_local_angle_bins(
     struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
@@ -1011,6 +1011,7 @@ void compute_local_gnu(grid_local_angles_type local_angles, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
 #endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+#endif // NEUTRINOS
 #endif // RADIATION
 
 // passive.c

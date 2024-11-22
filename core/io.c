@@ -638,7 +638,7 @@ void dump_grid() {
   }
 
 #if RADIATION
-#if LOCAL_ANGULAR_DISTRIBUTIONS
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
   {
     double *local_angles_Xharm = safe_malloc(
         (NDIM - 1) * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * sizeof(double));
@@ -1063,7 +1063,7 @@ void dump() {
     }
 
     // local angle histograms
-#if LOCAL_ANGULAR_DISTRIBUTIONS
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
     accumulate_local_angles();
     {
 #define RANK (5)
