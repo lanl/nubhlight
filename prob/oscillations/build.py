@@ -14,23 +14,25 @@ from units import cgs
 PROB = 'oscillations'
 
 MPI = '-mpi' in sys.argv
-NEUTRINOS = True
 if '-idim' in sys.argv:
-  IDIM = int(sys.argv[sys.argv.index('-idim')+1])
+  IDIM = int(sys.argv[sys.argv.index('-idim') +1])
 else:
-  IDIM = 3
+  IDIM = 1
 
+NEUTRINOS = True
 print("MPI = {}".format(MPI))
-print("NEUTRINOS = {}".format(NEUTRINOS))
 print("IDIM = {}".format(IDIM))
 
 NCPU = 2 if MPI else 1
-NTOT = 12
-TF = 1.
+NTOT = 12 if MPI else 3
+TF = 0.1
 DTout = TF
 T0 = TF/1e6
-NR = 1e7 # if NEUTRINOS else 1e6
+Nsph_tot = 1e7
+Nph_tot = 1e55
 E_MEV = 25
+
+FRACS = [0.2, 0.4, 0.2, 0.2]
 
 # Use a fake table for this test
 GAMMA = 1.4
@@ -38,15 +40,12 @@ TFINAL = 600
 YE = 0.5
 
 CL = cgs['CL']
-RHOMIN, RHOMAX, NRHO =  1e-4, 1e20, 234
-UMIN, UMAX, NU = 1e-8, 1e8, 136
-YEMIN, YEMAX, NYE = 0.0, 0.6, 50
+RHOMIN, RHOMAX, NRHO =  1e-4, 1e20, 20
+UMIN, UMAX, NU = 1e-8, 1e8, 20
+YEMIN, YEMAX, NYE = 0.0, 0.6, 10
 CRASH_ON_SOUND_SPEED = False
 
-MS_THETA = (E_MEV*cgs['MEV']/(cgs['ME']*CL*CL))**2
-
-dtau = 1.0
-rhol = dtau/((14./3.)*cgs['NUSIGMA0']*(MS_THETA**2)*(1.-YE)/cgs['MN'])
+rhol = 1.0
 RHO_UNIT = 2.8e14
 L_UNIT = rhol/RHO_UNIT
 M_UNIT = RHO_UNIT*(L_UNIT**3)
@@ -66,11 +65,8 @@ tab.make_table_u(RHOMIN, RHOMAX, NRHO,
 
 
 RHO0 = 1.
-#RHO0 = 1.e10 if NEUTRINOS else 1.e1
 UU0 = 1e-6*RHO0
 print("rho_cgs = {}\nu_cgs = {}\n".format(RHO0,UU0))
-print("MS_THETA = {}".format(MS_THETA))
-
 
                          ### COMPILE TIME PARAMETERS ###
 
@@ -114,11 +110,11 @@ bhl.config.set_cparm('EMISSION', False)
 bhl.config.set_cparm('ABSORPTION', False)
 bhl.config.set_cparm('SCATTERING', False)
 bhl.config.set_cparm('MULTISCATT_TEST', False)
-bhl.config.set_cparm('NU_BINS', 61)
+bhl.config.set_cparm('NU_BINS', 5)
 bhl.config.set_cparm('GRAYABSORPTION', False)
 bhl.config.set_cparm('BREMSSTRAHLUNG', False)
 bhl.config.set_cparm('SYNCHROTRON', False)
-bhl.config.set_cparm('NU_BINS_SPEC', 61)
+bhl.config.set_cparm('NU_BINS_SPEC', 5)
 bhl.config.set_cparm("NTH", 8)
 bhl.config.set_cparm("NPHI", 8)
 bhl.config.set_cparm('X1L_RAD_BOUND', 'BC_PERIODIC')
@@ -129,11 +125,11 @@ bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 
 bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
-bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
+bhl.config.set_cparm('LOCAL_ANGLES_NMU', 32)
 bhl.config.set_cparm('LOCAL_ANGLES_NX1', NTOT)
 bhl.config.set_cparm('LOCAL_ANGLES_NX2', NTOT)
 bhl.config.set_cparm('RAD_NUM_TYPES', 4)
-bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', 1)
+bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
 
                            ### RUNTIME PARAMETERS ###
 
@@ -148,7 +144,14 @@ bhl.config.set_rparm('M_unit', 'double', default = M_UNIT)
 bhl.config.set_rparm('DTl', 'double', default = DTout)
 bhl.config.set_rparm('DTd', 'double', default = DTout)
 bhl.config.set_rparm('DTr', 'double', default = 1e6)
-bhl.config.set_rparm('Nr0', 'int', default = NR)
+
+bhl.config.set_rparm('Nsph_tot', 'double', default = Nsph_tot)
+bhl.config.set_rparm('Nph_tot', 'double', default = Nph_tot)
+bhl.config.set_rparm('frac_e', 'double', default = FRACS[0])
+bhl.config.set_rparm('frac_ebar', 'double', default = FRACS[1])
+bhl.config.set_rparm('frac_x', 'double', default = FRACS[2])
+bhl.config.set_rparm('frac_xbar', 'double', default = FRACS[3])
+
 bhl.config.set_rparm('E_MEV', 'double', default = E_MEV)
 bhl.config.set_rparm('rho0', 'double', default = RHO0)
 bhl.config.set_rparm('uu0', 'double', default = UU0)
