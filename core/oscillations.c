@@ -176,25 +176,26 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
-        int ix1, ix2, icosth1, icosth2;
-        get_local_angle_bins(ph, &ix1, &ix2, &icosth1, &icosth2);
+        int ix1, ix2, icosth[LOCAL_NUM_BASES];
+        get_local_angle_bins(ph, &ix1, &ix2, &icosth[0], &icosth[1]);
 
         int    b_osc = local_b_osc[ix1][ix2];
+        int    imu   = icosth[b_osc];
         double A     = local_moments[b_osc][MOMENTS_A][ix1][ix2];
         double B     = local_moments[b_osc][MOMENTS_B][ix1][ix2];
-        int    imu   = b_osc ? icosth2 : icosth1;
+        double G     = gnu[b_osc][ix1][ix2][imu];
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
-        if (!((gnu[b_osc][ix1][ix2][imu] == 0) || ((A == 0) && (B == 0)))) {
+        if ((G != 0) && (A != 0) && (B != 0)) {
           // If A == B then which region we treat as shallow is
-          // unimportant. Psurviv = 1/3 for both regions.
+          // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
           int    B_is_shallow = !(A_is_shallow);
           double shallow      = A_is_shallow ? A : B;
           double deep         = A_is_shallow ? B : A;
 
-          int g_in_A = gnu[b_osc][ix1][ix2][imu] < 0;
-          int g_in_B = gnu[b_osc][ix1][ix2][imu] > 0;
+          int g_in_A = G < 0;
+          int g_in_B = G > 0;
 
           int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
           int in_deep    = !(in_shallow);
