@@ -1017,8 +1017,7 @@ void accumulate_local_angles();
 void compute_local_gnu(grid_local_angles_type local_angles,
     grid_Gnu_type local_stddev, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
-void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu,
-    double t, double dt);
+void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu);
 #endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION

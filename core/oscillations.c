@@ -17,7 +17,9 @@ double get_dt_oscillations() {
   ZLOOP {
     nph_max = MY_MAX(nph_max, nph[i][j][k]); // 1/cm^3
   }
+  // seconds
   double dt_osc = 1. / (NUFERM * nph_max + SMALL);
+  dt_osc /= T_unit; // code units
   dt_osc        = mpi_min(dt_osc);
   return dt_osc;
 }
@@ -158,8 +160,7 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
   }
 }
 
-void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu,
-           double t, double dt) {
+void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
