@@ -1103,7 +1103,10 @@ void dump() {
         fcount[2] = 0;
         fcount[3] = 0;
       }
-      WRITE_ARRAY(Gnu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(Gnu,
+                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(local_stddev,
+                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
 
