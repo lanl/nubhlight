@@ -76,7 +76,7 @@ void step() {
     RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
   int oscillations_active = (dt_osc <= dt);
   if (mpi_io_proc()) {
-    printf("Oscillations active? %d dt_osc = %.14e\n", oscillations_active,
+    printf("\t[Oscillations] Active? %d dt_osc = %.14e\n", oscillations_active,
         dt_osc);
   }
   if (oscillations_active) { // TOOD(JMM): Some safety factor?
