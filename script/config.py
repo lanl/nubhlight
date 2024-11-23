@@ -345,6 +345,10 @@ def build(PROBLEM, PATHS):
       else:
         set_cparm("RAD_NUM_TYPES", 3)
       print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
+    if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS"):
+      print_config("NEUTRINO_OSCILLATIONS", CPARMS["NEUTRINO_OSCILLATIONS"])
+    else:
+      set_cparm('NEUTRINO_OSCILLATIONS', 0)
   else:
     set_cparm("RADIATION", 0)
     set_cparm("RAD_NUM_TYPES", 0)

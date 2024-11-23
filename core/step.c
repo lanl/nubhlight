@@ -27,7 +27,13 @@ void step() {
   double ndt;
 #if RADIATION
   double dt_cool;
-#endif
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
+    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
+  // not used for timestep control. Used to turn oscillations on or
+  // off.
+  double dt_osc = get_dt_oscillations();
+#endif // oscillations
+#endif // radiation
   dtsave = dt;
 
   // Need both P_n and P_n+1 to calculate current
@@ -65,7 +71,20 @@ void step() {
   interact(Ph, extra, t, dt);
   // check_nu_type("after interact"); // DEBUG
   bound_superphotons(Ph, t, dt);
-// check_nu_type("after bound"); // DEBUG
+  // check_nu_type("after bound"); // DEBUG
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
+    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
+  int oscillations_active = (dt_osc <= dt);
+  if (mpi_io_proc()) {
+    printf("Oscillations active? %d dt_osc = %.14e\n", oscillations_active,
+        dt_osc);
+  }
+  if (oscillations_active) { // TOOD(JMM): Some safety factor?
+    accumulate_local_angles();
+    oscillate(local_moments, Gnu);
+  }
+  // check_nu_type("after oscillate"); // DEBUG
+#endif // OSCILLATIONS
 #endif
 
   // Corrector step
