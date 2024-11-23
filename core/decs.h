@@ -382,7 +382,7 @@ typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
                             [LOCAL_ANGLES_NX2][LOCAL_ANGLES_NMU];
 typedef double grid_local_moment_type[LOCAL_NUM_BASES][2][LOCAL_ANGLES_NX1]
                                      [LOCAL_ANGLES_NX2];
-extern grid_Gnu_type          Gnu;
+extern grid_Gnu_type          Gnu, local_stddev;
 extern grid_local_moment_type local_moments;
 #endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
@@ -689,6 +689,12 @@ extern int global_stop[NDIM];
 #define SCATTLOOP for (int iscatt = 0; iscatt < RAD_SCATT_TYPES; iscatt++)
 #define JRADLOOP for (int n = 0; n < MAXNSCATT + 2; n++)
 #define NULOOP for (int inu = 0; inu < NU_BINS + 1; inu++)
+
+#define LOCALXLOOP                             \
+  for (int i = 0; i < LOCAL_ANGLES_NX1; ++i)   \
+    for (int j = 0; j < LOCAL_ANGLES_NX2; ++j)
+#define LOCALMULOOP for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu)
+#define LOCALXMULOOP LOCALXLOOP LOCALMULOOP
 
 #define MY_MIN(fval1, fval2) (((fval1) < (fval2)) ? (fval1) : (fval2))
 #define MY_MAX(fval1, fval2) (((fval1) > (fval2)) ? (fval1) : (fval2))
@@ -1003,11 +1009,13 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 
 // oscillations.c
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
+double get_dt_oscillations();
 void get_local_angle_bins(
     struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
 #if RAD_NUM_TYPES >= 4
-void compute_local_gnu(grid_local_angles_type local_angles, grid_Gnu_type gnu);
+void compute_local_gnu(grid_local_angles_type local_angles,
+    grid_Gnu_type local_stddev, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
 void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu,
     double t, double dt);

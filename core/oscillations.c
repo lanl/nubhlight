@@ -10,10 +10,28 @@
 #if RADIATION == RADTYPE_NEUTRINOS
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
+double get_dt_oscillations() {
+  set_Rmunu(); // So we have Nsph and nph
+  double nph_max = 0;
+#pragma omp parallel for reduction(max : nph_max) collapse(3)
+  ZLOOP {
+    if (nph_max > nph[i][j][k])
+      nph_max = nph[i][j][k]; // 1/cm^3
+  }
+  double dt_osc = 1. / (NUFERM * nph_max + SMALL);
+  dt_osc        = mpi_min(dt_osc);
+  return dt_osc;
+}
+
 void accumulate_local_angles() {
-  static const int LOCAL_ANGLES_SIZE = 2 * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 *
-                                       LOCAL_ANGLES_NMU * RAD_NUM_TYPES;
+  static const int LOCAL_ANGLES_SIZE = LOCAL_NUM_BASES * LOCAL_ANGLES_NX1 *
+                                       LOCAL_ANGLES_NX2 * LOCAL_ANGLES_NMU *
+                                       RAD_NUM_TYPES;
+  static const int LOCAL_STDDEV_SIZE =
+      LOCAL_NUM_BASES * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * LOCAL_ANGLES_NMU;
+
   memset(local_angles, 0, LOCAL_ANGLES_SIZE * sizeof(double));
+  memset(local_stddev, 0, LOCAL_STDDEV_SIZE * sizeof(double));
 
 #pragma omp parallel
   {
@@ -22,23 +40,32 @@ void accumulate_local_angles() {
       if (ph->type != TYPE_TRACER) {
         int ix1, ix2, icosth1, icosth2;
         get_local_angle_bins(ph, &ix1, &ix2, &icosth1, &icosth2);
+        for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
 #pragma omp atomic
-        local_angles[0][ix1][ix2][ph->type][icosth1] += ph->w;
+          local_angles[b][ix1][ix2][ph->type][icosth1] += ph->w;
 #pragma omp atomic
-        // local_angles global
-        local_angles[1][ix1][ix2][ph->type][icosth2] += ph->w;
+          local_stddev[b][ix1][ix2][icosth1] += 1.;
+        }
+        ph = ph->next;
       }
-      ph = ph->next;
+    } // omp parallel
+
+    mpi_dbl_allreduce_array((double *)local_angles, LOCAL_ANGLES_SIZE);
+    mpi_dbl_allreduce_array((double *)local_stddev, LOCAL_STDDEV_SIZE);
+
+#pragma omp parallel for collapse(4)
+    for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
+      LOCALXMULOOP {
+        local_stddev[b][i][j][imu] = sqrt(fabs(local_stddev[b][i][j][imu]));
+      }
     }
-  } // omp parallel
 
-  mpi_dbl_allreduce_array((double *)local_angles, LOCAL_ANGLES_SIZE);
-
-  // Gnu, local_moments are global
+    // Gnu, local_moments are global
 #if RAD_NUM_TYPES >= 4
-  compute_local_gnu(local_angles, Gnu);
-  compute_local_moments(Gnu, local_moments);
+    compute_local_gnu(local_angles, local_stddev, Gnu);
+    compute_local_moments(Gnu, local_moments);
 #endif // RAD_NUM_TYPES >= 4
+  }
 }
 
 void get_local_angle_bins(
@@ -89,20 +116,21 @@ void get_local_angle_bins(
 }
 
 #if RAD_NUM_TYPES >= 4
-void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type gnu) {
+void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type stddev, grid_Gnu_type gnu) {
 #pragma omp parallel for collapse(4)
   for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
-    for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
-      for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
-        for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu) {
-          // TODO(JMM): Generalize this for six species?
-          double ELN =
-              (f[b][i][j][NU_ELECTRON][imu] - f[b][i][j][ANTINU_ELECTRON][imu]);
-          double XLN =
-              (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
-          gnu[b][i][j][imu] = ELN - XLN;
-        }
-      }
+    LOCALXMULOOP {
+      // TODO(JMM): Generalize this for six species?
+      double ELN =
+          (f[b][i][j][NU_ELECTRON][imu] - f[b][i][j][ANTINU_ELECTRON][imu]);
+      double XLN = (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
+
+      double tot = 0;
+      TYPELOOP tot += f[b][i][j][itp][imu];
+      double ebar = tot/(stddev[b][i][j][imu] + SMALL);
+
+      double g_temp = ELN - XLN;
+      gnu[b][i][j][imu] = (fabs(g_temp) > ebar)*g_temp;
     }
   }
 }
@@ -112,21 +140,19 @@ void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type gnu) {
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
   // We are reducing over mu, but if we just parallel loop over b,i,j,
   // there is no danger of index collisions.
-  for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu) {
-#pragma omp parallel for collapse (3)
+  LOCALMULOOP {
+#pragma omp parallel for collapse(3)
     for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
-      for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) {
-        for (int j = 0; j < LOCAL_ANGLES_NX2; ++j) {
-          if (gnu[b][i][j][imu] < 0) {
-            // TODO(JMM): Pretty sure this atomic isn't needed
+      LOCALXLOOP {
+        if (gnu[b][i][j][imu] < 0) {
+          // TODO(JMM): Pretty sure this atomic isn't needed
 #pragma omp atomic
-            moments[b][MOMENTS_A][i][j] += gnu[b][i][j][imu];
-          } else if (gnu[b][i][j][imu] > 0) {
-            // TODO(JMM): Pretty sure this atomic isn't needed
+          moments[b][MOMENTS_A][i][j] += gnu[b][i][j][imu];
+        } else if (gnu[b][i][j][imu] > 0) {
+          // TODO(JMM): Pretty sure this atomic isn't needed
 #pragma omp atomic
-            moments[b][MOMENTS_B][i][j] += gnu[b][i][j][imu];
-          } // else nada. We don't care about == 0.
-         }
+          moments[b][MOMENTS_B][i][j] += gnu[b][i][j][imu];
+        } // else nada. We don't care about == 0.
       }
     }
   }
