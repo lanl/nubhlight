@@ -20,7 +20,7 @@ double get_dt_oscillations() {
   // seconds
   double dt_osc = 1. / (NUFERM * nph_max + SMALL);
   dt_osc /= T_unit; // code units
-  dt_osc        = mpi_min(dt_osc);
+  dt_osc = mpi_min(dt_osc);
   return dt_osc;
 }
 
@@ -39,13 +39,13 @@ void accumulate_local_angles() {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
-        int ix1, ix2, icosth1, icosth2;
-        get_local_angle_bins(ph, &ix1, &ix2, &icosth1, &icosth2);
+        int ix1, ix2, icosth[LOCAL_NUM_BASES];
+        get_local_angle_bins(ph, &ix1, &ix2, &icosth[0], &icosth[1]);
         for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
 #pragma omp atomic
-          local_angles[b][ix1][ix2][ph->type][icosth1] += ph->w;
+          local_angles[b][ix1][ix2][ph->type][icosth[b]] += ph->w;
 #pragma omp atomic
-          local_stddev[b][ix1][ix2][icosth1] += 1.;
+          local_stddev[b][ix1][ix2][icosth[b]] += 1.;
         }
       }
       ph = ph->next;
@@ -105,7 +105,7 @@ void get_local_angle_bins(
   knorm = 1. / (fabs(knorm) + SMALL);
   costh1 *= knorm;
   costh2 *= knorm;
-
+ 
   *pi = MY_MAX(
       0, MY_MIN(LOCAL_ANGLES_NX1 - 1, (X[1] - startx_rad[1]) / local_dx1_rad));
   *pj = MY_MAX(
@@ -157,10 +157,20 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
         } // else nada. We don't care about == 0.
       }
     }
+  } // MU LOOP
+
+#pragma omp parallel for collapse(2)
+  LOCALXLOOP {
+    for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
+      moments[b][MOMENTS_DIFF][i][j] =
+          fabs(moments[b][MOMENTS_B][i][j] - moments[b][MOMENTS_A][i][j]);
+    }
+    local_b_osc[i][j] = (local_moments[1][MOMENTS_DIFF][i][j] >
+                         local_moments[0][MOMENTS_DIFF][i][j]);
   }
 }
 
-void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
@@ -169,44 +179,36 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
         int ix1, ix2, icosth1, icosth2;
         get_local_angle_bins(ph, &ix1, &ix2, &icosth1, &icosth2);
 
-        // TODO(JMM) should we precompute this?
-        // TODO(JMM) make this less gross
-        double A[LOCAL_NUM_BASES], B[LOCAL_NUM_BASES], diff[LOCAL_NUM_BASES];
-        for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
-          A[b]    = local_moments[b][MOMENTS_A][ix1][ix2];
-          B[b]    = local_moments[b][MOMENTS_B][ix1][ix2];
-          diff[b] = fabs(B[b] - A[b]);
-        }
-        int b_osc = diff[1] > diff[0];
-        int imu   = b_osc ? icosth2 : icosth1;
+        int    b_osc = local_b_osc[ix1][ix2];
+        double A     = local_moments[b_osc][MOMENTS_A][ix1][ix2];
+        double B     = local_moments[b_osc][MOMENTS_B][ix1][ix2];
+        int    imu   = b_osc ? icosth2 : icosth1;
+
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
-        if (gnu[b_osc][ix1][ix2][imu] == 0)
-          continue;
-        // thanks to Gnu stddev switch, this is totally
-        // possible. Don't oscillate in this case.
-        if ((A[b_osc] == 0) && (B[b_osc] == 0))
-          continue;
+        if (!((gnu[b_osc][ix1][ix2][imu] == 0) || ((A == 0) && (B == 0)))) {
+          // If A == B then which region we treat as shallow is
+          // unimportant. Psurviv = 1/3 for both regions.
+          int    A_is_shallow = A < B;
+          int    B_is_shallow = !(A_is_shallow);
+          double shallow      = A_is_shallow ? A : B;
+          double deep         = A_is_shallow ? B : A;
 
-        int    A_is_shallow = A[b_osc] < B[b_osc];
-        int    B_is_shallow = !(A_is_shallow);
-        double shallow      = A_is_shallow ? A[b_osc] : B[b_osc];
-        double deep         = A_is_shallow ? B[b_osc] : A[b_osc];
+          int g_in_A = gnu[b_osc][ix1][ix2][imu] < 0;
+          int g_in_B = gnu[b_osc][ix1][ix2][imu] > 0;
 
-        int g_in_A = gnu[b_osc][ix1][ix2][imu] < 0;
-        int g_in_B = gnu[b_osc][ix1][ix2][imu] > 0;
+          int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
+          int in_deep    = !(in_shallow);
 
-        int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
-        int in_deep    = !(in_shallow);
-
-        double p_survival =
-            in_shallow ? PEQ : (1 - (1 - PEQ) * B[b_osc] / (A[b_osc] + SMALL));
-        double p_osc = 1. - p_survival;
-        if (get_rand() < p_osc) {
-          // JMM:
-          // Type order is NUE, NUEBAR, NUX, NUXBAR
-          // adding 2 on ring 0, 1, 2, 3
-          // moves through without changing to antiparticle.
-          ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
+          double p_survival =
+              in_shallow ? PEQ : (1 - (1 - PEQ) * B / (A + SMALL));
+          double p_osc = 1. - p_survival;
+          if (get_rand() < p_osc) {
+            // JMM:
+            // Type order is NUE, NUEBAR, NUX, NUXBAR
+            // adding 2 on ring 0, 1, 2, 3
+            // moves through without changing to antiparticle.
+            ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
+          }
         }
       }
       ph = ph->next;

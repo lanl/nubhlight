@@ -56,6 +56,7 @@ double local_dx1_rad, local_dx2_rad, local_dx_costh;
 #if RAD_NUM_TYPES >= 4
 grid_Gnu_type Gnu, local_stddev;
 grid_local_moment_type local_moments;
+grid_local_basis_idx_type local_b_osc;
 #endif //  RAD_NUM_TYPES
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
