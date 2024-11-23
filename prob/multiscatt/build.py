@@ -59,8 +59,8 @@ else:
   L_UNIT = rhol/RHO_UNIT
   M_UNIT = RHO_UNIT*(L_UNIT**3)
 
-  print("rhol = {:.5}".format(rhol))
-  print("RHO_UNIT = {:.5}".format(RHO_UNIT))
+print("rhol = {:.5}".format(rhol))
+print("RHO_UNIT = {:.5}".format(RHO_UNIT))
 print("L_UNIT = {:.5}".format(L_UNIT))
 print("M_UNIT = {:.5}".format(M_UNIT))
 
@@ -143,13 +143,6 @@ bhl.config.set_cparm('X2L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X2R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
-
-bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
-bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
-bhl.config.set_cparm('LOCAL_ANGLES_NX1', NTOT)
-bhl.config.set_cparm('LOCAL_ANGLES_NX2', NTOT)
-bhl.config.set_cparm('RAD_NUM_TYPES', 4)
-bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', 1)
 
                            ### RUNTIME PARAMETERS ###
 

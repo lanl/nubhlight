@@ -27,8 +27,7 @@ TABLEPATH = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+TABLEPATH
 OPACPARAM = "opacbin.LS220.evan.param"
 if HDF:
-    OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
-    #OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
 else:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 OPACPATH = "../../data/"+OPACPATH
@@ -107,7 +106,7 @@ bhl.config.set_cparm('ESTIMATE_THETAE', False)
 bhl.config.set_cparm('EMISSION', True)
 bhl.config.set_cparm('ABSORPTION', ABSORPTION)
 bhl.config.set_cparm('SCATTERING', False)
-bhl.config.set_cparm('NU_BINS', 61)
+bhl.config.set_cparm('NU_BINS', 200)
 bhl.config.set_cparm('BURROWS_OPACITIES', BURROWS_OPACITIES)
 bhl.config.set_cparm('HDF5_OPACITIES',    HDF)
 bhl.config.set_cparm('GRAYABSORPTION', False)
@@ -121,7 +120,6 @@ bhl.config.set_cparm('X2R_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('X3L_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('X3R_RAD_BOUND', RAD_BC)
 bhl.config.set_cparm('KILL_ALL_PACKETS', KILL_ALL_PACKETS)
-bhl.config.set_cparm("RAD_NUM_TYPES", 4)
 
                            ### RUNTIME PARAMETERS ###
 
