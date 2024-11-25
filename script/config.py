@@ -346,9 +346,14 @@ def build(PROBLEM, PATHS):
         set_cparm("RAD_NUM_TYPES", 3)
       print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
     if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS"):
-      print_config("NEUTRINO_OSCILLATIONS", CPARMS["NEUTRINO_OSCILLATIONS"])
+      print_config("NEUTRINO_OSCILLATIONS ", CPARMS["NEUTRINO_OSCILLATIONS"])
+      if util.parm_is_active(CPARMS, 'FORCE_EQUIPARTITION'):
+        print_config("FORCE_EQUIPARTITION ", CPARMS["FORCE_EQUIPARTITION"])
+      else:
+        set_cparm('FORCE_EQUIPARTITION', 0)
     else:
       set_cparm('NEUTRINO_OSCILLATIONS', 0)
+      set_cparm('FORCE_EQUIPARTITION', 0)
   else:
     set_cparm("RADIATION", 0)
     set_cparm("RAD_NUM_TYPES", 0)

@@ -200,8 +200,13 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
           int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
           int in_deep    = !(in_shallow);
 
+          double peq = (1./3.);
+#if FORCE_EQUIPARTITION
+          double p_survival = peq;
+#else
           double p_survival =
-              in_shallow ? PEQ : (1 - (1 - PEQ) * B / (A + SMALL));
+              in_shallow ? peq : (1 - (1 - peq) * B / (A + SMALL));
+#endif // FORCE_EQUIPARTITION
           double p_osc = 1. - p_survival;
           if (get_rand() < p_osc) {
             // JMM:

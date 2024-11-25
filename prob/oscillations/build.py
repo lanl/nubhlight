@@ -130,6 +130,7 @@ bhl.config.set_cparm('LOCAL_ANGLES_NX1', NTOT)
 bhl.config.set_cparm('LOCAL_ANGLES_NX2', NTOT)
 bhl.config.set_cparm('RAD_NUM_TYPES', 4)
 bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
+bhl.config.set_cparm('FORCE_EQUIPARTITION', False)
 
                            ### RUNTIME PARAMETERS ###
 
