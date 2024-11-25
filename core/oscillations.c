@@ -186,7 +186,7 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
         double G     = gnu[b_osc][ix1][ix2][imu];
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
-        if ((G != 0) && (A != 0) && (B != 0)) {
+        if (((G != 0) || FORCE_EQUIPARTITION) && (A != 0) && (B != 0)) {
           // If A == B then which region we treat as shallow is
           // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
@@ -200,7 +200,7 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
           int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
           int in_deep    = !(in_shallow);
 
-          double peq = (1./3.);
+          double peq = nu_is_heavy(ph->type) ? (2./3.) : (1./3.);
 #if FORCE_EQUIPARTITION
           double p_survival = peq;
 #else
