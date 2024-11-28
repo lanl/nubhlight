@@ -67,21 +67,53 @@ dumps = [h5py.File(f, 'r') for f in dfiles]
 b = 0
 mu = geom['local_angles_mu'][:]
 angles = [d['local_angles'][b].sum(axis=(0,1)) for d in dumps]
-Gnu = [(a[0] - a[1]) - (a[2] - a[3]) for a in angles]
-diff = (Gnu[1].sum() - Gnu[0].sum())
-reldiff = 2.0*diff/(np.abs(Gnu[1].sum()) + np.abs(Gnu[0].sum()) + 1e-20)
-print("Relative diff in Gnu = {}".format(reldiff))
+moments = dumps[0]['local_moments'][b].sum(axis=-1).sum(axis=-1)
+ntot = [a.sum() for a in angles]
+A = moments[0]
+B = moments[1]
+
+Gnu = [d['Gnu'][b].sum(axis=(0,1)) for d in dumps]
+Gdiff = (Gnu[1].sum() - Gnu[0].sum())
+Greldiff = 2.0*Gdiff/(np.abs(Gnu[1].sum()) + np.abs(Gnu[0].sum()) + 1e-20)
+
+Nnu_tot = 1e55
+dmu = mu[1] - mu[0]
+fracs = [0.2, 0.4, 0.2, 0.2]
+e0 = dmu*Nnu_tot*fracs[0]*(2./3.)*(1 - (3./4.)*mu*mu)
+ebar0 = dmu*Nnu_tot*fracs[1]*((1./4.) + (3./4.)*mu*mu)
+x0 = dmu*fracs[2]*Nnu_tot*np.ones_like(mu)/2
+xbar0 = dmu*fracs[3]*Nnu_tot*np.ones_like(mu)/2
+
+Amask = Gnu[0] < 0
+Bmask = Gnu[0] > 0
+e1 = e0.copy()
+e1[Amask] = (1 - (2./3.)*(B/A))*e0[Amask] + (1./3.)*(B/A)*x0[Amask]
+e1[Bmask] = (1./3.)*(e0[Bmask] + x0[Bmask])
+x1 = x0.copy()
+x1[Amask] = (2./3.)*(B/A)*e0[Amask] + (1 - (1./3.)*(B/A))*x0[Amask]
+x1[Bmask] = (2./3.)*(e0[Bmask] + x0[Bmask])
 
 if AUTO:
     data = {}
     data['SOL'] = [0]
-    data['CODE'] = diff
+    data['CODE'] = Gdiff
     data['THRESHOLD'] = 0.005
     import pickle
     pickle.dump(data, open('data.p', 'wb'))
     # clean up
     util.safe_remove(TMP_DIR)
     sys.exit()
+
+print("Ntot = ",ntot)
+print("Ntot per species (initial) = ", angles[0].sum(axis=-1))
+print("Ntot per species (final) = ", angles[1].sum(axis=-1))
+print("Frac per species (initial) = ", angles[0].sum(axis=-1)/ntot[0])
+print("Frac per species (final) = ", angles[1].sum(axis=-1)/ntot[1])
+print("frac e+x, frac ebar+xbar = ",
+      (angles[1].sum(axis=-1)/ntot[1])[0]+(angles[1].sum(axis=-1)/ntot[1])[2],
+      (angles[1].sum(axis=-1)/ntot[1])[1]+(angles[1].sum(axis=-1)/ntot[1])[3])
+print("Gnu start, Gnu end = ",Gnu[0].sum(), Gnu[1].sum())
+print("Relative diff in Gnu = {}".format(Greldiff))
 
 # make figure
 import matplotlib as mpl; mpl.use('Agg')
@@ -96,12 +128,36 @@ axarr[0].legend()
 axarr[0].set_ylabel(r'particle number$/10^{53}$')
 axarr[0].set_xlim(-1.01, 1.01)
 
+cmap = plt.get_cmap("tab10")
 for i,ax in enumerate(axarr[1:]):
-    ax.plot(mu, angles[i][0]/1e53,label=r'$\nu_e$')
-    ax.plot(mu, angles[i][1]/1e53,linestyle='--',label=r'$\bar{\nu}_e$')
-    ax.plot(mu, angles[i][2]/1e53,label=r'$\nu_X$')
-    ax.plot(mu, angles[i][3]/1e53,linestyle='--',label=r'$\bar{\nu}_x$')
-axarr[2].legend()
+#     ax.plot(mu, angles[i][0]/1e53,
+#             label=r'$\nu_e$')
+#     ax.plot(mu, angles[i][1]/1e53,
+#             #linestyle='--',
+#             label=r'$\bar{\nu}_e$')
+#     ax.plot(mu, angles[i][2]/1e53,
+#             label=r'$\nu_X$')
+#     ax.plot(mu, angles[i][3]/1e53,
+#             #linestyle='--',
+#             label=r'$\bar{\nu}_x$')
+    ax.set_ylim(0,1.0)
+axarr[1].plot(mu, angles[0][0]/1e53,
+              label=r'$\nu_e$')
+axarr[2].plot(mu, angles[1][0]/1e53)
+
+axarr[1].plot(mu, angles[0][2]/1e53,
+              label=r'$\nu_x$')
+axarr[2].plot(mu, angles[1][2]/1e53)
+
+axarr[2].plot(mu, e1/1e53, #color=cmap(1),
+              linestyle=':', label=r'$\nu_e$ analytic')
+axarr[2].plot(mu, x1/1e53, #color=cmap(1),
+              linestyle=':', label=r'$\nu_x$ analytic')
+axarr[1].legend(loc='lower center',
+                ncol=1)
+axarr[2].legend(loc='lower center',
+                ncol=1)
+
 
 for ax in axarr:
     ax.set_xlabel(r'$\cos(\theta)$')

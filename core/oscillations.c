@@ -131,7 +131,7 @@ void compute_local_gnu(
       TYPELOOP tot += f[b][i][j][itp][imu];
       double   ebar = tot / (stddev[b][i][j][imu] + SMALL);
 
-      double g_temp     = ELN - XLN;
+      double g_temp     = ELN - 0.5*XLN;
       gnu[b][i][j][imu] = (fabs(g_temp) > ebar) * g_temp;
     }
   }
@@ -187,6 +187,7 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
         if (((G != 0) || FORCE_EQUIPARTITION) && (A != 0) && (B != 0)) {
+        // if ((A != 0) && (B != 0)) {
           // If A == B then which region we treat as shallow is
           // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
