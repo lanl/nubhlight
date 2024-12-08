@@ -391,6 +391,7 @@ def load_dump(fname, geom=None, nulegacy=False):
       dump['Gnu'] = dfile['Gnu'][:]
       dump['local_Ns'] = dfile['local_Ns'][:]
       dump['local_wsqr'] = dfile['local_wsqr'][:]
+      dump['local_moments'] = dfile['local_moments'][:]
       wmean = dump['local_angles'].sum(axis=3) / dump['local_Ns']
       Ns = dump['local_Ns'][:]
       wb2N = Ns*wmean*wmean
