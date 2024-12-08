@@ -384,7 +384,7 @@ typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
 typedef double grid_local_moment_type[LOCAL_NUM_BASES][3][LOCAL_ANGLES_NX1]
                                      [LOCAL_ANGLES_NX2];
 typedef int grid_local_basis_idx_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
-extern grid_Gnu_type          Gnu, local_stddev;
+extern grid_Gnu_type          Gnu, local_Ns, local_wsqr;
 extern grid_local_moment_type local_moments;
 extern grid_local_basis_idx_type local_b_osc;
 #endif // #if RAD_NUM_TYPES >= 4
@@ -1018,7 +1018,7 @@ void get_local_angle_bins(
 void accumulate_local_angles();
 #if RAD_NUM_TYPES >= 4
 void compute_local_gnu(grid_local_angles_type local_angles,
-    grid_Gnu_type local_stddev, grid_Gnu_type gnu);
+    grid_Gnu_type local_Ns, grid_Gnu_type local_wsqr, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
 void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu);
 #endif // RAD_NUM_TYPES >= 4

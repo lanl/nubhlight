@@ -32,7 +32,8 @@ void accumulate_local_angles() {
       LOCAL_NUM_BASES * LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2 * LOCAL_ANGLES_NMU;
 
   memset(local_angles, 0, LOCAL_ANGLES_SIZE * sizeof(double));
-  memset(local_stddev, 0, LOCAL_STDDEV_SIZE * sizeof(double));
+  memset(local_Ns, 0, LOCAL_STDDEV_SIZE * sizeof(double));
+  memset(local_wsqr, 0, LOCAL_STDDEV_SIZE * sizeof(double));
 
 #pragma omp parallel
   {
@@ -45,7 +46,9 @@ void accumulate_local_angles() {
 #pragma omp atomic
           local_angles[b][ix1][ix2][ph->type][icosth[b]] += ph->w;
 #pragma omp atomic
-          local_stddev[b][ix1][ix2][icosth[b]] += 1.;
+          local_Ns[b][ix1][ix2][icosth[b]] += 1.;
+#pragma omp atomic
+          local_wsqr[b][ix1][ix2][icosth[b]] += (ph->w)*(ph->w);
         }
       }
       ph = ph->next;
@@ -53,18 +56,12 @@ void accumulate_local_angles() {
   } // omp parallel
 
   mpi_dbl_allreduce_array((double *)local_angles, LOCAL_ANGLES_SIZE);
-  mpi_dbl_allreduce_array((double *)local_stddev, LOCAL_STDDEV_SIZE);
-
-#pragma omp parallel for collapse(4)
-  for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
-    LOCALXMULOOP {
-      local_stddev[b][i][j][imu] = sqrt(fabs(local_stddev[b][i][j][imu]));
-    }
-  }
+  mpi_dbl_allreduce_array((double *)local_Ns, LOCAL_STDDEV_SIZE);
+  mpi_dbl_allreduce_array((double *)local_wsqr, LOCAL_STDDEV_SIZE);
 
   // Gnu, local_moments are global
 #if RAD_NUM_TYPES >= 4
-  compute_local_gnu(local_angles, local_stddev, Gnu);
+  compute_local_gnu(local_angles, local_Ns, local_wsqr, Gnu);
   compute_local_moments(Gnu, local_moments);
 #endif // RAD_NUM_TYPES >= 4
 }
@@ -117,21 +114,34 @@ void get_local_angle_bins(
 }
 
 #if RAD_NUM_TYPES >= 4
-void compute_local_gnu(
-    grid_local_angles_type f, grid_Gnu_type stddev, grid_Gnu_type gnu) {
+void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
+                       grid_Gnu_type local_wsqr, grid_Gnu_type gnu) {
 #pragma omp parallel for collapse(4)
   for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
     LOCALXMULOOP {
+      const double Ns = local_Ns[b][i][j][imu];
+      const double w2 = local_wsqr[b][i][j][imu];
+
+      double   wmean = 0;
+      TYPELOOP wmean += fabs(f[b][i][j][itp][imu]);
+      wmean /= (Ns + SMALL);
+
+      const double wb2N = Ns * wmean * wmean;
+      // should have units of w/sqrt(N).
+      const double stddev =
+          sqrt(wb2N + (w2 + Ns * wb2N) / (fabs(Ns - 1) + SMALL));
+
       // TODO(JMM): Generalize this for six species?
-      double ELN =
+      const double ELN =
           (f[b][i][j][NU_ELECTRON][imu] - f[b][i][j][ANTINU_ELECTRON][imu]);
-      double XLN = (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
+      const double XLN =
+          (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
 
       double   tot = 0;
       TYPELOOP tot += f[b][i][j][itp][imu];
-      double   ebar = tot / (stddev[b][i][j][imu] + SMALL);
+      double   ebar = tot / (stddev + SMALL);
 
-      double g_temp     = ELN - 0.5*XLN;
+      double g_temp     = ELN - 0.5 * XLN;
       gnu[b][i][j][imu] = (fabs(g_temp) > ebar) * g_temp;
     }
   }

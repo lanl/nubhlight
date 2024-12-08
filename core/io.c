@@ -1105,7 +1105,9 @@ void dump() {
       }
       WRITE_ARRAY(Gnu,
                   RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
-      WRITE_ARRAY(local_stddev,
+      WRITE_ARRAY(local_Ns,
+                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(local_wsqr,
                   RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
