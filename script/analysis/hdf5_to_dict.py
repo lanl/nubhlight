@@ -278,6 +278,12 @@ def load_geom(hdr,
       if use_2d_metrics or force_2d:
         geom['Gamma'] = geom['Gamma'][:,:,0]
 
+  # local angles stuff
+  for key in ['local_angles_Xharm', 'local_angles_Xbl',
+              'local_angles_Xcart', 'local_angles_mu']:
+    if key in dfile.keys():
+      geom[key] = np.array(dfile[key])
+
   dfile.close()
 
   return geom
