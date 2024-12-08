@@ -873,6 +873,13 @@ void dump() {
   WRITE_HDR(nubins_spec, TYPE_INT);
   WRITE_HDR(numin, TYPE_DBL);
   WRITE_HDR(numax, TYPE_DBL);
+
+  int neutrino_oscillations = NEUTRINO_OSCILLATIONS;
+  WRITE_HDR(neutrino_oscillations, TYPE_INT);
+  int force_equipartition = FORCE_EQUIPARTITION;
+  WRITE_HDR(force_equipartition, TYPE_INT);
+  int local_angular_distributions = LOCAL_ANGULAR_DISTRIBUTIONS;
+  WRITE_HDR(local_angular_distributions, TYPE_INT);
 #endif
 
 #if NVAR_PASSIVE > 0

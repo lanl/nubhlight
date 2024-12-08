@@ -292,9 +292,10 @@
 #define TIMER_MAKE (7)
 #define TIMER_PUSH (8)
 #define TIMER_INTERACT (9)
-#define TIMER_MICRO (10)
-#define TIMER_ALL (11)
-#define NUM_TIMERS (12)
+#define TIMER_OSCILLATIONS (10)
+#define TIMER_MICRO (11)
+#define TIMER_ALL (12)
+#define NUM_TIMERS (13)
 
 // Units
 #define NEED_UNITS (RADIATION || EOS == EOS_TYPE_TABLE)

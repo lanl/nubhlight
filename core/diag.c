@@ -299,6 +299,9 @@ void diag(int call_code) {
 #if ELECTRONS
       fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_ELECTRON));
 #endif
+#if NEUTRINO_OSCILLATIONS || LOCAL_ANGULAR_DISTRIBUTIONS
+      fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_OSCILLATIONS));
+#endif
       fprintf(ener_file, "\n");
       fflush(ener_file);
     }

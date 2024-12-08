@@ -91,6 +91,11 @@ void report_performance() {
     fprintf(stdout, "   INTERACT: %8.4g s (%.4g %%)\n",
         times[TIMER_INTERACT] / dnstep,
         100. * times[TIMER_INTERACT] / times[TIMER_ALL]);
+#if NEUTRINO_OSCILLATIONS || LOCAL_ANGULAR_DISTRIBUTIONS
+    fprintf(stdout, "   OSCILL:   %8.4g s (%.4g %%)\n",
+        times[TIMER_OSCILLATIONS] / dnstep,
+        100. * times[TIMER_OSCILLATIONS] / times[TIMER_ALL]);
+#endif
     fprintf(stdout, "   MICRPHYS: %8.4g s (%.4g %%)\n",
         times[TIMER_MICRO] / dnstep,
         100. * times[TIMER_MICRO] / times[TIMER_ALL]);

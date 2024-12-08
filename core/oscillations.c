@@ -11,6 +11,7 @@
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
 double get_dt_oscillations() {
+  timer_start(TIMER_OSCILLATIONS);
   set_Rmunu(); // So we have Nsph and nph
   double nph_max = 0;
 #pragma omp parallel for reduction(max : nph_max) collapse(3)
@@ -21,10 +22,12 @@ double get_dt_oscillations() {
   double dt_osc = 1. / (NUFERM * nph_max + SMALL);
   dt_osc /= T_unit; // code units
   dt_osc = mpi_min(dt_osc);
+  timer_stop(TIMER_OSCILLATIONS);
   return dt_osc;
 }
 
 void accumulate_local_angles() {
+  timer_start(TIMER_OSCILLATIONS);
   static const int LOCAL_ANGLES_SIZE = LOCAL_NUM_BASES * LOCAL_ANGLES_NX1 *
                                        LOCAL_ANGLES_NX2 * LOCAL_ANGLES_NMU *
                                        RAD_NUM_TYPES;
@@ -64,6 +67,7 @@ void accumulate_local_angles() {
   compute_local_gnu(local_angles, local_Ns, local_wsqr, Gnu);
   compute_local_moments(Gnu, local_moments);
 #endif // RAD_NUM_TYPES >= 4
+  timer_stop(TIMER_OSCILLATIONS);
 }
 
 void get_local_angle_bins(
@@ -182,7 +186,8 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
   }
 }
 
-void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+  timer_start(TIMER_OSCILLATIONS);
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
@@ -233,6 +238,7 @@ void        oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
       ph = ph->next;
     }
   } // omp parallel
+  timer_stop(TIMER_OSCILLATIONS);
 }
 
 #endif // RAD_NUM_TYPES >= 4

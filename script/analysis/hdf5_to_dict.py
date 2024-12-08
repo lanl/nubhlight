@@ -115,6 +115,9 @@ def load_hdr(fname):
   read_hdr_var('nubins_spec','nubins_spec',200)
   read_hdr_var('diagnostics_use_radtypes','diagnostics_use_radtypes',0)
   read_hdr_var('FULL_DUMP','FULL_DUMP',1)
+  read_hdr-var("LOCAL_ANGULAR_DISTRIBUTIONS", "local_angular_distributions", 0)
+  read_hdr_var("NEUTRINO_OSCILLATIONS", "neutrino_oscillations", 0)
+  read_hdr_var("FORCE_EQUIPARTITION", "force_equipartition", 0)
 
   hdr['vnams'] = [h5_to_string(i) for i in dfile['P'].attrs['vnams']]
 
@@ -383,6 +386,16 @@ def load_dump(fname, geom=None, nulegacy=False):
         dump['Nabs_x'] = dump['Nabs_phys'][:,:,:,2]
       else:
         dump['Nabs_ph'] = dump['Nabs_phys'][:,:,:,0]
+    if hdr['NEUTRINO_OSCILLATIONS'] or hdr['LOCAL_ANGULAR_DISTRIBUTIONS']:
+      dump['local_angles'] = dfile['local_angles'][:]
+      dump['Gnu'] = dfile['Gnu'][:]
+      dump['local_Ns'] = dfile['local_Ns'][:]
+      dump['local_wsqr'] = dfile['local_wsqr'][:]
+      wmean = dump['local_angles'].sum(axis=3) / dump['local_Ns']
+      Ns = dump['local_Ns'][:]
+      wb2N = Ns*wmean*wmean
+      w2 = dump['local_wsqr'][:]
+      dump['local_stddev'] = np.sqrt(wb2N + N2*(w2 - wb2N)/(Ns - 1))
 
   ucon, ucov, bcon, bcov = get_state(dump, geom)
 
@@ -560,6 +573,9 @@ def load_diag(path, hdr = None, nulegacy = False, timers = True):
     nbase += 11
     if hdr['ELECTRONS']:
       diag['TIMER_ELECTRON'] = dfile[nbase + 1]
+      nbase += 1
+    if hdr['NEUTRINO_OSCILLATIONS'] or hdr['LOCAL_ANGULAR_DISTRIBUTIONS']:
+      diag['TIMER_OSCILLATIONS'] = dfile[nbase + 1]
       nbase += 1
 
   # Purge vanishing data due to restarts
