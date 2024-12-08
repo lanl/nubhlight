@@ -127,9 +127,11 @@ void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
       wmean /= (Ns + SMALL);
 
       const double wb2N = Ns * wmean * wmean;
-      // should have units of w/sqrt(N).
+      // should have units of sum(w)/sqrt(N) ~ sqrt(N) wmean
+      // middle term scales b/c
+      // sqrt(sum w^2) ~ sqrt(N wmean^2) ~ sqrt(N) wmean
       const double stddev =
-          sqrt(wb2N + (w2 + Ns * wb2N) / (fabs(Ns - 1) + SMALL));
+          sqrt(wb2N + Ns * (w2 - wb2N) / (fabs(Ns - 1) + SMALL));
 
       // TODO(JMM): Generalize this for six species?
       const double ELN =
