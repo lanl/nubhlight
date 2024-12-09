@@ -115,7 +115,7 @@ def load_hdr(fname):
   read_hdr_var('nubins_spec','nubins_spec',200)
   read_hdr_var('diagnostics_use_radtypes','diagnostics_use_radtypes',0)
   read_hdr_var('FULL_DUMP','FULL_DUMP',1)
-  read_hdr-var("LOCAL_ANGULAR_DISTRIBUTIONS", "local_angular_distributions", 0)
+  read_hdr_var("LOCAL_ANGULAR_DISTRIBUTIONS", "local_angular_distributions", 0)
   read_hdr_var("NEUTRINO_OSCILLATIONS", "neutrino_oscillations", 0)
   read_hdr_var("FORCE_EQUIPARTITION", "force_equipartition", 0)
 
