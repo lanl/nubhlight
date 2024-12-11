@@ -40,6 +40,7 @@ SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
+OSCILLATIONS = "-oscillations" in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
 
@@ -421,11 +422,13 @@ bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
 
-bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
-bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
-bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
-bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
-bhl.config.set_cparm('RAD_NUM_TYPES', 4)
+if OSCILLATIONS:
+    bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
+    bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
+    bhl.config.set_cparm('RAD_NUM_TYPES', 4)
+    bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
