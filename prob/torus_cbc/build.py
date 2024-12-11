@@ -345,8 +345,8 @@ if GAMTABLE:
 print("Make sure to move the generated table to your run directory!")
 
 # Radiation units
-NUMIN_MEV = 0.1
-NUMAX_MEV = 500
+NUMIN_MEV = 1
+NUMAX_MEV = 300
 NUMIN = NUMIN_MEV*cgs['MEV']/cgs['HPL']
 NUMAX = NUMAX_MEV*cgs['MEV']/cgs['HPL']
 if RADIATION:
