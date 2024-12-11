@@ -588,7 +588,7 @@ void print_rad_types() {
         rad_type_counts[ANTINU_ELECTRON]);
     fprintf(stdout, " X                        %.2f %%\n",
         rad_type_counts[NU_HEAVY]);
-#if RAD_NUM_TYPES > 3
+#if RAD_NUM_TYPES >= 4
     fprintf(stdout, " ANTIX                    %.2f %%\n",
         rad_type_counts[ANTINU_HEAVY]);
 #endif

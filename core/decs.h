@@ -373,6 +373,7 @@ extern grid_prim_type   psupersave;
 #define MOMENTS_A (0)
 #define MOMENTS_B (1)
 #define MOMENTS_DIFF (2)
+#define LOCAL_NUM_MOMENTS (3)
 typedef double grid_local_angles_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
                                      [LOCAL_ANGLES_NX2][RAD_NUM_TYPES]
                                      [LOCAL_ANGLES_NMU];
@@ -382,8 +383,8 @@ extern double                 local_dx1_rad, local_dx2_rad, local_dx_costh;
 #if RAD_NUM_TYPES >= 4
 typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
                             [LOCAL_ANGLES_NX2][LOCAL_ANGLES_NMU];
-typedef double grid_local_moment_type[LOCAL_NUM_BASES][3][LOCAL_ANGLES_NX1]
-                                     [LOCAL_ANGLES_NX2];
+typedef double grid_local_moment_type[LOCAL_NUM_BASES][LOCAL_NUM_MOMENTS]
+                                     [LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 typedef int grid_local_basis_idx_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 extern grid_Gnu_type          Gnu, local_Ns, local_wsqr;
 extern grid_local_moment_type local_moments;
