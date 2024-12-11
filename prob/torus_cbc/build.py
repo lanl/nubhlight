@@ -427,9 +427,9 @@ bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 
 if OSCILLATIONS:
     bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
-    bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
-    bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
-    bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
+    bhl.config.set_cparm('LOCAL_ANGLES_NMU', 32)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX1', 32)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX2', 32)
     bhl.config.set_cparm('RAD_NUM_TYPES', 4)
     bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
 
