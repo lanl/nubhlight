@@ -386,9 +386,11 @@ typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
 typedef double grid_local_moment_type[LOCAL_NUM_BASES][LOCAL_NUM_MOMENTS]
                                      [LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 typedef int grid_local_basis_idx_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
+typedef double grid_local_count_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 extern grid_Gnu_type          Gnu, local_Ns, local_wsqr;
 extern grid_local_moment_type local_moments;
 extern grid_local_basis_idx_type local_b_osc;
+extern grid_local_count_type local_osc_count;
 #endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 

@@ -57,6 +57,7 @@ double local_dx1_rad, local_dx2_rad, local_dx_costh;
 grid_Gnu_type Gnu, local_Ns, local_wsqr;
 grid_local_moment_type local_moments;
 grid_local_basis_idx_type local_b_osc;
+grid_local_count_type local_osc_count;
 #endif //  RAD_NUM_TYPES
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
