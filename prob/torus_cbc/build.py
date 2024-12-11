@@ -116,8 +116,11 @@ TABLEPATH = "../../data/"+TABLEPATH
 if FORTRAN:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 else:
-    #OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
-    OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
+    if OSCILLATIONS:
+        OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
+    else:
+        OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+
 OPACPARAM = "opacbin.LS220.evan.param"
 OPACPATH = "../../data/"+OPACPATH
 OPACPARAM = "../../data/"+OPACPARAM
