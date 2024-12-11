@@ -403,6 +403,8 @@ def load_dump(fname, geom=None, nulegacy=False):
       wb2N = Ns*wmean*wmean
       w2 = dump['local_wsqr'][:]
       dump['local_stddev'] = np.sqrt(wb2N + N2*(w2 - wb2N)/(Ns - 1))
+      if hdr['NEUTRINO_OSCILLATIONS']:
+        dump['local_osc_rate'] = dfile['local_osc_count'][:]
 
   ucon, ucov, bcon, bcov = get_state(dump, geom)
 
