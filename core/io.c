@@ -1139,6 +1139,32 @@ void dump() {
           local_moments, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
+
+#if NEUTRINO_OSCILLATIONS
+    {
+      mpi_dbl_allreduce_array(
+          (double *)local_osc_count, LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2);
+      for (int ix1 = 0; ix1 < LOCAL_ANGLES_NX1; ++ix1) {
+        for (int ix2 = 0; ix2 < LOCAL_ANGLES_NX2; ++ix2) {
+          local_osc_count[ix1][ix2] /= DTd;
+        }
+      }
+
+#define RANK (2)
+      hsize_t fdims[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t fstart[RANK] = {0, 0};
+      hsize_t fcount[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t mdims[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t mstart[RANK] = {0, 0};
+      if (!mpi_io_proc()) {
+        fcount[0] = 0;
+        fcount[1] = 0;
+      }
+      WRITE_ARRAY(
+          local_osc_count, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#undef RANK
+    }
+#endif // NEUTRINO_OSCILLATIONS
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
   }

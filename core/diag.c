@@ -35,6 +35,9 @@ void reset_dump_variables() {
   memset(radG_int, 0, RAD_NUM_TYPES * N123G * sizeof(double));
   memset(dtau_avg, 0, (RAD_SCATT_TYPES + 1) * N123G * sizeof(double));
   memset(en_int_avg, 0, (RAD_SCATT_TYPES + 1) * N123G * sizeof(double));
+#if NEUTRINO_OSCILLATIONS
+  memset(local_osc_count, 0, LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
+#endif // NEUTRINO_OSCILLATIONS
 #endif
 }
 
