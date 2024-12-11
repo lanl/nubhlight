@@ -42,6 +42,13 @@ def print_config(key, var):
 def set_cparm(name, value):
   CPARMS[name] = value
 
+def set_cparm_if_active(name, value):
+  if util.parm_is_active(CPARMS, name):
+    print_config(name + ' ', CPARMS[name])
+  else:
+    set_cparm(name, value)
+  return
+
 # SET RUNTIME PARAMETER. DO NOT OVERWRITE DEFAULT VALUES, AS THIS IS CALLED BY
 # PROBLEM FILE BEFORE CORE ROUTINE
 def set_rparm(name, datatype, default=None):
@@ -330,8 +337,26 @@ def build(PROBLEM, PATHS):
       print_config("HDF5_OPACITIES", CPARMS["HDF5_OPACITIES"])
     else:
       set_cparm("HDF5_OPACITIES", 0)
+    if util.parm_is_active(CPARMS, "RAD_NUM_TYPES"):
+      print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
+    else:
+      if CPARMS['RADIATION'] == 1:
+        set_cparm("RAD_NUM_TYPES", 1)
+      else:
+        set_cparm("RAD_NUM_TYPES", 3)
+      print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
+    if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS"):
+      print_config("NEUTRINO_OSCILLATIONS ", CPARMS["NEUTRINO_OSCILLATIONS"])
+      if util.parm_is_active(CPARMS, 'FORCE_EQUIPARTITION'):
+        print_config("FORCE_EQUIPARTITION ", CPARMS["FORCE_EQUIPARTITION"])
+      else:
+        set_cparm('FORCE_EQUIPARTITION', 0)
+    else:
+      set_cparm('NEUTRINO_OSCILLATIONS', 0)
+      set_cparm('FORCE_EQUIPARTITION', 0)
   else:
     set_cparm("RADIATION", 0)
+    set_cparm("RAD_NUM_TYPES", 0)
   if util.parm_is_active(CPARMS, 'ELECTRONS'):
     print_config("ELECTRONS", CPARMS['ELECTRONS'])
   else:
@@ -390,7 +415,12 @@ def build(PROBLEM, PATHS):
 
   if util.parm_is_active(CPARMS, 'RADIATION'):
     if util.parm_is_active(CPARMS, 'LOCAL_ANGULAR_DISTRIBUTIONS'):
-      print_config('LOCAL_ANGULAR_DISTRIBUTIONS', CPARMS['LOCAL_ANGULAR_DISTRIBUTIONS'])
+      print_config('LOCAL_ANGULAR_DISTRIBUTIONS ',
+                   CPARMS['LOCAL_ANGULAR_DISTRIBUTIONS'])
+      # TODO(JMM): What should defaults be?
+      set_cparm_if_active('LOCAL_ANGLES_NMU', 64)
+      set_cparm_if_active('LOCAL_ANGLES_NX1', 64)
+      set_cparm_if_active('LOCAL_ANGLES_NX2', 64)
     else:
       set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', 0)
 

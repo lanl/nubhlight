@@ -841,7 +841,7 @@ double total_cross_lkup(
     }
 #else  // Normal neutrino scattering
     {
-      if (type == NU_HEAVY && interaction == RSCATT_TYPE_E) {
+      if (nu_is_heavy(type) && interaction == RSCATT_TYPE_E) {
         return 0.0; // heavy cannot scatter off of electrons
       }
       double sigma =
@@ -1032,7 +1032,7 @@ double total_cross_ions(double sigma_hc, double A, double Z) {
 // Burrows, Reddy, Thomson, arXiv:astro-ph/0404432
 double nu_cross_delta(int type, int interaction) {
   // heavy cannot scatter off of electrons
-  if (type == NU_HEAVY && interaction == RSCATT_TYPE_E)
+  if (nu_is_heavy(type) && interaction == RSCATT_TYPE_E)
     return 0.0;
   if (interaction == RSCATT_TYPE_P) {
     double Cpv = 0.5 + 2.0 * S2THW;
@@ -1054,7 +1054,7 @@ double nu_cross_delta(int type, int interaction) {
 double nu_cross_factor(
     double sigma, int type, int interaction, const struct of_microphysics *m) {
   // heavy cannot scatter off of electrons
-  if (type == NU_HEAVY && interaction == RSCATT_TYPE_E)
+  if (nu_is_heavy(type) && interaction == RSCATT_TYPE_E)
     return 0.0;
   if (interaction == RSCATT_TYPE_P) {
     return 0.25 * NUSIGMA0 * sigma *

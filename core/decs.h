@@ -165,10 +165,10 @@
 #define RAD_TYPE_START (0)
 #define TYPE_TRACER (-1)
 #if RADIATION == RADTYPE_NEUTRINOS
-#define RAD_NUM_TYPES (3)
 #define NU_ELECTRON (0)
 #define ANTINU_ELECTRON (1)
 #define NU_HEAVY (2)
+#define ANTINU_HEAVY (3)
 #if MULTISCATT_TEST
 #define RAD_SCATT_TYPES (3)
 #else
@@ -183,12 +183,10 @@
 #define RADG_YE (4)
 #define RADG_YE_EM (5)
 #elif RADIATION == RADTYPE_LIGHT
-#define RAD_NUM_TYPES (1)
 #define RAD_SCATT_TYPES (1)
 #define NRADCOMP (0)
 #define PHOTON (0)
 #else
-#define RAD_NUM_TYPES (0)
 #define RAD_SCATT_TYPES (0)
 #define NRADCOMP (0)
 #endif
@@ -294,9 +292,10 @@
 #define TIMER_MAKE (7)
 #define TIMER_PUSH (8)
 #define TIMER_INTERACT (9)
-#define TIMER_MICRO (10)
-#define TIMER_ALL (11)
-#define NUM_TIMERS (12)
+#define TIMER_OSCILLATIONS (10)
+#define TIMER_MICRO (11)
+#define TIMER_ALL (12)
+#define NUM_TIMERS (13)
 
 // Units
 #define NEED_UNITS (RADIATION || EOS == EOS_TYPE_TABLE)
@@ -368,6 +367,31 @@ extern grid_radtype_type Nem_phys, Nabs_phys, radtype_buf;
 extern grid_int_type    Nsuper;
 extern grid_double_type Esuper;
 extern grid_prim_type   psupersave;
+
+#if LOCAL_ANGULAR_DISTRIBUTIONS
+#define LOCAL_NUM_BASES (2)
+#define MOMENTS_A (0)
+#define MOMENTS_B (1)
+#define MOMENTS_DIFF (2)
+#define LOCAL_NUM_MOMENTS (3)
+typedef double grid_local_angles_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
+                                     [LOCAL_ANGLES_NX2][RAD_NUM_TYPES]
+                                     [LOCAL_ANGLES_NMU];
+extern grid_local_angles_type local_angles;
+extern double                 local_dx1_rad, local_dx2_rad, local_dx_costh;
+
+#if RAD_NUM_TYPES >= 4
+typedef double grid_Gnu_type[LOCAL_NUM_BASES][LOCAL_ANGLES_NX1]
+                            [LOCAL_ANGLES_NX2][LOCAL_ANGLES_NMU];
+typedef double grid_local_moment_type[LOCAL_NUM_BASES][LOCAL_NUM_MOMENTS]
+                                     [LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
+typedef int grid_local_basis_idx_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
+extern grid_Gnu_type          Gnu, local_Ns, local_wsqr;
+extern grid_local_moment_type local_moments;
+extern grid_local_basis_idx_type local_b_osc;
+#endif // #if RAD_NUM_TYPES >= 4
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
 #endif // RADIATION
 
 // Default initialization is 0, which in this case is
@@ -670,6 +694,12 @@ extern int global_stop[NDIM];
 #define SCATTLOOP for (int iscatt = 0; iscatt < RAD_SCATT_TYPES; iscatt++)
 #define JRADLOOP for (int n = 0; n < MAXNSCATT + 2; n++)
 #define NULOOP for (int inu = 0; inu < NU_BINS + 1; inu++)
+
+#define LOCALXLOOP                             \
+  for (int i = 0; i < LOCAL_ANGLES_NX1; ++i)   \
+    for (int j = 0; j < LOCAL_ANGLES_NX2; ++j)
+#define LOCALMULOOP for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu)
+#define LOCALXMULOOP LOCALXLOOP LOCALMULOOP
 
 #define MY_MIN(fval1, fval2) (((fval1) < (fval2)) ? (fval1) : (fval2))
 #define MY_MAX(fval1, fval2) (((fval1) > (fval2)) ? (fval1) : (fval2))
@@ -981,6 +1011,20 @@ double Jnu_hdf(double nu, int type, const struct of_microphysics *m);
 double int_jnudnudOmega_hdf(const struct of_microphysics *m);
 double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 #endif // HDF opacities
+
+// oscillations.c
+#if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
+double get_dt_oscillations();
+void get_local_angle_bins(
+    struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
+void accumulate_local_angles();
+#if RAD_NUM_TYPES >= 4
+void compute_local_gnu(grid_local_angles_type local_angles,
+    grid_Gnu_type local_Ns, grid_Gnu_type local_wsqr, grid_Gnu_type gnu);
+void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
+void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu);
+#endif // RAD_NUM_TYPES >= 4
+#endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION
 
 // passive.c
@@ -1065,6 +1109,7 @@ void   set_cooling_time(
 void record_lepton_flux(const struct of_photon *ph);
 void check_nu_type(const char *location);
 int  get_lepton_sign(const struct of_photon *ph);
+int  nu_is_heavy(const int radtype);
 #endif // NEUTRINOS
 #endif // RADIATION
 

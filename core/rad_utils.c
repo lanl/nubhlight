@@ -758,6 +758,9 @@ int get_lepton_sign(const struct of_photon *ph) {
     return -1;
   return 0;
 }
+int nu_is_heavy(const int radtype) {
+  return ((radtype == NU_HEAVY) || (radtype == ANTINU_HEAVY));
+}
 
 // for debugging
 void        check_nu_type(const char *location) {

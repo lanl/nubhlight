@@ -299,6 +299,9 @@ void diag(int call_code) {
 #if ELECTRONS
       fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_ELECTRON));
 #endif
+#if NEUTRINO_OSCILLATIONS || LOCAL_ANGULAR_DISTRIBUTIONS
+      fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_OSCILLATIONS));
+#endif
       fprintf(ener_file, "\n");
       fflush(ener_file);
     }
@@ -583,8 +586,12 @@ void print_rad_types() {
         rad_type_counts[NU_ELECTRON]);
     fprintf(stdout, " ANTI                     %.2f %%\n",
         rad_type_counts[ANTINU_ELECTRON]);
-    fprintf(stdout, " HEAVY                    %.2f %%\n",
+    fprintf(stdout, " X                        %.2f %%\n",
         rad_type_counts[NU_HEAVY]);
+#if RAD_NUM_TYPES >= 4
+    fprintf(stdout, " ANTIX                    %.2f %%\n",
+        rad_type_counts[ANTINU_HEAVY]);
+#endif
     fprintf(stdout, "*********************************\n\n");
   }
   timer_stop(TIMER_DIAG);

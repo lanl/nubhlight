@@ -28,6 +28,10 @@
 #define S4THW (S2THW * S2THW)
 #define NUSIGMA0 (1.7611737037e-44) // Fundamental neutrino cross section
 
+// Frequency scale of neutrino oscillations
+#define ROOT2 (1.4142135623730951)
+#define NUFERM (ROOT2*HBAR*HBAR*CL*CL*CL*GFERM)
+
 // Unit conversions
 #define EV (1.60217653e-12)   // Electron-volt
 #define MEV (1.0e6 * EV)      // Mega-Electron-Volt

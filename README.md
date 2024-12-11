@@ -58,6 +58,10 @@ equations of state and opacities and emissivities.
 - An HDF5 reader exists for opacities defined in `nubhlight`
   format. See `core/opac_emis_hdf.c` for the reader and for
   information for how to define your own such table.
+- The HDF5 opacity reader does not exactly support NuLib opacities,
+  however, [a fork of
+  NuLib](https://github.com/Yurlungur/NuLib/pull/1) exists that
+  contains the relevant modifications to run with nublhight.
 
 
 # CLANG FORMAT

@@ -40,6 +40,7 @@ SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
+OSCILLATIONS = "-oscillations" in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
 
@@ -115,7 +116,11 @@ TABLEPATH = "../../data/"+TABLEPATH
 if FORTRAN:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 else:
-    OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+    if OSCILLATIONS:
+        OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
+    else:
+        OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
+
 OPACPARAM = "opacbin.LS220.evan.param"
 OPACPATH = "../../data/"+OPACPATH
 OPACPARAM = "../../data/"+OPACPARAM
@@ -344,8 +349,8 @@ if GAMTABLE:
 print("Make sure to move the generated table to your run directory!")
 
 # Radiation units
-NUMIN_MEV = 1.0
-NUMAX_MEV = 100
+NUMIN_MEV = 1
+NUMAX_MEV = 300
 NUMIN = NUMIN_MEV*cgs['MEV']/cgs['HPL']
 NUMAX = NUMAX_MEV*cgs['MEV']/cgs['HPL']
 if RADIATION:
@@ -406,7 +411,7 @@ if KILL:
     bhl.config.set_cparm('KILL_ALL_PACKETS', True)
 bhl.config.set_cparm('BURROWS_OPACITIES', FORTRAN)
 bhl.config.set_cparm('HDF5_OPACITIES', HDF)
-bhl.config.set_cparm('NU_BINS', 200)
+bhl.config.set_cparm('NU_BINS', 61)
 bhl.config.set_cparm('ESTIMATE_THETAE', False)
 bhl.config.set_cparm('GRAYABSORPTION',  False)
 bhl.config.set_cparm('BREMSSTRAHLUNG',  False)
@@ -419,6 +424,14 @@ bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
+
+if OSCILLATIONS:
+    bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
+    bhl.config.set_cparm('LOCAL_ANGLES_NMU', 64)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX1', 64)
+    bhl.config.set_cparm('LOCAL_ANGLES_NX2', 64)
+    bhl.config.set_cparm('RAD_NUM_TYPES', 4)
+    bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
