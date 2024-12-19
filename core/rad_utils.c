@@ -47,7 +47,7 @@ void init_superphoton_resolution() {
   dt_tune_emiss = 0.5;
   dt_tune_scatt = Rout_rad;
   if (RADIATION == RADTYPE_NEUTRINOS) {
-    cross_section = RAD_SCATT_TYPES * NUSIGMA0;
+    cross_section = RAD_NUM_TYPES * RAD_SCATT_TYPES * NUSIGMA0;
   } else {
     cross_section = 16. * pow(10, 2) * THOMSON;
   }
