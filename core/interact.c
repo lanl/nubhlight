@@ -40,7 +40,7 @@ double bound_bias(double bias, double nu, int type, int interaction,
   // Another BOUND_BIAS method. Assumes large hotspots, may work fine instead
   // assuming ~GM/c^2 length scale for hot spots.
   double dtau = conservative_dtau_est(nu, type, interaction, m);
-  bias        = MY_MIN(bias, 1. / (dtau * RAD_SCATT_TYPES));
+  bias        = MY_MIN(bias, 1. / (dtau * RAD_NUM_TYPES * RAD_SCATT_TYPES));
   bias        = MY_MAX(bias, 1.);
 
   return bias;
