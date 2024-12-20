@@ -30,7 +30,7 @@
 
 // Frequency scale of neutrino oscillations
 #define ROOT2 (1.4142135623730951)
-#define NUFERM (HBAR / (ROOT2*GFERM))
+#define NUFERM ((ROOT2*GFERM) / HBAR)
 
 // Unit conversions
 #define EV (1.60217653e-12)   // Electron-volt
