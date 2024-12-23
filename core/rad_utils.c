@@ -137,8 +137,8 @@ void update_superphoton_resolution(
     correction = ideal / real;
 
     // Limit strength of correction
-    correction = MY_MIN(correction, 1.5); // MY_MIN(correction, 2.0);
-    correction = MY_MAX(correction, 0.5);
+    correction = MY_MIN(correction, 1.25); // MY_MIN(correction, 2.0);
+    correction = MY_MAX(correction, 0.25);
 
     // If no superphotons are being emitted (yet) don't modify emission strength
     if (real < SMALL)

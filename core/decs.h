@@ -98,7 +98,7 @@
 
 // Chosen to give some wiggle room
 // in scattering stability criterion
-#define SCATT_BIAS_SAFETY (0.75) // (0.9/RAD_SCATT_TYPES)
+#define SCATT_BIAS_SAFETY (0.5) // (0.9/RAD_SCATT_TYPES)
 
 //#define NUMIN     (1.e10)
 //#define NUMAX     (1.e25)
