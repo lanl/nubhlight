@@ -17,6 +17,8 @@
 
 #if RADIATION == RAD_TYPE_LIGHT
 #define CONSERVATIVE_BOUND (1)
+#elif RAD_NUM_TYPES >= 4
+#define CONSERVATIVE_BOUND (1)
 #else
 #define CONSERVATIVE_BOUND (0)
 #endif
