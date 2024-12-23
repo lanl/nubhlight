@@ -402,7 +402,8 @@ def load_dump(fname, geom=None, nulegacy=False):
       Ns = dump['local_Ns'][:]
       wb2N = Ns*wmean*wmean
       w2 = dump['local_wsqr'][:]
-      dump['local_stddev'] = np.sqrt(wb2N + N2*(w2 - wb2N)/(Ns - 1))
+      ones = np.ones_like(Ns)
+      dump['local_stddev'] = np.sqrt(wb2N + Ns*(w2 - wb2N)/(np.minimum(ones, Ns - 1))
       if hdr['NEUTRINO_OSCILLATIONS']:
         dump['local_osc_rate'] = dfile['local_osc_count'][:]
 
