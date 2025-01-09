@@ -213,7 +213,10 @@ void get_X_source(double Kcon[NDIM], double src[NDIM]) {
 void get_K_source(
     double X[NDIM], double Kcov[NDIM], double Kcon[NDIM], double src[NDIM]) {
 // Don't do work when sources are trivial
-#if METRIC == MINKOWSKI
+//#if METRIC == MINKOWSKI
+//  static int killing[] = {1, 1, 1, 1};
+// added by Sudi09012025
+#if METRIC == MINKOWSKI || METRIC == NUMERICAL
   static int killing[] = {1, 1, 1, 1};
 #elif METRIC == MKS
   static int killing[] = {1, 0, 0, 1};
