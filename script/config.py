@@ -688,10 +688,9 @@ def build(PROBLEM, PATHS):
         if CPARMS['METRIC'] == 'MKS':
           write_rparm(pf, 'mbh')
           write_rparm(pf, 'M_unit')
-        #added by SUDI
-#        if CPARMS['METRIC'] == 'NUMERICAL':
-#          write_rparm(pf, 'mbh')
-#          write_rparm(pf, 'M_unit')
+        #added by SUDI:09012025
+        if CPARMS['METRIC'] == 'NUMERICAL':
+          write_rparm(pf, 'RHO_unit')
 
       pf.write("\n# FLUID\n")
       write_rparm(pf, 'cour')
