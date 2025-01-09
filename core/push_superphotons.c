@@ -216,9 +216,9 @@ void get_K_source(
 //#if METRIC == MINKOWSKI
 //  static int killing[] = {1, 1, 1, 1};
 // added by Sudi09012025
-#if METRIC == MINKOWSKI || METRIC == NUMERICAL
+#if METRIC == MINKOWSKI
   static int killing[] = {1, 1, 1, 1};
-#elif METRIC == MKS
+#elif METRIC == MKS || METRIC == NUMERICAL
   static int killing[] = {1, 0, 0, 1};
 #endif
 
