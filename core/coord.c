@@ -147,6 +147,35 @@ void cart_coord(const double X[NDIM], double Xcart[NDIM]) {
 #endif // METRIC == MKS
 }
 
+// Spherical coordinate of point X //SUDI:10012025
+void cart_to_spher(const double X[NDIM], double *r, double *th, double *phi) {
+  *r = sqrt(X[1] * X[1] +  X[2] * X[2] + X[3] * X[3]);
+    
+   if (*r == 0) {
+       *theta = 0;
+       *phi = 0;
+   } else {
+       *theta = acos(X[3] / *r);
+       *phi = atan2(X[2], X[1]);
+   }
+
+// Avoid singularity at polar axis
+#if (COORDSINGFIX)
+  if (fabs(*th) < SINGSMALL) {
+    if ((*th) >= 0)
+      *th = SINGSMALL;
+    if ((*th) < 0)
+      *th = -SINGSMALL;
+  }
+  if (fabs(M_PI - (*th)) < SINGSMALL) {
+    if ((*th) >= M_PI)
+      *th = M_PI + SINGSMALL;
+    if ((*th) < M_PI)
+      *th = M_PI - SINGSMALL;
+  }
+#endif
+}
+
 // Jacobians.
 // Jcon maps contravariant 4-vector from HARM coordinates
 // to Boyer-Lindquist coordinates

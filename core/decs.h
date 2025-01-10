@@ -770,6 +770,7 @@ void set_dxdX(double X[NDIM], double dxdX[NDIM][NDIM]);
 void bl_coord(const double X[NDIM], double *r, double *th);
 int  bl_i_of_r(double r);
 void cart_coord(const double X[NDIM], double Xcart[NDIM]);
+void cart_to_spher(const double x[NDIM], double *r, double *th, double *phi) //SUDI:10012025
 void set_gcov(double X[NDIM], double gcov[NDIM][NDIM]);
 void set_metric(double X[NDIM], struct of_geom *g);
 void num_set_metric(grid_geom_type ggeom);
