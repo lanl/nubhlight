@@ -152,10 +152,10 @@ void cart_to_spher(const double X[NDIM], double *r, double *th, double *phi) {
   *r = sqrt(X[1] * X[1] +  X[2] * X[2] + X[3] * X[3]);
     
    if (*r == 0) {
-       *theta = 0;
+       *th = 0;
        *phi = 0;
    } else {
-       *theta = acos(X[3] / *r);
+       *th = acos(X[3] / *r);
        *phi = atan2(X[2], X[1]);
    }
 

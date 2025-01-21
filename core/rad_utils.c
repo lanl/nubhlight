@@ -616,7 +616,7 @@ void get_nuLnu_bin(double X[NDIM], int *thbin, int *phibin) {
   //Sudi:10012025
   #if METRIC == NUMERICAL
   double phi_0;
-  cart_to_spear(X, &r, &th, &phi_0)
+  cart_to_spher(X, &r, &th, &phi_0);
   phi = fmod(phi_0, 2. * M_PI);
   #else
   bl_coord(X, &r, &th);
