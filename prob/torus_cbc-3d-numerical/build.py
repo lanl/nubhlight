@@ -6,6 +6,8 @@
 
 # TODO: use argparse
 
+#Sudi: compile with '-nob -reltable -3d -nu -hdf'
+
 from __future__ import print_function,division
 
 import sys
@@ -73,7 +75,7 @@ EOSNAME = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+EOSNAME
 #TABLEPATH = EOSNAME
 
-CARPETPROFNAME = "245414.h5"
+CARPETPROFNAME = "nx32ref3.h5"
 CARPETPROFPATH = "../../data/"+CARPETPROFNAME
 
 if FORTRAN:
@@ -92,6 +94,14 @@ BETA = 1e2
     
 RHO_unit = 6.17244*1e17
 
+#Grid extension
+x1Min = -8.0
+x1Max = 8.0
+x2Min = -8.0
+x2Max = 8.0
+x3Min = -8.0
+x3Max = 8.0
+
 # Note that if scattering is enabled,
 # you'll get twice as many photons
 # per cell as this number
@@ -104,8 +114,8 @@ bhl.report_var('RHO_unit',RHO_unit)
 # Chosen so that guess is right at rho = 1.0
 # in code units
 
-L_UNIT = cgs['GNEWT']*cgs['MSOLAR']*1/(cgs['CL']**2) # M = 1*M_Sun
-M_UNIT = RHO_unit*(L_UNIT**3)
+#L_UNIT = cgs['GNEWT']*cgs['MSOLAR']*1/(cgs['CL']**2) # M = 1*M_Sun
+#M_UNIT = RHO_unit*(L_UNIT**3)
 
 # final time
 if NOB and not INITIAL:
@@ -120,13 +130,20 @@ else:
 if TOROIDALB:
     TFINAL *= 2
 
-Rout = 1000.
+#Rout = 1000.
 #Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
 #Rout_vis = Rout
 #
 ## time when radiation resolution controls turn on
 #t0_tune_emiss = Rout_rad if LIMIT_RAD else -1.
 #t0_tune_scatt = 2.*max(Rout_rad,t0_tune_emiss)
+
+# t0_tune_emiss and t0_tune_scatt
+#smaller prevents supercooling
+#larger prevents instabilities where too many particles are created
+
+t0_tune_emiss = 8.
+t0_tune_scatt = 8.
 
 if LIMIT_RAD:
     tune_emiss = 1.
@@ -143,7 +160,7 @@ DNr = 50 if RESTARTTEST else 1000
 
 N1TOT = 32
 N2TOT = 32
-N3TOT = 1
+N3TOT = 32
 
 N1CPU = 1
 N2CPU = 1
@@ -211,7 +228,8 @@ bhl.config.set_cparm('X2L_INFLOW', False)
 bhl.config.set_cparm('X2R_INFLOW', False)
 bhl.config.set_cparm('X3L_INFLOW', False)
 bhl.config.set_cparm('X3R_INFLOW', False)
-bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
+#bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
+#bhl.config.set_cparm('QUADRANT_SYMMETRY', False)
 
 #EOS
 bhl.config.set_cparm("EOS", EOS)
@@ -239,7 +257,7 @@ bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 
-bhl.config.set_cparm("EXIT_ON_INIT", True)
+#bhl.config.set_cparm("EXIT_ON_INIT", True)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
@@ -252,7 +270,16 @@ bhl.config.set_rparm('carpetprofpath', 'string', default = CARPETPROFPATH)
 # generic
 bhl.config.set_rparm('tf', 'double', default = TFINAL)
 bhl.config.set_rparm('dt', 'double', default = 1.e-6)
-bhl.config.set_rparm('Rout', 'double', default = Rout)
+
+bhl.config.set_rparm('x1Min', 'double', default = x1Min)
+bhl.config.set_rparm('x1Max', 'double', default = x1Max)
+bhl.config.set_rparm('x2Min', 'double', default = x2Min)
+bhl.config.set_rparm('x2Max', 'double', default = x2Max)
+bhl.config.set_rparm('x3Min', 'double', default = x3Min)
+bhl.config.set_rparm('x3Max', 'double', default = x3Max)
+
+
+#bhl.config.set_rparm('Rout', 'double', default = Rout)
 # Maybe this should be something further out. Fine for test.
 #bhl.config.set_rparm('Rout_rad', 'double', default = Rout_rad)
 #bhl.config.set_rparm('Rout_vis', 'double', default = Rout_vis)
@@ -261,12 +288,10 @@ bhl.config.set_rparm('DTl', 'double', default = DTl)
 bhl.config.set_rparm('DTr', 'double', default = DTr)
 bhl.config.set_rparm('DNr', 'integer', default = DNr)
 bhl.config.set_rparm('tune_emiss', 'double', default = tune_emiss)
-#bhl.config.set_rparm('t0_tune_emiss', 'double', default = t0_tune_emiss)
-#bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt) 
+bhl.config.set_rparm('t0_tune_emiss', 'double', default = t0_tune_emiss)
+bhl.config.set_rparm('t0_tune_scatt', 'double', default = t0_tune_scatt)
 
 # problem
-#bhl.config.set_rparm('M_unit', 'double', default = M_UNIT)
-#bhl.config.set_rparm('L_unit', 'double', default = L_UNIT)
 bhl.config.set_rparm('RHO_unit', 'double', default = RHO_unit)
 bhl.config.set_rparm("bfield", 'string', default = BFIELD)
 bhl.config.set_rparm("beta", "double", default = BETA)

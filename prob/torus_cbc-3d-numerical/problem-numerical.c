@@ -14,9 +14,6 @@ void    set_prim(grid_prim_type P);
 static char   bfield_type[STRLEN];
 static int    renormalize_densities;
 static double beta;
-#if RADIATION && TRACERS
-static int ntracers;
-#endif
 
 // Make global so it ends on heap
 static double           A[N1 + 2 * NG][N2 + 2 * NG];
@@ -26,9 +23,6 @@ void set_problem_params() {
   set_param("bfield", &bfield_type);
   set_param("beta", &beta);
   set_param("renorm_dens", &renormalize_densities);
-#if RADIATION && TRACERS
-  set_param("ntracers", &ntracers);
-#endif
 }
 
 
