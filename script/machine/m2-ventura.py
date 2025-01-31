@@ -18,7 +18,8 @@ import util
 import sys
 import os
 
-flags_base = '-Wall -Werror=unknown-pragmas -Wstringop-overflow -fdiagnostics-color -fopenmp'
+flags_base = '-Wall -Werror=unknown-pragmas -Wstringop-overflow -fdiagnostics-color -fopenmp -Wl,-no_warn_duplicate_libraries'
+# -Wl,-no_warn_duplicate_libraries a workaround for the issue "ld: warning: ignoring duplicate libraries: '-lgcc'" after updating macOS ventura to sequoia 15.0,
 
 def matches_host():
   host = os.uname()[1]
@@ -29,7 +30,7 @@ def get_options():
 
   local_root = os.path.join(os.environ['HOME'],'local','gcc')
   host['NAME']           = os.uname()[1]
-  host['COMPILER']       = os.path.join('/opt/homebrew/opt/gcc/','bin','gcc-13')
+  host['COMPILER']       = os.path.join('/opt/homebrew/opt/gcc/','bin','gcc-14')
   #host['COMPILER']       = os.path.join('/opt/homebrew/opt/open-mpi/','bin','mpicc')
   host['COMPILER_FLAGS'] = flags_base + ' ' + '-O2' # ' ' + '-arch' + ' ' + 'arm64' + ' ' +  '-Os' 
   host['DEBUG_FLAGS']    = flags_base + ' ' + '-g -O0'

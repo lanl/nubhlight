@@ -17,7 +17,7 @@ sys.dont_write_bytecode = True
 import bhlight as bhl
 from bhlight import cgs
 from units import UnitSystem
-from math import log10,ceil
+from math import log10,ceil,sqrt
 
 PROB = 'torus_cbc-3dnumerical'
 
@@ -75,7 +75,8 @@ EOSNAME = "Hempel_SFHoEOS_rho222_temp180_ye60_version_1.1_20120817.h5"
 TABLEPATH = "../../data/"+EOSNAME
 #TABLEPATH = EOSNAME
 
-CARPETPROFNAME = "nx32ref3.h5"
+#CARPETPROFNAME = "nx32ref3.h5"
+CARPETPROFNAME = "245414.h5"
 CARPETPROFPATH = "../../data/"+CARPETPROFNAME
 
 if FORTRAN:
@@ -132,6 +133,7 @@ if TOROIDALB:
 
 #Rout = 1000.
 #Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
+Rout_rad = sqrt(x1Max**2 + x2Max**2 + x3Max**2)
 #Rout_vis = Rout
 #
 ## time when radiation resolution controls turn on
@@ -162,8 +164,8 @@ N1TOT = 32
 N2TOT = 32
 N3TOT = 32
 
-N1CPU = 1
-N2CPU = 1
+N1CPU = 2
+N2CPU = 2
 N3CPU = 1
     
 NCPU_TOT     = N1CPU*N2CPU*N3CPU
@@ -257,7 +259,7 @@ bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 
-#bhl.config.set_cparm("EXIT_ON_INIT", True)
+bhl.config.set_cparm("EXIT_ON_INIT", False)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:
@@ -281,7 +283,7 @@ bhl.config.set_rparm('x3Max', 'double', default = x3Max)
 
 #bhl.config.set_rparm('Rout', 'double', default = Rout)
 # Maybe this should be something further out. Fine for test.
-#bhl.config.set_rparm('Rout_rad', 'double', default = Rout_rad)
+bhl.config.set_rparm('Rout_rad', 'double', default = Rout_rad)
 #bhl.config.set_rparm('Rout_vis', 'double', default = Rout_vis)
 bhl.config.set_rparm('DTd', 'double', default = DTd)
 bhl.config.set_rparm('DTl', 'double', default = DTl)

@@ -84,7 +84,7 @@ bhl.config.set_cparm('OPENMP', False)
 bhl.config.set_cparm('METRIC', 'MINKOWSKI')
 
 #EXIT AFTER GRID SETTING
-bhl.config.set_cparm('EXIT_ON_INIT', True)
+bhl.config.set_cparm('EXIT_ON_INIT', False)
 
 # FLUID
 bhl.config.set_cparm('RECONSTRUCTION', 'WENO')
