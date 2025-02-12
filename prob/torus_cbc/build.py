@@ -423,6 +423,7 @@ bhl.config.set_cparm('X2R_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
+bhl.config.set_cparm('RZ_HISTOGRAMS', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
 
 if OSCILLATIONS:
