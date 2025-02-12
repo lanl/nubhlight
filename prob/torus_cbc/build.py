@@ -470,6 +470,8 @@ if RADIATION:
     bhl.config.set_rparm('numin', 'double', default = NUMIN)
     bhl.config.set_rparm('numax', 'double', default = NUMAX)
     bhl.config.set_rparm('nph_per_proc', 'double', default = NPH_PER_PROC)
+    bhl.config.set_rparm('rz_rmax', 'double', default = Rout_rad)
+    bhl.config.set_rparm('rz_zmax', 'double', default = Rout_rad)
 
 if TRACERS:
     bhl.config.set_rparm('ntracers', 'int', default = NTCR_TOT)
