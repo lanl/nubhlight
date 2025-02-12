@@ -146,6 +146,10 @@ void set_core_params() {
   set_param("ms_theta_nu0", &ms_theta_nu0);
   set_param("ms_delta0", &ms_delta0);
 #endif // MULTISCATT_TEST
+#if RZ_HISTOGRAMS
+  set_param("rz_rmax", &rz_rmax);
+  set_param("rz_zmax", &rz_zmax);
+#endif // RZ_HISTOGRAMS
 #if (RADIATION == RADTYPE_NEUTRINOS)
 #if BURROWS_OPACITIES
   set_param("opac_param_file", &opac_param_file);
@@ -242,4 +246,9 @@ void init_params(char *pfname) {
   set_core_params();
   set_problem_params();
   read_params(pfname);
+  // TODO: Not the best place for this?
+#if RZ_HISTOGRAMS
+  delta_rcyl = rz_rmax / RZ_HISTOGRAMS_N;
+  delta_z = rz_zmax / RZ_HISTOGRAMS_N;
+#endif // RZ_HISTOGRAMS
 }

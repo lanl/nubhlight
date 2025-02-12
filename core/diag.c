@@ -35,10 +35,18 @@ void reset_dump_variables() {
   memset(radG_int, 0, RAD_NUM_TYPES * N123G * sizeof(double));
   memset(dtau_avg, 0, (RAD_SCATT_TYPES + 1) * N123G * sizeof(double));
   memset(en_int_avg, 0, (RAD_SCATT_TYPES + 1) * N123G * sizeof(double));
+#if RZ_HISTOGRAMS
+  memset(rz_r_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
+  memset(rz_z_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
+#if NEUTRINO_OSCILLATIONS
+  memset(osc_rz_r_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
+  memset(osc_rz_z_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
+#endif // NEUTRINO_OSCILLATIONS
+#endif // RZ_HISTOGRAMS
 #if NEUTRINO_OSCILLATIONS
   memset(local_osc_count, 0, LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
 #endif // NEUTRINO_OSCILLATIONS
-#endif
+#endif // RADIATION
 }
 
 void diag(int call_code) {
@@ -559,6 +567,57 @@ void count_leptons(grid_prim_type P, double dt, int nstep) {
 #endif
   timer_stop(TIMER_DIAG);
 }
+
+#if RZ_HISTOGRAMS
+void generate_rz_histograms() {
+  timer_start(TIMER_DIAG);
+
+  #pragma omp parallel
+  {
+    struct of_photon *ph = photon_lists[omp_get_thread_num()];
+    while (ph != NULL) {
+      double Xorig[NDIM], Xorig_cart[NDIM];
+      int i = ph->origin[1];
+      int j = ph->origin[2];
+      int k = ph->origin[3];
+      coord(i, j, k, CENT, Xorig);
+      cart_coord(Xorig, Xorig_cart);
+
+      double x = Xorig_cart[1];
+      double y = Xorig_cart[2];
+      double rcyl = MY_MIN(sqrtf(x*x + y*y), fabs(rz_rmax) - SMALL);
+      double z = MY_MIN(fabs(Xorig_cart[3]), fabs(rz_zmax) - SMALL);
+
+      int ir = rcyl / (delta_rcyl + SMALL);
+      int iz = z / (delta_z + SMALL);
+
+#pragma omp atomic
+      rz_r_orig_hist[ir] += ph->w;
+#pragma omp atomic
+      rz_z_orig_hist[iz] += ph->w;
+
+#if NEUTRINO_OSCILLATIONS
+      if (ph->has_oscillated) {
+#pragma omp atomic
+        osc_rz_r_orig_hist[ir] += ph->w;
+#pragma omp atomic
+        osc_rz_z_orig_hist[iz] += ph->w;
+      }
+#endif // NEUTRINO_OSCILLATIONS
+
+      ph = ph->next;
+    }
+  }
+  mpi_dbl_allreduce_array((double *)rz_r_orig_hist, RZ_HISTOGRAMS_N);
+  mpi_dbl_allreduce_array((double *)rz_z_orig_hist, RZ_HISTOGRAMS_N);
+#if NEUTRINO_OSCILLATIONS
+  mpi_dbl_allreduce_array((double *)osc_rz_r_orig_hist, RZ_HISTOGRAMS_N);
+  mpi_dbl_allreduce_array((double *)osc_rz_z_orig_hist, RZ_HISTOGRAMS_N);
+#endif
+
+  timer_stop(TIMER_DIAG);
+}
+#endif // RZ_HISTOGRAMS
 
 void print_rad_types() {
   timer_start(TIMER_DIAG);

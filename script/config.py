@@ -354,6 +354,13 @@ def build(PROBLEM, PATHS):
     else:
       set_cparm('NEUTRINO_OSCILLATIONS', 0)
       set_cparm('FORCE_EQUIPARTITION', 0)
+    if util.parm_is_active(CPARMS, "RZ_HISTOGRAMS"):
+      print_config("RZ_HISTOGRAMS", CPARMS["RZ_HISTOGRAMS"])
+      if not util.parm_is_active(CPARMS, "RZ_HISTOGRAMS_N"):
+        set_cparm("RZ_HISTOGRAMS_N", 32)
+      print_config("RZ_HISTOGRAMS_N", CPARMS["RZ_HISTOGRAMS_N"])
+    else:
+      set_cparm("RZ_HISTOGRAMS", 0)
   else:
     set_cparm("RADIATION", 0)
     set_cparm("RAD_NUM_TYPES", 0)
@@ -506,6 +513,13 @@ def build(PROBLEM, PATHS):
     set_rparm('phibin', 'int', default = 8);
     if util.parm_is_active(CPARMS, 'FLATEMISS'):
       set_rparm('cnu_flat', 'double', default = 1.)
+    if util.parm_is_active(CPARMS, "RZ_HISTOGRAMS"):
+      if CPARMS['METRIC'] == 'MINKOWSKI':
+        set_rparm('rz_rmax', 'double', default = 1)
+        set_rparm('rz_zmax', 'double', default = 1)
+      if CPARMS['METRIC'] == 'MKS':
+        set_rparm('rz_rmax', 'double', default = 40)
+        set_rparm('rz_zmax', 'double', default = 40)
     
   set_rparm('init_from_grmhd', 'string', default = 'No')
   

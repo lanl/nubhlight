@@ -275,6 +275,7 @@ void sample_photon(int i, int j, int k, double t, double dt, int type,
     } else {
       tmp[n]->is_tracked = 0;
     }
+    tmp[n]->has_oscillated = 0;
   }
 }
 

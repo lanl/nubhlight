@@ -316,6 +316,9 @@ typedef double grid_tensor_type[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG][NDIM]
 typedef int    grid_int_type[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG];
 typedef double grid_eosvar_type[N1 + 2 * NG][N2 + 2 * NG][N3 + 2 * NG]
                                [EOS_NUM_EXTRA];
+#if RZ_HISTOGRAMS
+typedef double rz_hist_type[RZ_HISTOGRAMS_N];
+#endif // RZ_HISTOGRAMS
 typedef void (*passive_init_ftype)(int, int, int, double *, double *);
 typedef double (*hc_ftype)(double, double);
 
@@ -337,6 +340,12 @@ extern grid_radg_type   radG_buf; // ...buffer for communication
 extern grid_tensor_type Rmunu;    // Radiation stress-energy tensor
 extern grid_int_type    Nsph;
 extern grid_double_type nph;
+#if RZ_HISTOGRAMS
+extern rz_hist_type rz_r_orig_hist, rz_z_orig_hist;
+#if NEUTRINO_OSCILLATIONS
+extern rz_hist_type osc_rz_r_orig_hist, osc_rz_z_orig_hist;
+#endif // NEUTRINO_OSCILLATIONS
+#endif // RZ_HISTOGRAMS
 
 extern struct of_photon **photon_lists;
 extern struct of_photon **photon_mpi_lists;
@@ -492,6 +501,9 @@ extern double cnu_flat;
 #if MULTISCATT_TEST
 extern double ms_theta_nu0, ms_delta0;
 #endif // MULTISCATT_TEST
+#if RZ_HISTOGRAMS
+extern double rz_rmax, rz_zmax, delta_rcyl, delta_z;
+#endif // RZ_HISTOGRAMS
 #endif // RADIATION
 #if ELECTRONS
 extern double tptemin, tptemax;
@@ -575,10 +587,12 @@ struct of_photon {
   int               origin[NDIM];
   double            t0;
   int               is_tracked;
+  // Only relevant for neutrino oscillations
+  int               has_oscillated;
   struct of_photon *next;
 };
 
-#define PH_ELEM (11)
+#define PH_ELEM (12)
 struct of_track_photon {
   double X1;
   double X2;
@@ -769,7 +783,10 @@ void report_load_imbalance();
 void print_rad_types();
 void count_leptons(grid_prim_type P, double dt, int nstep);
 #endif
-#endif
+#if RZ_HISTOGRAMS
+void generate_rz_histograms();
+#endif // RZ_HISTOGRAMS
+#endif // RADIATION
 
 // electrons.c
 #if ELECTRONS

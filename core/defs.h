@@ -27,6 +27,13 @@ grid_radg_type     radG_buf; // ...buffer for communication
 grid_tensor_type   Rmunu;
 grid_int_type      Nsph;
 grid_double_type   nph;
+#if RZ_HISTOGRAMS
+rz_hist_type rz_r_orig_hist, rz_z_orig_hist;
+#if NEUTRINO_OSCILLATIONS
+rz_hist_type osc_rz_r_orig_hist, osc_rz_z_orig_hist;
+#endif // NEUTRINO_OSCILLATIONS
+#endif // RZ_HISTOGRAMS
+
 struct of_photon **photon_lists;
 struct of_photon **photon_mpi_lists;
 
@@ -164,6 +171,9 @@ double cnu_flat;
 #if MULTISCATT_TEST
 double ms_theta_nu0, ms_delta0;
 #endif // MULTISCATT_TEST
+#if RZ_HISTOGRAMS
+double rz_rmax, rz_zmax, delta_rcyl, delta_z;
+#endif // RZ_HISTOGRAMS
 #endif // RADIATION
 #if ELECTRONS
 double tptemin, tptemax;
