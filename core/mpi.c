@@ -184,7 +184,7 @@ void init_mpi() {
       MPI_DOUBLE, MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT, MPI_INT,
       mpi_pointer_type};
   int          blocklen[PH_ELEM] = {
-      NDIM * NSUP, NDIM * NSUP, NDIM * NSUP, 1, 1, 1, 1, NDIM, 1, 1, 1};
+      NDIM * NSUP, NDIM * NSUP, NDIM * NSUP, 1, 1, 1, 1, NDIM, 1, 1, 1, 1};
   MPI_Aint         disp[PH_ELEM];
   struct of_photon tmp;
   MPI_Get_address(&(tmp.X[0][0]), &(disp[0]));
