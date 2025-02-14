@@ -181,10 +181,10 @@ void init_mpi() {
   MPI_Type_contiguous(sizeof(struct of_photon *), MPI_BYTE, &mpi_pointer_type);
   MPI_Type_commit(&mpi_pointer_type);
   MPI_Datatype type[PH_ELEM] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE,
-      MPI_DOUBLE, MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT,
+      MPI_DOUBLE, MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT, MPI_INT,
       mpi_pointer_type};
   int          blocklen[PH_ELEM] = {
-      NDIM * NSUP, NDIM * NSUP, NDIM * NSUP, 1, 1, 1, 1, NDIM, 1, 1, 1};
+      NDIM * NSUP, NDIM * NSUP, NDIM * NSUP, 1, 1, 1, 1, NDIM, 1, 1, 1, 1};
   MPI_Aint         disp[PH_ELEM];
   struct of_photon tmp;
   MPI_Get_address(&(tmp.X[0][0]), &(disp[0]));
@@ -197,7 +197,8 @@ void init_mpi() {
   MPI_Get_address(tmp.origin, &(disp[7]));
   MPI_Get_address(&(tmp.t0), &(disp[8]));
   MPI_Get_address(&(tmp.is_tracked), &(disp[9]));
-  MPI_Get_address(&(tmp.next), &(disp[10]));
+  MPI_Get_address(&(tmp.has_oscillated), &(disp[10]));
+  MPI_Get_address(&(tmp.next), &(disp[11]));
   MPI_Aint base;
   MPI_Get_address(&tmp, &base);
   for (int n = 0; n < PH_ELEM; n++) {

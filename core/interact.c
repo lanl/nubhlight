@@ -603,6 +603,7 @@ memcpy((void*)(&m), (void*)(&(m_grd[i][j][k])),
           phscatt->origin[1] = i;
           phscatt->origin[2] = j;
           phscatt->origin[3] = k;
+          phscatt->has_oscillated = ph->has_oscillated;
 
           double wsave = ph->w;
           ph->w        = (1. - 1. / bias_scatt[scatt_to_do]) * ph->w;

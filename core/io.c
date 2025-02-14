@@ -248,6 +248,8 @@ void init_io() {
   H5Tinsert(phfiletype, "t0", offset, H5T_NATIVE_DOUBLE);
   offset += sizeof(double);
   H5Tinsert(phfiletype, "is_tracked", offset, H5T_NATIVE_INT);
+  offset += sizeof(int);
+  H5Tinsert(phfiletype, "has_oscillated", offset, H5T_NATIVE_INT);
 
   // Use HOFFSET to account for struct padding in memory
   phmemtype = H5Tcreate(H5T_COMPOUND, sizeof(struct of_photon));
@@ -265,6 +267,8 @@ void init_io() {
   H5Tinsert(phmemtype, "t0", HOFFSET(struct of_photon, t0), H5T_NATIVE_DOUBLE);
   H5Tinsert(phmemtype, "is_tracked", HOFFSET(struct of_photon, is_tracked),
       H5T_NATIVE_INT);
+  H5Tinsert(phmemtype, "has_oscillated",
+      HOFFSET(struct of_photon, has_oscillated), H5T_NATIVE_INT);
 
   trackphfiletype = H5Tcreate(H5T_COMPOUND, sizeof(struct of_photon));
   offset          = 0;
@@ -880,6 +884,8 @@ void dump() {
   WRITE_HDR(force_equipartition, TYPE_INT);
   int local_angular_distributions = LOCAL_ANGULAR_DISTRIBUTIONS;
   WRITE_HDR(local_angular_distributions, TYPE_INT);
+  int rz_histograms = RZ_HISTOGRAMS;
+  WRITE_HDR(rz_histograms, TYPE_INT);
 #endif
 
 #if NVAR_PASSIVE > 0
@@ -1110,12 +1116,11 @@ void dump() {
         fcount[2] = 0;
         fcount[3] = 0;
       }
-      WRITE_ARRAY(Gnu,
-                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
-      WRITE_ARRAY(local_Ns,
-                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
-      WRITE_ARRAY(local_wsqr,
-                  RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(Gnu, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(
+          local_Ns, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(
+          local_wsqr, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #undef RANK
     }
 
@@ -1151,21 +1156,43 @@ void dump() {
       }
 
 #define RANK (2)
-      hsize_t fdims[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t fdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
       hsize_t fstart[RANK] = {0, 0};
       hsize_t fcount[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
-      hsize_t mdims[RANK] = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
+      hsize_t mdims[RANK]  = {LOCAL_ANGLES_NX1, LOCAL_ANGLES_NX2};
       hsize_t mstart[RANK] = {0, 0};
       if (!mpi_io_proc()) {
         fcount[0] = 0;
         fcount[1] = 0;
       }
-      WRITE_ARRAY(
-          local_osc_count, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+      WRITE_ARRAY(local_osc_count, RANK, fdims, fstart, fcount, mdims, mstart,
+          TYPE_DBL);
 #undef RANK
     }
 #endif // NEUTRINO_OSCILLATIONS
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+#if RZ_HISTOGRAMS
+  generate_rz_histograms();
+  {
+#define RANK (1)
+    hsize_t fdims[RANK]  = {RZ_HISTOGRAMS_N};
+    hsize_t fstart[RANK] = {0};
+    hsize_t fcount[RANK] = {RZ_HISTOGRAMS_N};
+    hsize_t mdims[RANK]  = {RZ_HISTOGRAMS_N};
+    hsize_t mstart[RANK] = {0};
+    if (!mpi_io_proc()) {
+      fcount[0] = 0;
+    }
+    WRITE_ARRAY(rz_r_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    WRITE_ARRAY(rz_z_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#if NEUTRINO_OSCILLATIONS
+    WRITE_ARRAY(osc_rz_r_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+    WRITE_ARRAY(osc_rz_z_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
+#endif
+#undef RANK
+  }
+#endif // RZ_HISTOGRAMS
 #endif // RADIATION
   }
 

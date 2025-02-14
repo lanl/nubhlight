@@ -143,12 +143,8 @@ void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
       const double XLN =
           (f[b][i][j][NU_HEAVY][imu] - f[b][i][j][ANTINU_HEAVY][imu]);
 
-      double   tot = 0;
-      TYPELOOP tot += f[b][i][j][itp][imu];
-      double   ebar = tot / (stddev + SMALL);
-
       double g_temp     = ELN - 0.5 * XLN;
-      gnu[b][i][j][imu] = (fabs(g_temp) > ebar) * g_temp;
+      gnu[b][i][j][imu] = (fabs(g_temp) > stddev) * g_temp;
     }
   }
 }
@@ -216,14 +212,13 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
           int g_in_B = G > 0;
 
           int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
-          int in_deep    = !(in_shallow);
 
           double peq = nu_is_heavy(ph->type) ? (2./3.) : (1./3.);
 #if FORCE_EQUIPARTITION
           double p_survival = peq;
 #else
           double p_survival =
-              in_shallow ? peq : (1 - (1 - peq) * B / (A + SMALL));
+              in_shallow ? peq : (1 - (1 - peq) * shallow / (deep + SMALL));
 #endif // FORCE_EQUIPARTITION
           double p_osc = 1. - p_survival;
           if (get_rand() < p_osc) {
@@ -232,6 +227,7 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
             // adding 2 on ring 0, 1, 2, 3
             // moves through without changing to antiparticle.
             ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
+            ph->has_oscillated = 1;
 
             #pragma omp atomic
             local_osc_count[ix1][ix2] += ph->w;

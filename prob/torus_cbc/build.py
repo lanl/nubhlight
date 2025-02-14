@@ -423,6 +423,7 @@ bhl.config.set_cparm('X2R_RAD_BOUND', 'BC_ESCAPE')
 bhl.config.set_cparm('X3L_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('X3R_RAD_BOUND', 'BC_PERIODIC')
 bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
+bhl.config.set_cparm('RZ_HISTOGRAMS', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
 
 if OSCILLATIONS:
@@ -469,6 +470,8 @@ if RADIATION:
     bhl.config.set_rparm('numin', 'double', default = NUMIN)
     bhl.config.set_rparm('numax', 'double', default = NUMAX)
     bhl.config.set_rparm('nph_per_proc', 'double', default = NPH_PER_PROC)
+    bhl.config.set_rparm('rz_rmax', 'double', default = Rout_rad)
+    bhl.config.set_rparm('rz_zmax', 'double', default = Rout_rad)
 
 if TRACERS:
     bhl.config.set_rparm('ntracers', 'int', default = NTCR_TOT)
