@@ -61,6 +61,11 @@ parser.add_argument('--nproc',
                     type=int,
                     help=('Number of parallel processe to use. '
                           +'If not set, defaults to all available cores.'))
+parser.add_argument('--twod',
+                    dest='twod',
+                    default=False,
+                    action='store_true',
+                    help=('For 2d dump files'))
 
 
 args = parser.parse_args()
@@ -79,7 +84,7 @@ else:
   util.safe_remove(tmpdir)
   os.mkdir(tmpdir)
 
-dfnams = io.get_dumps_full(dfold)
+dfnams = io.get_dumps_full(dfold, twod=args.twod)
 hdr = io.load_hdr(dfnams[0])
 geom = io.load_geom(hdr)
 num_files = len(dfnams)
