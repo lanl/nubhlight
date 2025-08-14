@@ -494,12 +494,15 @@ def load_sadw(fname):
         d[k] = v[()]
   return t,sadw,sph,zoh
 
-def load_diag(path, hdr = None, nulegacy = False, timers = True):
+def load_diag(path, hdr = None, nulegacy = False, timers = True, twod = False):
   import numpy as np
 
   # load header
   if hdr is None:
-    dfiles = sorted(glob.glob(os.path.join(path,'dump_*.h5')))
+    if twod:
+      dfiles = sorted(glob.glob(os.path.join(path,'dump2d_*.h5')))
+    else:
+      dfiles = sorted(glob.glob(os.path.join(path,'dump_*.h5')))
     if len(dfiles) < 1:
       import util
       util.warn("Cannot read header. No dumps available.")
