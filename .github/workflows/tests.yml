@@ -40,7 +40,7 @@ jobs:
             make -s install
         - name: Cache Python
           id: pycache
-          uses: actions/cache@v2
+          uses: actions/cache@v4
           env:
             cache-name: miniconda
           with:
