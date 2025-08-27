@@ -197,7 +197,7 @@ void init_mpi() {
   MPI_Get_address(tmp.origin, &(disp[7]));
   MPI_Get_address(&(tmp.t0), &(disp[8]));
   MPI_Get_address(&(tmp.is_tracked), &(disp[9]));
-  MPI_Get_address(&(tmp.has_oscillated), &(disp[10]));
+  MPI_Get_address(&(tmp.osc_count), &(disp[10]));
   MPI_Get_address(&(tmp.next), &(disp[11]));
   MPI_Aint base;
   MPI_Get_address(&tmp, &base);

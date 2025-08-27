@@ -249,7 +249,7 @@ void init_io() {
   offset += sizeof(double);
   H5Tinsert(phfiletype, "is_tracked", offset, H5T_NATIVE_INT);
   offset += sizeof(int);
-  H5Tinsert(phfiletype, "has_oscillated", offset, H5T_NATIVE_INT);
+  H5Tinsert(phfiletype, "osc_count", offset, H5T_NATIVE_INT);
 
   // Use HOFFSET to account for struct padding in memory
   phmemtype = H5Tcreate(H5T_COMPOUND, sizeof(struct of_photon));
@@ -267,8 +267,8 @@ void init_io() {
   H5Tinsert(phmemtype, "t0", HOFFSET(struct of_photon, t0), H5T_NATIVE_DOUBLE);
   H5Tinsert(phmemtype, "is_tracked", HOFFSET(struct of_photon, is_tracked),
       H5T_NATIVE_INT);
-  H5Tinsert(phmemtype, "has_oscillated",
-      HOFFSET(struct of_photon, has_oscillated), H5T_NATIVE_INT);
+  H5Tinsert(phmemtype, "osc_count",
+      HOFFSET(struct of_photon, osc_count), H5T_NATIVE_INT);
 
   trackphfiletype = H5Tcreate(H5T_COMPOUND, sizeof(struct of_photon));
   offset          = 0;
