@@ -227,7 +227,7 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
             // adding 2 on ring 0, 1, 2, 3
             // moves through without changing to antiparticle.
             ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
-            ph->has_oscillated = 1;
+            ph->osc_count += 1;
 
             #pragma omp atomic
             local_osc_count[ix1][ix2] += ph->w;

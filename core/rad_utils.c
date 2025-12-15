@@ -398,11 +398,13 @@ void copy_photon(struct of_photon *ph, struct of_photon *phc) {
     }
     phc->origin[mu] = ph->origin[mu];
   }
-  phc->w         = ph->w;
-  phc->KdotKprev = ph->KdotKprev;
-  phc->nscatt    = ph->nscatt;
-  phc->t0        = ph->t0;
-  phc->type      = ph->type;
+  phc->w          = ph->w;
+  phc->KdotKprev  = ph->KdotKprev;
+  phc->type       = ph->type;
+  phc->nscatt     = ph->nscatt;
+  phc->t0         = ph->t0;
+  phc->is_tracked = ph->is_tracked;
+  phc->osc_count  = ph->osc_count;
 }
 
 void print_ph_diag(struct of_photon *ph) {
@@ -420,6 +422,7 @@ void print_ph_diag(struct of_photon *ph) {
       ph->origin[3]);
   printf("w = %e\n", ph->w);
   printf("type = %d\n", ph->type);
+  printf("osc_count = %d\n", ph->osc_count);
   printf("K.Kprev = %e\n", ph->KdotKprev);
   printf("nscatt = %i\n", ph->nscatt);
   printf("t0 = %e\n", ph->t0);

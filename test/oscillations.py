@@ -63,6 +63,8 @@ os.chdir('../')
 dfiles = np.sort(glob.glob(os.path.join(TMP_DIR,'')+'/dumps/dump*.h5'))
 geom = h5py.File(os.path.join(TMP_DIR,'')+'/dumps/grid.h5','r')
 dumps = [h5py.File(f, 'r') for f in dfiles]
+restarts = np.sort(glob.glob(os.path.join(TMP_DIR,'')+'/restarts/restart*.h5'))
+restart = h5py.File(restarts[-1], 'r')
 
 b = 0
 mu = geom['local_angles_mu'][:]
@@ -92,6 +94,11 @@ e1[Bmask] = (1./3.)*(e0[Bmask] + x0[Bmask])
 x1 = x0.copy()
 x1[Amask] = (2./3.)*(B/A)*e0[Amask] + (1 - (1./3.)*(B/A))*x0[Amask]
 x1[Bmask] = (2./3.)*(e0[Bmask] + x0[Bmask])
+
+# Check that osc_count is non-trivial
+osc_count = np.array(restart['superphotons'].fields('osc_count'))
+weights = np.array(restart['superphotons'].fields('w'))
+print("Number of physical oscillations:",np.sum(osc_count * weights))
 
 if AUTO:
     data = {}

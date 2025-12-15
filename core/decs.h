@@ -588,7 +588,7 @@ struct of_photon {
   double            t0;
   int               is_tracked;
   // Only relevant for neutrino oscillations
-  int               has_oscillated;
+  int               osc_count;
   struct of_photon *next;
 };
 
