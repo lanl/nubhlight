@@ -40,6 +40,7 @@ SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
+KUMAMOTO = '-kumamoto' in sys.argv
 OSCILLATIONS = "-oscillations" in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
@@ -71,7 +72,7 @@ N3TOT_FROM_CLI = '-n3tot' in sys.argv
 EMISS = not NOEMISS
 SCATT = not (NOSCATT or KILL)
 ABS = not (NOABS or KILL)
-FORTRAN = NEUTRINOS and not HDF
+FORTRAN = NEUTRINOS and not HDF and not KUMAMOTO
 TRACERS = not NOTRACE
 
 USE_TABLE = GAMTABLE or RELTABLE
@@ -411,6 +412,7 @@ if KILL:
     bhl.config.set_cparm('KILL_ALL_PACKETS', True)
 bhl.config.set_cparm('BURROWS_OPACITIES', FORTRAN)
 bhl.config.set_cparm('HDF5_OPACITIES', HDF)
+bhl.config.set_cparm('KUMAMOTO_OPACITIES',KUMAMOTO)
 bhl.config.set_cparm('NU_BINS', 61)
 bhl.config.set_cparm('ESTIMATE_THETAE', False)
 bhl.config.set_cparm('GRAYABSORPTION',  False)

@@ -158,6 +158,10 @@ void set_core_params() {
 #if HDF5_OPACITIES
   set_param("opac_file", &opac_file);
 #endif // HDF5_OPACITIES
+#if KUMAMOTO_OPACITIES
+  printf("Trying to use Kumamoto opacities! These are not currently implemented, crashing out...\n");
+  exit(-1);
+#endif // KUMAMOTO_OPACITIES
 #endif // RADTYPE_NEUTRINOS
 #endif // RADIATION
 
