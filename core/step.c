@@ -74,15 +74,12 @@ void step() {
   // check_nu_type("after bound"); // DEBUG
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
     RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
-  int oscillations_active = (dt_osc <= dt);
   if (mpi_io_proc()) {
-    printf("\t[Oscillations] Active? %d dt_osc = %.14e\n", oscillations_active,
-        dt_osc);
+    printf("\t[Oscillations] tau_ffi = %.14e, dt/tau = %.14e\n",
+           dt_osc, dt / (dt_osc + SMALL));
   }
-  if (oscillations_active) { // TOOD(JMM): Some safety factor?
-    accumulate_local_angles();
-    oscillate(local_moments, Gnu);
-  }
+  accumulate_local_angles();
+  oscillate(local_moments, Gnu);
   // check_nu_type("after oscillate"); // DEBUG
 #endif // OSCILLATIONS
 #endif

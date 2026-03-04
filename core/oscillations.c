@@ -187,10 +187,18 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
+    double            X[NDIM], Kcov[NDIM], Kcon[NDIM];
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
         int ix1, ix2, icosth[LOCAL_NUM_BASES];
         get_local_angle_bins(ph, &ix1, &ix2, &icosth[0], &icosth[1]);
+
+        // find local FFI time scale nph already computed because of
+        // set_Rmunu which must be called each step
+        int i, j, k;
+        get_X_K_interp(ph, t, P, X, Kcov, Kcon);
+        Xtoijk(X, &i, &j, &k);
+        double tau = 1. / (T_unit * NUFERM * nph[i][j][k] + SMALL);
 
         int    b_osc = local_b_osc[ix1][ix2];
         int    imu   = icosth[b_osc];
@@ -220,7 +228,7 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
           double p_survival =
               in_shallow ? peq : (1 - (1 - peq) * shallow / (deep + SMALL));
 #endif // FORCE_EQUIPARTITION
-          double p_osc = 1. - p_survival;
+          double p_osc = MY_MIN(1.0, dt / (tau + SMALL))*(1. - p_survival);
           if (get_rand() < p_osc) {
             // JMM:
             // Type order is NUE, NUEBAR, NUX, NUXBAR
