@@ -10,7 +10,7 @@
 #if RADIATION == RADTYPE_NEUTRINOS
 #if LOCAL_ANGULAR_DISTRIBUTIONS
 
-double get_dt_oscillations() {
+double get_dt_ffi() {
   timer_start(TIMER_OSCILLATIONS);
   set_Rmunu(); // So we have Nsph and nph
   double nph_max = 0;

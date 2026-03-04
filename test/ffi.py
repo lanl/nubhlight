@@ -17,7 +17,7 @@ from bhlight import bcall
 
 TMP_DIR = 'TMP'
 util.safe_remove(TMP_DIR)
-PROBLEM = 'oscillations'
+PROBLEM = 'ffi'
 AUTO = '-auto' in sys.argv
 MPI = '-mpi' in sys.argv
 gam = 1.4
@@ -175,8 +175,8 @@ axarr[2].set_title(r'$f(t = t_{final})$')
 
 plt.tight_layout()
 
-plt.savefig('oscillations_1zone.png', bbox_inches='tight')
-plt.savefig('oscillations_1zone.pdf', bbox_inches='tight')
+plt.savefig('ffi_1zone.png', bbox_inches='tight')
+plt.savefig('ffi_1zone.pdf', bbox_inches='tight')
 
 # clean up
 util.safe_remove(TMP_DIR)

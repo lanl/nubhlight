@@ -31,7 +31,7 @@ void step() {
     RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
   // not used for timestep control. Used to turn oscillations on or
   // off.
-  double dt_osc = get_dt_oscillations();
+  double dt_ffi = get_dt_ffi();
 #endif // oscillations
 #endif // radiation
   dtsave = dt;
@@ -76,7 +76,7 @@ void step() {
     RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
   if (mpi_io_proc()) {
     printf("\t[Oscillations] tau_ffi = %.14e, dt/tau_ffi = %.14e\n",
-           dt_osc, dt / (dt_osc + SMALL));
+           dt_ffi, dt / (dt_ffi + SMALL));
   }
   accumulate_local_angles();
   oscillate_ffi(local_moments, Gnu);

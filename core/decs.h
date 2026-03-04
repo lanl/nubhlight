@@ -1033,7 +1033,7 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 
 // oscillations.c
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
-double get_dt_oscillations();
+double get_dt_ffi();
 void get_local_angle_bins(
     struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
