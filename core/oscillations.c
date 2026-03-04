@@ -182,7 +182,7 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
   }
 }
 
-void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
   timer_start(TIMER_OSCILLATIONS);
 #pragma omp parallel
   {

@@ -75,11 +75,11 @@ void step() {
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
     RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
   if (mpi_io_proc()) {
-    printf("\t[Oscillations] tau_ffi = %.14e, dt/tau = %.14e\n",
+    printf("\t[Oscillations] tau_ffi = %.14e, dt/tau_ffi = %.14e\n",
            dt_osc, dt / (dt_osc + SMALL));
   }
   accumulate_local_angles();
-  oscillate(local_moments, Gnu);
+  oscillate_ffi(local_moments, Gnu);
   // check_nu_type("after oscillate"); // DEBUG
 #endif // OSCILLATIONS
 #endif
