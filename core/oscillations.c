@@ -189,10 +189,10 @@ void oscillate_ffi(grid_local_angles_type f,
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
-    double            X[NDIM], Kcov[NDIM], Kcon[NDIM];
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
         int ix1, ix2, icosth[LOCAL_NUM_BASES];
+        double X[NDIM], Kcov[NDIM], Kcon[NDIM];
         get_local_angle_bins(ph, &ix1, &ix2, &icosth[0], &icosth[1]);
 
         int    b_osc = local_b_osc[ix1][ix2];
@@ -254,7 +254,7 @@ void oscillate_ffi(grid_local_angles_type f,
             ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
             ph->osc_count += 1;
 
-#pragma omp atomic
+            #pragma omp atomic
             local_osc_count[ix1][ix2] += ph->w;
           }
         }
@@ -266,6 +266,53 @@ void oscillate_ffi(grid_local_angles_type f,
 }
 
 #endif // RAD_NUM_TYPES >= 4
-
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+#if NEUTRINO_OSCILLATIONS_CFI
+void compute_cfi_active_mode(grid_int_type cfi_active_mode) {
+  timer_start(TIMER_OSCILLATIONS);
+
+  static const int SYMM_SIZE = (N1 + 2*NG)*(N2 + 2*NG);
+
+  memset(nph_flavor, 0, SYMM_SIZE * RAD_NUM_TYPES * sizeof(double));
+  memset(kappa_avg, 0, SYMM_SIZE * RAD_NUM_TYPES * sizeof(double));
+  memset(cfi_Gamma, 0, 2 * SYMM_SIZE * sizeof(double));
+
+#pragma omp parallel
+  {
+    struct of_photon *ph = photon_lists[omp_get_thread_num()];
+    while (ph != NULL) {
+      if (ph->type != TYPE_TRACER) {
+        double X[NDIM], Kcov[NDIM], Kcon[NDIM];
+        int i, j, k;
+        get_X_K_interp(ph, t, P, X, Kcov, Kcon);
+        Xtoijk(X, &i, &j, &k);
+        
+        #pragma omp atomic
+        nph_flavor[i][j][ph->type] += ph->w;
+
+        double theta = get_bk_angle(
+            X, Kcon, Ucov_grd[i][j][k],
+            Bcov_grd[i][j][k], m_grd[i][j][k].B);
+        double nu = get_fluid_nu(X, Kcov, Ucon_grd[i][j][k]);
+        double kappa = alpha_inv_abs(nu, ph->type,
+                                     &(m_grd[i][j][k]), theta)
+          / (nu + SMALL);
+        #pragma omp atomic
+        kappa_avg[i][j][ph->type] += kappa * ph->w;
+
+        // TODO: DO Gamma
+      }
+      ph = ph->next;
+    }
+  }
+
+  mpi_dbl_allreduce_array((double *)nph_flavor, SYMM_SIZE * RAD_NUM_TYPES);
+  mpi_dbl_allreduce_array((double *)kappa_avg, SYMM_SIZE * RAD_NUM_TYPES);
+  mpi_dbl_allreduce_array((double *)cfi_Gamma, 2 * SYMM_SIZE);
+
+  timer_stop(TIMER_OSCILLATIONS);
+}
+#endif // NEUTRINO_OSCILLATIONS_CFI
+
 #endif // RADIATION
