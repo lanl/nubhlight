@@ -118,8 +118,8 @@ void get_local_angle_bins(
 }
 
 #if RAD_NUM_TYPES >= 4
-void        compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
-           grid_Gnu_type local_wsqr, grid_Gnu_type gnu) {
+void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
+                       grid_Gnu_type local_wsqr, grid_Gnu_type gnu) {
 #pragma omp parallel for collapse(4)
   for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
     LOCALXMULOOP {
