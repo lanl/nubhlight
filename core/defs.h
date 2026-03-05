@@ -71,8 +71,8 @@ grid_local_count_type local_osc_count;
 #if DO_CFI
 // Which CFI mode is active, if any
 grid_int_type cfi_active_mode;
-// change towards asymptotic state and time scale
-grid_double_type cfi_delta_asymp, cfi_tau_asymp;
+// time scale for asymptotic state
+grid_double_type cfi_tau_asymp;
 #endif // DO_CFI
 
 #endif // RADIATION
