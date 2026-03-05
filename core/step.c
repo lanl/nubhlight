@@ -79,7 +79,7 @@ void step() {
            dt_osc, dt / (dt_osc + SMALL));
   }
   accumulate_local_angles();
-  oscillate(local_moments, Gnu);
+  oscillate(local_angles, local_moments, Gnu);
   // check_nu_type("after oscillate"); // DEBUG
 #endif // OSCILLATIONS
 #endif
