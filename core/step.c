@@ -79,7 +79,7 @@ void step() {
            dt_ffi, dt / (dt_ffi + SMALL));
   }
   accumulate_local_angles();
-  oscillate_ffi(local_moments, Gnu);
+  oscillate_ffi(local_angles, local_moments, Gnu);
   // check_nu_type("after oscillate"); // DEBUG
 #endif // OSCILLATIONS
 #endif

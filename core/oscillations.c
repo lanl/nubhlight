@@ -183,7 +183,8 @@ void compute_local_moments(grid_local_angles_type f, grid_Gnu_type gnu,
   }
 }
 
-void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+void oscillate_ffi(grid_local_angles_type f,
+                   grid_local_moment_type local_moments, grid_Gnu_type gnu) {
   timer_start(TIMER_OSCILLATIONS);
 #pragma omp parallel
   {
@@ -194,13 +195,6 @@ void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
         int ix1, ix2, icosth[LOCAL_NUM_BASES];
         get_local_angle_bins(ph, &ix1, &ix2, &icosth[0], &icosth[1]);
 
-        // find local FFI time scale nph already computed because of
-        // set_Rmunu which must be called each step
-        int i, j, k;
-        get_X_K_interp(ph, t, P, X, Kcov, Kcon);
-        Xtoijk(X, &i, &j, &k);
-        double tau = 1. / (T_unit * NUFERM * nph[i][j][k] + SMALL);
-
         int    b_osc = local_b_osc[ix1][ix2];
         int    imu   = icosth[b_osc];
         double A     = local_moments[b_osc][MOMENTS_A][ix1][ix2];
@@ -209,7 +203,29 @@ void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
         if (((G != 0) || FORCE_EQUIPARTITION) && (A != 0) && (B != 0)) {
-          // if ((A != 0) && (B != 0)) {
+          // finite volumes cell
+          int i, j, k;
+          get_X_K_interp(ph, t, P, X, Kcov, Kcon);
+          Xtoijk(X, &i, &j, &k);
+
+          // compute crossing depth
+          double n_tot_supercell = 0;
+          TYPELOOP {
+            LOCALMULOOP {
+              // total neutrinos of all flavors
+              n_tot_supercell += fabs(f[0][ix1][ix2][itp][imu]);
+            }
+          }
+          // crossing depth in units of number/cm^3
+          // sqrt(AB)/n_tot_supercell is normalized unitless crossing
+          // depth but units should be in number/cm^3.
+          double crossing_depth = sqrt(fabs(A * B))*nph[i][j][k] / (n_tot_supercell + SMALL);
+
+          // find local FFI time scale nph already computed because of
+          // Rmunu This crossing depth formula is slightly more
+          // sophisticated than just 1 / G_F n
+          double tau = 1. / (T_unit * NUFERM * crossing_depth  + SMALL);
+
           // If A == B then which region we treat as shallow is
           // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
