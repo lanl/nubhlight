@@ -1064,6 +1064,9 @@ void oscillate_ffi(grid_local_angles_type f,
 
 // CFI
 #if NEUTRINO_OSCILLATIONS_CFI
+void compute_cfi_symmetrized_avgs(grid_symm_radtype_type nph_flavor,
+                                  grid_symm_radtype_type kappa_avg,
+                                  grid_CFI_Gamma_type cfi_gamma);
 void compute_cfi_active_mode(grid_int_type cfi_active_mode);
 #endif // NEUTRINO_OSCILLATIONS_CFI
 
@@ -1150,6 +1153,7 @@ void record_lepton_flux(const struct of_photon *ph);
 void check_nu_type(const char *location);
 int  get_lepton_sign(const struct of_photon *ph);
 int  nu_is_heavy(const int radtype);
+int is_antiparticle(const struct of_photon *ph);
 #endif // NEUTRINOS
 #endif // RADIATION
 

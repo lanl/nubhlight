@@ -269,7 +269,9 @@ void oscillate_ffi(grid_local_angles_type f,
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 #if NEUTRINO_OSCILLATIONS_CFI
-void compute_cfi_active_mode(grid_int_type cfi_active_mode) {
+void compute_cfi_symmetrized_avgs(grid_symm_radtype_type nph_flavor,
+                                  grid_symm_radtype_type kappa_avg,
+                                  grid_CFI_Gamma_type cfi_gamma) {
   timer_start(TIMER_OSCILLATIONS);
 
   static const int SYMM_SIZE = (N1 + 2*NG)*(N2 + 2*NG);
@@ -284,6 +286,7 @@ void compute_cfi_active_mode(grid_int_type cfi_active_mode) {
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
         double X[NDIM], Kcov[NDIM], Kcon[NDIM];
+        double kappa[RAD_NUM_TYPES];
         int i, j, k;
         get_X_K_interp(ph, t, P, X, Kcov, Kcon);
         Xtoijk(X, &i, &j, &k);
@@ -295,13 +298,40 @@ void compute_cfi_active_mode(grid_int_type cfi_active_mode) {
             X, Kcon, Ucov_grd[i][j][k],
             Bcov_grd[i][j][k], m_grd[i][j][k].B);
         double nu = get_fluid_nu(X, Kcov, Ucon_grd[i][j][k]);
-        double kappa = alpha_inv_abs(nu, ph->type,
-                                     &(m_grd[i][j][k]), theta)
-          / (nu + SMALL);
-        #pragma omp atomic
-        kappa_avg[i][j][ph->type] += kappa * ph->w;
+        TYPELOOP {
+          kappa[itp] = alpha_inv_abs(nu, itp,
+                                     &(m_grd[i][j][k]), theta);
+          kappa[itp] /= (nu + SMALL);
+        }
 
-        // TODO: DO Gamma
+        #pragma omp atomic
+        kappa_avg[i][j][ph->type] += kappa[ph->type] * ph->w;
+
+        // electrons and antis positive, heavies and antis negative
+        int gamma_sign = (ph->type < NU_HEAVY) ? 1 : -1;
+
+        // Check for the need to divide neutrino count for heavies by 2
+        double heavy_dupfac = ((RAD_NUM_TYPES < 4) && (ph->type >= NU_HEAVY))? 0.5 : 1.0;
+
+        // check for antiparticles
+        int isanti = is_antiparticle(ph);
+
+        int kappa_e_idx = NU_ELECTRON + isanti; // kappa_e for es, kappa_ebar for ebars
+        // kappa_x for xs, kappa_xbar for xbars. But account for x = xbar
+        int kappa_x_idx = NU_HEAVY + (RAD_NUM_TYPES == 4)*isanti; 
+
+        // es contribute + to this sum, xs minus. Need to divide by 2
+        // if heavies and their antis are bundled together.
+        double weight = gamma_sign * heavy_dupfac * ph->w;
+
+        // gamma_0 = (1/2) (kappa_e + kappa_x)
+        // gamma_1 = (1/2) (kappa_ebar + kappa_xbar)
+        //
+        // Method A
+        // avg gamma_0 = \int E^2 dE (kappa_e + kappa_x) (f_e - f_x) / \int E^2 / \int E^2 dE (f_e - f_x)
+        // avg gamma_1 = \int E^2 dE (kappa_ebar + kappa_xbar) (f_ebar - f_xbar) / \int E^2 / \int E^2 dE (f_ebar - f_xbar)
+        #pragma omp atomic
+        cfi_Gamma[i][j][isanti] += 0.5*(kappa[kappa_e_idx] + kappa[kappa_x_idx])*weight;
       }
       ph = ph->next;
     }
@@ -310,6 +340,14 @@ void compute_cfi_active_mode(grid_int_type cfi_active_mode) {
   mpi_dbl_allreduce_array((double *)nph_flavor, SYMM_SIZE * RAD_NUM_TYPES);
   mpi_dbl_allreduce_array((double *)kappa_avg, SYMM_SIZE * RAD_NUM_TYPES);
   mpi_dbl_allreduce_array((double *)cfi_Gamma, 2 * SYMM_SIZE);
+
+  #pragma omp parallel for collapse(2)
+  ILOOP {
+    JLOOP {
+      cfi_Gamma[i][j][0] /= (nph_flavor[i][j][NU_ELECTRON] - nph_flavor[i][j][NU_HEAVY]);
+      cfi_Gamma[i][j][1] /= (nph_flavor[i][j][ANTINU_ELECTRON] - nph_flavor[i][j][ANTINU_HEAVY]);
+    }
+  }
 
   timer_stop(TIMER_OSCILLATIONS);
 }
