@@ -400,8 +400,8 @@ extern grid_local_count_type     local_osc_count;
 #endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
-#if DO_CFI
-typedef double grid_double_type[N1 + 2 * NG][N2 + 2 * NG];
+#if NEUTRINO_OSCILLATIONS_CFI
+typedef double grid_symm_double_type[N1 + 2 * NG][N2 + 2 * NG];
 typedef int grid_symm_int_type[N1 + 2 * NG][N2 + 2 * NG];
 typedef double grid_symm_radtype_type[N1 + 2 * NG][N2 + 2 * NG][RAD_NUM_TYPES];
 typedef double grid_CFI_Gamma_type[N1 + 2 * NG][N2 + 2 * NG][2];
@@ -416,7 +416,7 @@ extern grid_CFI_Gamma_type cfi_Gamma;
 extern grid_symm_int_type cfi_active_mode;
 // time scale for asymptotic state
 extern grid_symm_double_type cfi_tau_asymp;
-#endif // DO_CFI
+#endif // NEUTRINO_OSCILLATIONS_CFI
 
 #endif // RADIATION
 
@@ -1063,9 +1063,9 @@ void oscillate_ffi(grid_local_angles_type f,
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 // CFI
-#if DO_CFI
+#if NEUTRINO_OSCILLATIONS_CFI
 void compute_cfi_active_mode(grid_int_type cfi_active_mode);
-#endif // DO_CFI
+#endif // NEUTRINO_OSCILLATIONS_CFI
 
 #endif // RADIATION
 

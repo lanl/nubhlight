@@ -68,7 +68,7 @@ grid_local_count_type local_osc_count;
 #endif //  RAD_NUM_TYPES
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
-#if DO_CFI
+#if NEUTRINO_OSCILLATIONS_CFI
 // number of neutrinos per flavor
 grid_symm_radtype_type nph_flavor;
 // individual distribution function-weighted opacity averages
@@ -79,7 +79,7 @@ grid_CFI_Gamma_type cfi_Gamma;
 grid_symm_int_type cfi_active_mode;
 // time scale for asymptotic state
 grid_symm_double_type cfi_tau_asymp;
-#endif // DO_CFI
+#endif // NEUTRINO_OSCILLATIONS_CFI
 
 #endif // RADIATION
 
