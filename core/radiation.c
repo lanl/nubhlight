@@ -27,6 +27,7 @@ double Bnu_inv(double nu,
 #endif
 }
 
+// todo(JMM): Pass in a rescaling option
 double jnu_inv(
     double nu, int type, const struct of_microphysics *m, double theta) {
   double j;
@@ -47,6 +48,7 @@ double alpha_inv_scatt(
 }
 
 // Invariant absorption opacity
+// TODO(JMM): Need to pass in a rescaling option
 double alpha_inv_abs(
     double nu, int type, const struct of_microphysics *m, double theta) {
 #if RADIATION == RADTYPE_NEUTRINOS
