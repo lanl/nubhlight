@@ -54,14 +54,14 @@ double distmu(int type, double x) {
 // Initialize dynamical variables
 void init_prob() {
   if ((RADIATION != RADTYPE_NEUTRINOS) || !LOCAL_ANGULAR_DISTRIBUTIONS ||
-      !NEUTRINO_OSCILLATIONS || (RAD_NUM_TYPES != 4)) {
+      !NEUTRINO_OSCILLATIONS_FFI || (RAD_NUM_TYPES != 4)) {
     if (mpi_io_proc()) {
       printf("Test needs the following physics active!\n"
              "\tRADIATION == RADTYPE_NEUTRINOS: %d\n"
              "\tLOCAL_ANGULAR_DISTRIBUTIONS: %d\n"
-             "\tNEUTRINO_OSCILLATIONS: %d\n"
+             "\tNEUTRINO_OSCILLATIONS_FFI: %d\n"
              "\tRAD_NUM_TYPES == 4: %d\n",
-          RADIATION, LOCAL_ANGULAR_DISTRIBUTIONS, NEUTRINO_OSCILLATIONS,
+          RADIATION, LOCAL_ANGULAR_DISTRIBUTIONS, NEUTRINO_OSCILLATIONS_FFI,
           RAD_NUM_TYPES);
     }
     exit(1);

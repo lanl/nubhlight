@@ -345,15 +345,19 @@ def build(PROBLEM, PATHS):
       else:
         set_cparm("RAD_NUM_TYPES", 3)
       print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
-    if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS"):
-      print_config("NEUTRINO_OSCILLATIONS ", CPARMS["NEUTRINO_OSCILLATIONS"])
+    if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS_FFI"):
+      print_config("NEUTRINO_OSCILLATIONS_FFI ", CPARMS["NEUTRINO_OSCILLATIONS_FFI"])
       if util.parm_is_active(CPARMS, 'FORCE_EQUIPARTITION'):
         print_config("FORCE_EQUIPARTITION ", CPARMS["FORCE_EQUIPARTITION"])
       else:
         set_cparm('FORCE_EQUIPARTITION', 0)
     else:
-      set_cparm('NEUTRINO_OSCILLATIONS', 0)
+      set_cparm('NEUTRINO_OSCILLATIONS_FFI', 0)
       set_cparm('FORCE_EQUIPARTITION', 0)
+    if util.parm_is_active(CPARMS, "NEUTRINO_OSCILLATIONS_CFI"):
+      print_config("NEUTRINO_OSCILLATIONS_CFI ", CPARMS["NEUTRINO_OSCILLATIONS_CFI"])
+    else:
+      set_cparm('NEUTRINO_OSCILLATIONS_CFI', 0)
     if util.parm_is_active(CPARMS, "RZ_HISTOGRAMS"):
       print_config("RZ_HISTOGRAMS", CPARMS["RZ_HISTOGRAMS"])
       if not util.parm_is_active(CPARMS, "RZ_HISTOGRAMS_N"):

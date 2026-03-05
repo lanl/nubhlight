@@ -29,9 +29,9 @@ grid_int_type      Nsph;
 grid_double_type   nph;
 #if RZ_HISTOGRAMS
 rz_hist_type rz_r_orig_hist, rz_z_orig_hist;
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
 rz_hist_type osc_rz_r_orig_hist, osc_rz_z_orig_hist;
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 #endif // RZ_HISTOGRAMS
 
 struct of_photon **photon_lists;
@@ -69,10 +69,16 @@ grid_local_count_type local_osc_count;
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 #if DO_CFI
+// number of neutrinos per flavor
+grid_symm_radtype_type nph_flavor;
+// individual distribution function-weighted opacity averages
+grid_symm_radtype_type kappa_avg;
+grid_CFI_Gamma_type cfi_Gamma;
+
 // Which CFI mode is active, if any
-grid_int_type cfi_active_mode;
+grid_symm_int_type cfi_active_mode;
 // time scale for asymptotic state
-grid_double_type cfi_tau_asymp;
+grid_symm_double_type cfi_tau_asymp;
 #endif // DO_CFI
 
 #endif // RADIATION
