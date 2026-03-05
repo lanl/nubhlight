@@ -151,8 +151,8 @@ void        compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
 
 // JMM: We can also compute, e.g., the average bin momentum if we need
 // to, e.g., compute higher moment integrands
-void compute_local_moments(grid_local_angles_type f, grid_Gnu_type gnu,
-    grid_local_moment_type moments) {
+void compute_local_moments(grid_Gnu_type gnu,
+                           grid_local_moment_type moments) {
   // We are reducing over mu, but if we just parallel loop over b,i,j,
   // there is no danger of index collisions.
   LOCALMULOOP {
