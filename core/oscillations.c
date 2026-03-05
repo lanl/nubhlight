@@ -51,7 +51,7 @@ void accumulate_local_angles() {
 #pragma omp atomic
           local_Ns[b][ix1][ix2][icosth[b]] += 1.;
 #pragma omp atomic
-          local_wsqr[b][ix1][ix2][icosth[b]] += (ph->w)*(ph->w);
+          local_wsqr[b][ix1][ix2][icosth[b]] += (ph->w) * (ph->w);
         }
       }
       ph = ph->next;
@@ -106,7 +106,7 @@ void get_local_angle_bins(
   knorm = 1. / (fabs(knorm) + SMALL);
   costh1 *= knorm;
   costh2 *= knorm;
- 
+
   *pi = MY_MAX(
       0, MY_MIN(LOCAL_ANGLES_NX1 - 1, (X[1] - startx_rad[1]) / local_dx1_rad));
   *pj = MY_MAX(
@@ -118,8 +118,8 @@ void get_local_angle_bins(
 }
 
 #if RAD_NUM_TYPES >= 4
-void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
-                       grid_Gnu_type local_wsqr, grid_Gnu_type gnu) {
+void        compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
+           grid_Gnu_type local_wsqr, grid_Gnu_type gnu) {
 #pragma omp parallel for collapse(4)
   for (int b = 0; b < LOCAL_NUM_BASES; ++b) {
     LOCALXMULOOP {
@@ -151,7 +151,8 @@ void compute_local_gnu(grid_local_angles_type f, grid_Gnu_type local_Ns,
 
 // JMM: We can also compute, e.g., the average bin momentum if we need
 // to, e.g., compute higher moment integrands
-void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
+void compute_local_moments(grid_local_angles_type f, grid_Gnu_type gnu,
+    grid_local_moment_type moments) {
   // We are reducing over mu, but if we just parallel loop over b,i,j,
   // there is no danger of index collisions.
   LOCALMULOOP {
@@ -208,7 +209,7 @@ void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
         if (((G != 0) || FORCE_EQUIPARTITION) && (A != 0) && (B != 0)) {
-        // if ((A != 0) && (B != 0)) {
+          // if ((A != 0) && (B != 0)) {
           // If A == B then which region we treat as shallow is
           // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
@@ -221,14 +222,14 @@ void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 
           int in_shallow = (A_is_shallow && g_in_A) || (B_is_shallow && g_in_B);
 
-          double peq = nu_is_heavy(ph->type) ? (2./3.) : (1./3.);
+          double peq = nu_is_heavy(ph->type) ? (2. / 3.) : (1. / 3.);
 #if FORCE_EQUIPARTITION
           double p_survival = peq;
 #else
           double p_survival =
               in_shallow ? peq : (1 - (1 - peq) * shallow / (deep + SMALL));
 #endif // FORCE_EQUIPARTITION
-          double p_osc = MY_MIN(1.0, dt / (tau + SMALL))*(1. - p_survival);
+          double p_osc = MY_MIN(1.0, dt / (tau + SMALL)) * (1. - p_survival);
           if (get_rand() < p_osc) {
             // JMM:
             // Type order is NUE, NUEBAR, NUX, NUXBAR
@@ -237,7 +238,7 @@ void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
             ph->type = (ph->type + (RAD_NUM_TYPES / 2)) % RAD_NUM_TYPES;
             ph->osc_count += 1;
 
-            #pragma omp atomic
+#pragma omp atomic
             local_osc_count[ix1][ix2] += ph->w;
           }
         }
