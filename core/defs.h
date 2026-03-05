@@ -67,6 +67,14 @@ grid_local_basis_idx_type local_b_osc;
 grid_local_count_type local_osc_count;
 #endif //  RAD_NUM_TYPES
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+#if DO_CFI
+// Which CFI mode is active, if any
+grid_int_type cfi_active_mode;
+// change towards asymptotic state and time scale
+grid_double_type cfi_delta_asymp, cfi_tau_asymp;
+#endif // DO_CFI
+
 #endif // RADIATION
 
 #if ELECTRONS

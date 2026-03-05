@@ -171,17 +171,20 @@
 #define ANTINU_HEAVY (3)
 #if MULTISCATT_TEST
 #define RAD_SCATT_TYPES (3)
-#else
+#else // NOT MULTISCATT TEST
 #define RAD_SCATT_TYPES (4) // TODO: Should be 5, including electrons
 #define RSCATT_TYPE_P (0)
 #define RSCATT_TYPE_N (1)
 #define RSCATT_TYPE_A (2)
 #define RSCATT_TYPE_ALPHA (3)
 #define RSCATT_TYPE_E (4) // TOOD: implement me
-#endif
+#endif // NOT MULTISCATT TEST
 #define NRADCOMP (2)
 #define RADG_YE (4)
 #define RADG_YE_EM (5)
+#define CFI_INACTIVE (0)      // For collisional flavor instability
+#define CFI_TYPE_GAPPED (1)   // Omega_- mode
+#define CFI_TYPE_GAPLESS (2)  // Omega_+ mode
 #elif RADIATION == RADTYPE_LIGHT
 #define RAD_SCATT_TYPES (1)
 #define NRADCOMP (0)
@@ -402,6 +405,13 @@ extern grid_local_basis_idx_type local_b_osc;
 extern grid_local_count_type local_osc_count;
 #endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+#if DO_CFI
+// Which CFI mode is active, if any
+extern grid_int_type cfi_active_mode;
+// change towards asymptotic state and time scale
+extern grid_double_type cfi_delta_asymp, cfi_tau_asymp;
+#endif // DO_CFI
 
 #endif // RADIATION
 
@@ -1033,6 +1043,7 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 
 // oscillations.c
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
+// FFI
 double get_dt_ffi();
 void get_local_angle_bins(
     struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
@@ -1044,6 +1055,12 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
 void oscillate_ffi(grid_local_moment_type local_moments, grid_Gnu_type gnu);
 #endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+// CFI
+#if DO_CFI
+void compute_cfi_active_mode(grid_int_type cfi_active_mode);
+#endif // DO_CFI
+
 #endif // RADIATION
 
 // passive.c
