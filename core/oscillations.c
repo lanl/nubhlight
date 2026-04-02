@@ -182,11 +182,13 @@ void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments) {
   }
 }
 
-void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
+void oscillate(grid_local_angles_type f,
+               grid_local_moment_type local_moments, grid_Gnu_type gnu) {
   timer_start(TIMER_OSCILLATIONS);
 #pragma omp parallel
   {
     struct of_photon *ph = photon_lists[omp_get_thread_num()];
+    double            X[NDIM], Kcov[NDIM], Kcon[NDIM];
     while (ph != NULL) {
       if (ph->type != TYPE_TRACER) {
         int ix1, ix2, icosth[LOCAL_NUM_BASES];
@@ -200,7 +202,29 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
 
         // gnu == 0 when we activated stddev trigger. Don't oscillate.
         if (((G != 0) || FORCE_EQUIPARTITION) && (A != 0) && (B != 0)) {
-        // if ((A != 0) && (B != 0)) {
+          // finite volumes cell
+          int i, j, k;
+          get_X_K_interp(ph, t, P, X, Kcov, Kcon);
+          Xtoijk(X, &i, &j, &k);
+
+          // compute crossing depth
+          double n_tot_supercell = 0;
+          TYPELOOP {
+            LOCALMULOOP {
+              // total neutrinos of all flavors
+              n_tot_supercell += fabs(f[0][ix1][ix2][itp][imu]);
+            }
+          }
+          // crossing depth in units of number/cm^3
+          // sqrt(AB)/n_tot_supercell is normalized unitless crossing
+          // depth but units should be in number/cm^3.
+          double crossing_depth = sqrt(fabs(A * B))*nph[i][j][k] / (n_tot_supercell + SMALL);
+
+          // find local FFI time scale nph already computed because of
+          // Rmunu This crossing depth formula is slightly more
+          // sophisticated than just 1 / G_F n
+          double tau = 1. / (T_unit * NUFERM * crossing_depth  + SMALL);
+
           // If A == B then which region we treat as shallow is
           // unimportant. Psurvive = 1/3 for both regions.
           int    A_is_shallow = A < B;
@@ -220,7 +244,7 @@ void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu) {
           double p_survival =
               in_shallow ? peq : (1 - (1 - peq) * shallow / (deep + SMALL));
 #endif // FORCE_EQUIPARTITION
-          double p_osc = 1. - p_survival;
+          double p_osc = MY_MIN(1.0, dt / (tau + SMALL))*(1. - p_survival);
           if (get_rand() < p_osc) {
             // JMM:
             // Type order is NUE, NUEBAR, NUX, NUXBAR
