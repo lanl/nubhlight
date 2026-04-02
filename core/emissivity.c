@@ -46,6 +46,7 @@ void init_emissivity() {
 #endif
 }
 
+// todo(JMM): Pass in a rescaling option
 double jnu(double nu, int type, const struct of_microphysics *m, double theta) {
   double jnu = 0.;
 
@@ -71,6 +72,7 @@ double jnu(double nu, int type, const struct of_microphysics *m, double theta) {
   return jnu;
 }
 
+// todo(JMM): Pass in a rescaling option
 double Jnu(double nu, int type, const struct of_microphysics *m) {
   double Jnu = 0.;
 
@@ -96,6 +98,7 @@ double Jnu(double nu, int type, const struct of_microphysics *m) {
   return Jnu;
 }
 
+// todo(JMM): Pass in a rescaling option
 double integrandJ(double x, void *params) {
   struct of_J_params *    p    = (struct of_J_params *)params;
   struct of_microphysics *m    = p->microphysics;
@@ -110,6 +113,7 @@ double integrandJ(double x, void *params) {
   return Jsamp;
 }
 
+// todo(JMM): Pass in a rescaling option
 double get_J(struct of_microphysics *m) {
 #if RADIATION == RADTYPE_LIGHT
   {

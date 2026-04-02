@@ -32,6 +32,11 @@
 #define ROOT2 (1.4142135623730951)
 #define NUFERM ((ROOT2*GFERM) / HBAR)
 
+// Cos(2 theta21) where theta_m is the vacuum mixing angle theta21
+#define C2TH21 (0.386)
+// square of mass gap between m1 and m2 for neutrino masses
+#define DM21SQR_EV (7.5e-5) // eV
+
 // Unit conversions
 #define EV (1.60217653e-12)   // Electron-volt
 #define MEV (1.0e6 * EV)      // Mega-Electron-Volt

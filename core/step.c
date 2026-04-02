@@ -28,10 +28,10 @@ void step() {
 #if RADIATION
   double dt_cool;
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
-    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
+    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS_FFI
   // not used for timestep control. Used to turn oscillations on or
   // off.
-  double dt_osc = get_dt_oscillations();
+  double dt_ffi = get_dt_ffi();
 #endif // oscillations
 #endif // radiation
   dtsave = dt;
@@ -73,13 +73,13 @@ void step() {
   bound_superphotons(Ph, t, dt);
   // check_nu_type("after bound"); // DEBUG
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS && \
-    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS
+    RAD_NUM_TYPES >= 4 && NEUTRINO_OSCILLATIONS_FFI
   if (mpi_io_proc()) {
-    printf("\t[Oscillations] tau_ffi = %.14e, dt/tau = %.14e\n",
-           dt_osc, dt / (dt_osc + SMALL));
+    printf("\t[Oscillations] tau_ffi = %.14e, dt/tau_ffi = %.14e\n",
+           dt_ffi, dt / (dt_ffi + SMALL));
   }
   accumulate_local_angles();
-  oscillate(local_angles, local_moments, Gnu);
+  oscillate_ffi(local_angles, local_moments, Gnu);
   // check_nu_type("after oscillate"); // DEBUG
 #endif // OSCILLATIONS
 #endif
