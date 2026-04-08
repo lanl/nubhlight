@@ -337,6 +337,10 @@ def build(PROBLEM, PATHS):
       print_config("HDF5_OPACITIES", CPARMS["HDF5_OPACITIES"])
     else:
       set_cparm("HDF5_OPACITIES", 0)
+    if util.parm_is_active(CPARMS, "KUMAMOTO_OPACITIES"):
+      print_config("KUMAMOTO_OPACITIES", CPARMS["KUMAMOTO_OPACITIES"])
+    else:
+      set_cparm("KUMAMOTO_OPACITIES", 0)
     if util.parm_is_active(CPARMS, "RAD_NUM_TYPES"):
       print_config("RAD_NUM_TYPES", CPARMS["RAD_NUM_TYPES"])
     else:
