@@ -588,7 +588,7 @@ struct of_photon {
   double            t0;
   int               is_tracked;
   // Only relevant for neutrino oscillations
-  int               has_oscillated;
+  int               osc_count;
   struct of_photon *next;
 };
 
@@ -1041,7 +1041,8 @@ void accumulate_local_angles();
 void compute_local_gnu(grid_local_angles_type local_angles,
     grid_Gnu_type local_Ns, grid_Gnu_type local_wsqr, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
-void oscillate(grid_local_moment_type local_moments, grid_Gnu_type gnu);
+void oscillate(grid_local_angles_type f,
+               grid_local_moment_type local_moments, grid_Gnu_type gnu);
 #endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 #endif // RADIATION

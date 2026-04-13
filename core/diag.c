@@ -597,7 +597,7 @@ void generate_rz_histograms() {
       rz_z_orig_hist[iz] += ph->w;
 
 #if NEUTRINO_OSCILLATIONS
-      if (ph->has_oscillated) {
+      if (ph->osc_count) {
 #pragma omp atomic
         osc_rz_r_orig_hist[ir] += ph->w;
 #pragma omp atomic
