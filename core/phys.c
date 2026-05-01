@@ -211,7 +211,7 @@ void mhd_vchar(double *Pr, struct of_state *q, struct of_geom *geom, int js,
   bsq = dot(q->bcon, q->bcov);
   rho = fabs(Pr[RHO] + SMALL);
   u   = Pr[UU];
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK  
   u = fabs(u + SMALL);
 #endif
   ef  = EOS_enthalpy_rho0_u(rho, u, extra);

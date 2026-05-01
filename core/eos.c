@@ -160,7 +160,11 @@ double EOS_enthalpy_rho0_u(double rho, double u, const double *extra) {
 double EOS_entropy_rho0_u(double rho, double u, const double *extra) {
   double ent;
 #if EOS == EOS_TYPE_GAMMA
-  ent = EOS_Gamma_entropy_rho0_u(rho, u);
+#if EOS_GAMMA == GASPRESS
+  ent = EOS_Gamma_Gaspress_entropy_rho0_u(rho, u);
+#elif EOS_GAMMA == RADPRESS
+  ent = EOS_Gamma_Radpress_entropy_rho0_u(rho, u);
+#endif
 #elif EOS == EOS_TYPE_POLYTROPE
   ent   = EOS_Poly_entropy_rho0_u(rho, u, poly_K, poly_gam);
 #elif EOS == EOS_TYPE_TABLE

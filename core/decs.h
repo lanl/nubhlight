@@ -199,7 +199,9 @@
 #if EOS == EOS_TYPE_GAMMA
 #define EOS_NUM_EXTRA (0)
 #define POLYTROPE_FALLBACK (0)
-#elif EPS == EOS_TYPE_POLYTROPE
+#define GASPRESS (1)
+#define RADPRESS (2)
+#elif EOS == EOS_TYPE_POLYTROPE
 #define EOS_NUM_EXTRA (0)
 #define POLYTROPE_FALLBACK (0)
 #elif EOS == EOS_TYPE_TABLE
@@ -452,6 +454,9 @@ extern double a;
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 extern double gam;
 #endif
+//#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+//extern double entropy;
+//#endif
 #if EOS == EOS_TYPE_POLYTROPE
 extern double poly_K, poly_gam;
 #endif
@@ -462,7 +467,7 @@ extern double M_unit;
 extern double Reh;
 extern double Risco;
 #if NEED_UNITS
-extern double mbh, Mbh, L_unit, T_unit, M_unit, RHO_unit, U_unit, B_unit;
+extern double mbh, Mbh, L_unit, T_unit, M_unit, RHO_unit, U_unit, B_unit, TEMP_unit;
 #endif
 #if EOS == EOS_TYPE_TABLE
 extern double TEMP_unit;
@@ -836,7 +841,8 @@ double EOS_Theta_unit();
 #if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
 double EOS_Gamma_pressure_rho0_u(double rho, double u);
 double EOS_Gamma_pressure_rho0_w(double rho, double w);
-double EOS_Gamma_entropy_rho0_u(double rho, double u);
+double EOS_Gamma_Gaspress_entropy_rho0_u(double rho, double u);
+double EOS_Gamma_Radpress_entropy_rho0_u(double rho, double u);
 double EOS_Gamma_enthalpy_rho0_u(double rho, double u);
 double EOS_Gamma_adiabatic_constant_rho0_u(double rho, double u);
 double EOS_Gamma_sound_speed_rho0_u(double rho, double u);

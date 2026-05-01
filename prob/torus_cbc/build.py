@@ -19,6 +19,8 @@ from math import log10,ceil
 PROB = 'torus_cbc'
 
 DO_GAMMA = '-gamma' in sys.argv # No table
+GAMMA_GASPRESS = '-gammagaspress' in sys.argv # No table
+GAMMA_RADPRESS = '-gammaradpress' in sys.argv # No table
 GAMTABLE = '-gamtable' in sys.argv # fake table
 RELTABLE = '-reltable' in sys.argv or (not DO_GAMMA or GAMTABLE)
 INITIAL = '-initial' in sys.argv # initial data only
@@ -52,6 +54,7 @@ QUAD = '-quad' in sys.argv # quadrant symmetry
 KILL = '-kill' in sys.argv # kill all packets
 
 ENT_FROM_CLI  = '-ent' in sys.argv
+KAPPA_FROM_CLI = '-kappa' in sys.argv
 RHO_FROM_CLI  = '-rho' in sys.argv
 RIN_FROM_CLI  = '-rin' in sys.argv
 RMAX_FROM_CLI = '-rmax' in sys.argv
@@ -83,6 +86,9 @@ if any([N1CPU_FROM_CLI, N2CPU_FROM_CLI, N3CPU_FROM_CLI]) and not N1N2N3CPU_FROM_
     raise ValueError("Must turn on the -n1n2n3cpu flag if inputting -n1cpu, -n2cpu, -n3cpu")
 if any([N1TOT_FROM_CLI, N2TOT_FROM_CLI, N3TOT_FROM_CLI]) and not N1N2N3TOT_FROM_CLI:
     raise ValueError("Must turn on the -n1n2n3tot flag if inputting -n1tot, -n2tot, -n3tot")
+
+if any([GAMMA_GASPRESS, GAMMA_RADPRESS]) and not DO_GAMMA:
+    raise ValueError("Must turn on the -gamma flag if inputting -gammagaspress or -gammaradpress")
 
 if NOB:
     BFIELD = "none"
@@ -151,11 +157,42 @@ bhl.report_var('ABH',ABH)
 if USE_TABLE:
     bhl.report_var('Disk Ye',YE)
 
+if USE_TABLE:
+    EOS_TYPE = "EOS_TYPE_TABLE"
+if DO_GAMMA:
+    EOS_TYPE = "EOS_TYPE_GAMMA"
+    if GAMMA_RADPRESS:
+        EOS_GAMMA = "RADPRESS"
+        GAMMA = 4./3.
+    elif GAMMA_GASPRESS:
+        EOS_GAMMA = "GASPRESS"
+        GAMMA = 5./3.
+    else:
+        print('Using the default gas-pressure dominated ideal gas EoS.',
+              'You can choose gas-pressure dominated (add flag -gammagaspress)',
+              'radiation-pressure dominated (add flag -gammaradpress).')
+        EOS_GAMMA = "GASPRESS"
+        GAMMA = 4./3.
+else:
+    raise ValueError("Bad EOS chosen")
+        
 if ENT_FROM_CLI:
     ENTROPY = float(sys.argv[sys.argv.index('-ent') + 1])
 else:
     ENTROPY = 4
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "RADPRESS":
+        print('Using the default initial entropy = 4.',
+              'Entropy is a required parameter in setting up radiation-pressure dominated disks.')
+
 bhl.report_var('ENTROPY',ENTROPY)
+
+if KAPPA_FROM_CLI:
+    KAPPA_EOS = float(sys.argv[sys.argv.index('-kappa') + 1])
+else:
+    KAPPA_EOS = 1.e-3
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GASPRESS":
+        print('Using the default initial kappa = 1.e-3.',
+              'kappa is a required parameter in setting up gas-pressure dominated disks.')
 
 if CLASSIC: # classic harm disk
     # Rmax and rho fixed
@@ -216,8 +253,6 @@ else:
 # use selection instead
 Rout_rad = ENTROPY*ceil(Rmax) # not safe to use 3x
 Rout_vis = Rout
-GAMMA = 13./9.
-KAPPA = 1.e-3
 L_unit = cgs['GNEWT']*cgs['MSOLAR']*MBH/(cgs['CL']**2)
 M_UNIT = RHO_unit*(L_unit**3)
 
@@ -322,7 +357,6 @@ if TRACERS:
 if not NEUTRINOS:
     NPH_PER_PROC = 0.0
 
-EOS = "EOS_TYPE_TABLE" if USE_TABLE else "EOS_TYPE_GAMMA"
 NVP0 = 3
 NVAR_PASSIVE = NVP0 if USE_TABLE else 0
 #GAMMA_FALLBACK = True
@@ -397,7 +431,10 @@ bhl.config.set_cparm('X3R_INFLOW', False)
 bhl.config.set_cparm('QUADRANT_SYMMETRY', QUAD)
 
 # EOS
-bhl.config.set_cparm("EOS", EOS)
+bhl.config.set_cparm("EOS", EOS_TYPE)
+bhl.config.set_cparm('OUTPUT_EOSVARS', True)
+if EOS_TYPE == 'EOS_TYPE_GAMMA':
+    bhl.config.set_cparm("EOS_GAMMA", EOS_GAMMA)
 bhl.config.set_cparm('NVAR_PASSIVE', NVAR_PASSIVE)
 bhl.config.set_cparm('GAMMA_FALLBACK', GAMMA_FALLBACK)
 
@@ -485,7 +522,10 @@ if USE_TABLE:
         bhl.config.set_rparm('lrho_guess','double',LRHO_GUESS)
 if USE_GAMMA or GAMMA_FALLBACK:
     bhl.config.set_rparm('gam', 'double', default = GAMMA)
-    bhl.config.set_rparm("kappa", "double", default = KAPPA)
+    if EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "RADPRESS":
+        bhl.config.set_rparm('entropy','double',ENTROPY)
+    elif EOS_TYPE == "EOS_TYPE_GAMMA" and EOS_GAMMA == "GASPRESS":
+        bhl.config.set_rparm("kappa_eos", "double", default = KAPPA_EOS)
 
 # Opacities
 if FORTRAN or HDF:

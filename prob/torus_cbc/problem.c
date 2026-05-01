@@ -16,16 +16,18 @@ static char   bfield_type[STRLEN];
 static int    renormalize_densities;
 static double rin;
 static double rmax;
-static double beta;
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+static double beta; // desired minimum ratio of gas to magnetic pressure
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
 static double kappa_eos;
 #endif
 #if EOS == EOS_TYPE_TABLE
 static double const_ye; // if > 0, set ye this way
 #if !GAMMA_FALLBACK
-static double entropy;
 static double lrho_guess;
 #endif
+#endif
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+static double entropy;
 #endif
 #if RADIATION && TRACERS
 static int ntracers;
@@ -44,8 +46,11 @@ void set_problem_params() {
   set_param("rmax", &rmax);
   set_param("beta", &beta);
   set_param("renorm_dens", &renormalize_densities);
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
   set_param("kappa_eos", &kappa_eos);
+#endif
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+  set_param("entropy", &entropy);
 #endif
 #if EOS == EOS_TYPE_TABLE
   set_param("const_ye", &const_ye);
@@ -68,8 +73,12 @@ void init_prob() {
   double SSin, hm1;
 
 // Diagnostics for entropy
-#if EOS == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
   double ent, entmax;
+#endif
+
+#if (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
+  double entropy_cgs, hm1_cgs;
 #endif
 
   // Magnetic field
@@ -181,6 +190,7 @@ void init_prob() {
       lnh[i][j][k] = 1.;
     }
 
+//fprintf(stdout, "entropy: %f\n", entropy);
 #if EOS == EOS_TYPE_TABLE
     ye     = const_ye; // may need to change this eventually
     ye_atm = 0.5;
@@ -224,8 +234,22 @@ void init_prob() {
       disk_cell[i][j][k] = 1;
 
       hm1 = exp(lnh[i][j][k]) - 1.;
-#if EOS == EOS_TYPE_GAMMA || GAMMA_FALLBACK
+#if EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS
+      //a = AR * pow(T_unit,2) * L_unit * pow(TEMP_unit, 4) * pow(M_unit, -2);
+      hm1_cgs = hm1 * pow(CL, 2);
+      fprintf(stdout, "hm1_cgs: %e\n", hm1_cgs);
+      entropy_cgs = entropy * KBOL / MP;
+      fprintf(stdout, "entropy_cgs: %e\n", entropy_cgs);
+      rho = ((64./3) * AR * (pow(hm1_cgs, 3)/pow(entropy_cgs, 4)) * pow((gam - 1.)/gam, 3)) / RHO_unit;
+      fprintf(stdout, "rho: %e\n", rho);
+      u = (hm1 * rho / gam);
+      fprintf(stdout, "u: %e\n", u);
+#elif (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == GASPRESS) || GAMMA_FALLBACK
       rho = pow(hm1 * (gam - 1.) / (kappa_eos * gam), 1. / (gam - 1.));
+      fprintf(stdout, "rho: %e\n", rho);
+      fprintf(stdout, "hm1: %e\n", hm1);
+      fprintf(stdout, "kappa_eos: %e\n", kappa_eos);
+      fprintf(stdout, "gam: %f\n", gam);
       u   = kappa_eos * pow(rho, gam) / (gam - 1.);
 #elif EOS == EOS_TYPE_TABLE
       hm1 += hm1_min;
@@ -319,12 +343,15 @@ void init_prob() {
       PsaveLocal[i][j][k][UU] /= rhomax;
     }
 
+    // Only let cells inside the torus (radius greater than rin and non-minimal 
+    // enthalpy) contribute to pressmax
     if (r > rin && lnh[i][j][k] >= 0.) {
 #if EOS == EOS_TYPE_TABLE
       EOS_SC_fill(PsaveLocal[i][j][k], extra[i][j][k]);
 #endif
       press = EOS_pressure_rho0_u(
           PsaveLocal[i][j][k][RHO], PsaveLocal[i][j][k][UU], extra[i][j][k]);
+      fprintf(stdout, "press: %e\n", press);
       if (press > pressmax)
         pressmax = press;
     }
@@ -390,7 +417,7 @@ void init_prob() {
         thd);
   }
 // debug
-#if EOS == EOS_TYPE_TABLE
+#if EOS == EOS_TYPE_TABLE || (EOS == EOS_TYPE_GAMMA && EOS_GAMMA == RADPRESS)
   if (mpi_io_proc()) {
     fprintf(stdout, "Calculating max entropy:\n");
   }
@@ -399,7 +426,9 @@ void init_prob() {
     coord(i, j, k, CENT, X);
     bl_coord(X, &r, &th);
     if (r > rin && lnh[i][j][k] >= 0.) {
-      EOS_SC_fill(P[i][j][k], extra[i][j][k]);
+      #if EOS == EOS_TYPE_TABLE
+        EOS_SC_fill(P[i][j][k], extra[i][j][k]);
+      #endif
       ent = EOS_entropy_rho0_u(P[i][j][k][RHO], P[i][j][k][UU], extra[i][j][k]);
       if (ent > entmax)
         entmax = ent;
