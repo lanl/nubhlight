@@ -466,7 +466,7 @@ def load_dump(fname, geom=None, nulegacy=False):
                                            dump['ucov'])
   dump['bcon_cart'] = grid_matrix_multiply(geom['Lambda_h2cart_con'],
                                            dump['bcon'])
-  dump['bcov_cart'] = grid_matrix_multiply(geom['Lambda_h2cart_con'],
+  dump['bcov_cart'] = grid_matrix_multiply(geom['Lambda_h2cart_cov'],
                                            dump['bcov'])
 
   dfile.close()
