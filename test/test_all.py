@@ -45,7 +45,7 @@ M_FLUID_TESTS = ['sod.py', 'table.py', 'advection2d.py', 'advection2d.py -mpi']
 M_NU_TESTS = ['yedecay.py', 'yedecay.py -antinu',
               'yedecay.py -mpi', # 'yedecay.py -mpi -antinu',
               'multiscatt.py',
-              'tracers1d.py']
+              'tracers1d.py', 'ffi.py']
 M_LIGHT_TESTS = ['binning.py', 'brem.py',
                  'thermalization.py', 'thermalization_mpi.py',
                  'comptonization.py']

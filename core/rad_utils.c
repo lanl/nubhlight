@@ -749,7 +749,7 @@ double get_min_dt_cool(grid_prim_type P, grid_eosvar_type extra) {
 }
 
 #if RADIATION == RADTYPE_NEUTRINOS
-void        record_lepton_flux(const struct of_photon *ph) {
+void record_lepton_flux(const struct of_photon *ph) {
 #pragma omp atomic
   lepton_lost_local += (ph->w) * get_lepton_sign(ph);
 }
@@ -763,6 +763,14 @@ int get_lepton_sign(const struct of_photon *ph) {
 }
 int nu_is_heavy(const int radtype) {
   return ((radtype == NU_HEAVY) || (radtype == ANTINU_HEAVY));
+}
+
+int is_antiparticle(const struct of_photon *ph) {
+#if RAD_NUM_TYPES == 4
+  return (ph->type == ANTINU_ELECTRON) || (ph->type == ANTINU_HEAVY);
+#else
+  return (ph->type == ANTINU_ELECTRON) || (ph->type == NU_HEAVY);
+#endif
 }
 
 // for debugging

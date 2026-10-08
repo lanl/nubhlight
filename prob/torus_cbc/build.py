@@ -40,7 +40,7 @@ SMALL = '-small' in sys.argv or NOB
 TRACERTEST = '-tracertest' in sys.argv
 RESTARTTEST = '-restarttest' in sys.argv
 HDF = '-hdf' in sys.argv
-OSCILLATIONS = "-oscillations" in sys.argv
+FFI = "-ffi" in sys.argv
 N1N2N3CPU_FROM_CLI = '-n1n2n3cpu' in sys.argv
 N1N2N3TOT_FROM_CLI = '-n1n2n3tot' in sys.argv
 
@@ -116,7 +116,7 @@ TABLEPATH = "../../data/"+TABLEPATH
 if FORTRAN:
     OPACPATH = "opacity.SFHo.nohoro.juo.brem1.bin"
 else:
-    if OSCILLATIONS:
+    if FFI:
         OPACPATH = "NuLib_rho70_temp62_ye50_ng61_ns4_version1.0_20241120_bhlight.h5"
     else:
         OPACPATH = "opacity.SFHo.nohoro.juo.brem1.h5"
@@ -426,13 +426,13 @@ bhl.config.set_cparm('DIAGNOSTICS_USE_RADTYPES', True)
 bhl.config.set_cparm('RZ_HISTOGRAMS', True)
 # bhl.config.set_cparm('RECORD_DT_MIN', True)
 
-if OSCILLATIONS:
+if FFI:
     bhl.config.set_cparm('LOCAL_ANGULAR_DISTRIBUTIONS', True)
     bhl.config.set_cparm('LOCAL_ANGLES_NMU', 32)
     bhl.config.set_cparm('LOCAL_ANGLES_NX1', 32)
     bhl.config.set_cparm('LOCAL_ANGLES_NX2', 32)
     bhl.config.set_cparm('RAD_NUM_TYPES', 4)
-    bhl.config.set_cparm('NEUTRINO_OSCILLATIONS', True)
+    bhl.config.set_cparm('NEUTRINO_OSCILLATIONS_FFI', True)
 
 # Special. Don't turn this on if you don't need to
 if DIAGNOSTIC:

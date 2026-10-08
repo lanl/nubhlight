@@ -878,8 +878,8 @@ void dump() {
   WRITE_HDR(numin, TYPE_DBL);
   WRITE_HDR(numax, TYPE_DBL);
 
-  int neutrino_oscillations = NEUTRINO_OSCILLATIONS;
-  WRITE_HDR(neutrino_oscillations, TYPE_INT);
+  int neutrino_oscillations_ffi = NEUTRINO_OSCILLATIONS_FFI;
+  WRITE_HDR(neutrino_oscillations_ffi, TYPE_INT);
   int force_equipartition = FORCE_EQUIPARTITION;
   WRITE_HDR(force_equipartition, TYPE_INT);
   int local_angular_distributions = LOCAL_ANGULAR_DISTRIBUTIONS;
@@ -1145,7 +1145,7 @@ void dump() {
 #undef RANK
     }
 
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
     {
       mpi_dbl_allreduce_array(
           (double *)local_osc_count, LOCAL_ANGLES_NX1 * LOCAL_ANGLES_NX2);
@@ -1169,7 +1169,7 @@ void dump() {
           TYPE_DBL);
 #undef RANK
     }
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
 
 #if RZ_HISTOGRAMS
@@ -1186,7 +1186,7 @@ void dump() {
     }
     WRITE_ARRAY(rz_r_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
     WRITE_ARRAY(rz_z_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
     WRITE_ARRAY(osc_rz_r_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
     WRITE_ARRAY(osc_rz_z_orig_hist, RANK, fdims, fstart, fcount, mdims, mstart, TYPE_DBL);
 #endif

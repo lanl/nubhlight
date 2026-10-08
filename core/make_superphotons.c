@@ -153,6 +153,7 @@ void sample_photon(int i, int j, int k, double t, double dt, int type,
   double weight = get_wgt(nu, dtau);
 
   // Sample emissivity in solid angle
+  // todo(JMM): Pass in a rescaling option
   double jmax = jnu(nu, type, m, 0.5 * M_PI);
   do {
     cth[0] = 2. * get_rand() - 1.;
@@ -288,6 +289,7 @@ void get_dndlnu(int i, int j, int k, double dt, double dndlnu[NU_BINS + 1],
 
   double dndlnu_max = -1.e100;
   for (int n = 0; n <= NU_BINS; n++) {
+    // todo(JMM): Pass in a rescaling option
     double Jsamp = Jnu(nusamp[n], type, m);
     Jsamp *= dx[1] * dx[2] * dx[3] * pow(L_unit, 3.) * ggeom[i][j][CENT].g;
 
@@ -330,6 +332,7 @@ void set_weight(grid_prim_type Prad, grid_eosvar_type extra) {
       get_fluid_zone(i, j, k, Prad, extra, &m, Ucon, Ucov, Bcon, Bcov);
       TYPELOOP {
         for (int n = 0; n <= NU_BINS; n++) {
+          // todo(JMM): Pass in a rescaling option
           Jtot += Jnu(nusamp[n], itp, &m) * zoneVol * ggeom[i][j][CENT].g;
         }
       } // TYPELOOP
@@ -353,6 +356,7 @@ double f(double x, void *params) {
   int                     type = p->type;
 
   double nu    = exp(x);
+  // todo(JMM): Pass in a rescaling option
   double Jsamp = Jnu(nu, type, m) * nu;
   double wgt   = get_wgt(nu, get_dtau(nu, type, dt, m));
   if (isinf(Jsamp) || wgt < SMALL) {

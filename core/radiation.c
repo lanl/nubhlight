@@ -9,24 +9,35 @@
 #include "decs.h"
 
 #if RADIATION
-double Bnu_inv(double nu,
-    const struct of_microphysics
-        *m) { // unused for neutrinos. Use tables by Burrows et al.
-#if RADIATION == RADTYPE_LIGHT
+double Bnu_inv(double nu, const struct of_microphysics *m) {
   double x;
+#if RADIATION == RADTYPE_LIGHT
   x = HPL * nu / (ME * CL * CL * m->Thetae);
+#elif RADIATION == RADTYPE_NEUTRINOS
+  x = HPL * nu / (KBOL * m->T);
+#endif
 
+#if RADIATION == RADTYPE_LIGHT
+  // Planck (i.e., Bose-Einstein) distribution
   if (x < 1.e-3) // Taylor-expand small arguments for numerical accuracy
     return (
         (2. * HPL / (CL * CL)) / (x / 24. * (24. + x * (12. + x * (4. + x)))));
   else
     return ((2. * HPL / (CL * CL)) / (exp(x) - 1.));
-#endif
-#if RADIATION == RADTYPE_NEUTRINOS
-  return 0.; // STUB
+#elif RADIATION == RADTYPE_NEUTRINOS
+  // Fermi-Dirac distribution
+  double dist;
+  if (x < 1.e-3) { // Taylor-expand small arguments for numerical accuracy
+    double x2 = x*x;
+    dist = 0.5*(1 - 0.5*x*(1 - (x2/12)*(1 - 0.1*x2)));
+  } else {
+    dist = 1. / (exp(x) + 1.);
+  }
+  return (2. * HPL / (CL * CL)) * dist;
 #endif
 }
 
+// todo(JMM): Pass in a rescaling option
 double jnu_inv(
     double nu, int type, const struct of_microphysics *m, double theta) {
   double j;
@@ -47,6 +58,7 @@ double alpha_inv_scatt(
 }
 
 // Invariant absorption opacity
+// TODO(JMM): Need to pass in a rescaling option
 double alpha_inv_abs(
     double nu, int type, const struct of_microphysics *m, double theta) {
 #if RADIATION == RADTYPE_NEUTRINOS

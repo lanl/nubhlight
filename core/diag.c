@@ -38,14 +38,14 @@ void reset_dump_variables() {
 #if RZ_HISTOGRAMS
   memset(rz_r_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
   memset(rz_z_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
   memset(osc_rz_r_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
   memset(osc_rz_z_orig_hist, 0, RZ_HISTOGRAMS_N * sizeof(double));
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 #endif // RZ_HISTOGRAMS
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
   memset(local_osc_count, 0, LOCAL_ANGLES_NX1*LOCAL_ANGLES_NX2*sizeof(double));
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 #endif // RADIATION
 }
 
@@ -310,7 +310,7 @@ void diag(int call_code) {
 #if ELECTRONS
       fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_ELECTRON));
 #endif
-#if NEUTRINO_OSCILLATIONS || LOCAL_ANGULAR_DISTRIBUTIONS
+#if NEUTRINO_OSCILLATIONS_FFI || LOCAL_ANGULAR_DISTRIBUTIONS
       fprintf(ener_file, "%15.8g ", get_time_per_step(TIMER_OSCILLATIONS));
 #endif
       fprintf(ener_file, "\n");
@@ -596,21 +596,21 @@ void generate_rz_histograms() {
 #pragma omp atomic
       rz_z_orig_hist[iz] += ph->w;
 
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
       if (ph->osc_count) {
 #pragma omp atomic
         osc_rz_r_orig_hist[ir] += ph->w;
 #pragma omp atomic
         osc_rz_z_orig_hist[iz] += ph->w;
       }
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 
       ph = ph->next;
     }
   }
   mpi_dbl_allreduce_array((double *)rz_r_orig_hist, RZ_HISTOGRAMS_N);
   mpi_dbl_allreduce_array((double *)rz_z_orig_hist, RZ_HISTOGRAMS_N);
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
   mpi_dbl_allreduce_array((double *)osc_rz_r_orig_hist, RZ_HISTOGRAMS_N);
   mpi_dbl_allreduce_array((double *)osc_rz_z_orig_hist, RZ_HISTOGRAMS_N);
 #endif

@@ -100,12 +100,6 @@
 // in scattering stability criterion
 #define SCATT_BIAS_SAFETY (0.5) // (0.9/RAD_SCATT_TYPES)
 
-//#define NUMIN     (1.e10)
-//#define NUMAX     (1.e25)
-//#define NU_BINS_SPEC    (200)
-//#define NTH (8)
-//#define NPHI (8)
-
 // Whether to move polar axis slightly off of coordinate singularity
 #define COORDSINGFIX 1
 #define SINGSMALL (1.E-20)
@@ -171,17 +165,20 @@
 #define ANTINU_HEAVY (3)
 #if MULTISCATT_TEST
 #define RAD_SCATT_TYPES (3)
-#else
+#else // NOT MULTISCATT TEST
 #define RAD_SCATT_TYPES (4) // TODO: Should be 5, including electrons
 #define RSCATT_TYPE_P (0)
 #define RSCATT_TYPE_N (1)
 #define RSCATT_TYPE_A (2)
 #define RSCATT_TYPE_ALPHA (3)
 #define RSCATT_TYPE_E (4) // TOOD: implement me
-#endif
+#endif // NOT MULTISCATT TEST
 #define NRADCOMP (2)
 #define RADG_YE (4)
 #define RADG_YE_EM (5)
+#define CFI_INACTIVE (0)     // For collisional flavor instability
+#define CFI_TYPE_GAPPED (1)  // Omega_- mode
+#define CFI_TYPE_GAPLESS (2) // Omega_+ mode
 #elif RADIATION == RADTYPE_LIGHT
 #define RAD_SCATT_TYPES (1)
 #define NRADCOMP (0)
@@ -342,9 +339,9 @@ extern grid_int_type    Nsph;
 extern grid_double_type nph;
 #if RZ_HISTOGRAMS
 extern rz_hist_type rz_r_orig_hist, rz_z_orig_hist;
-#if NEUTRINO_OSCILLATIONS
+#if NEUTRINO_OSCILLATIONS_FFI
 extern rz_hist_type osc_rz_r_orig_hist, osc_rz_z_orig_hist;
-#endif // NEUTRINO_OSCILLATIONS
+#endif // NEUTRINO_OSCILLATIONS_FFI
 #endif // RZ_HISTOGRAMS
 
 extern struct of_photon **photon_lists;
@@ -396,12 +393,30 @@ typedef double grid_local_moment_type[LOCAL_NUM_BASES][LOCAL_NUM_MOMENTS]
                                      [LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 typedef int grid_local_basis_idx_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
 typedef double grid_local_count_type[LOCAL_ANGLES_NX1][LOCAL_ANGLES_NX2];
-extern grid_Gnu_type          Gnu, local_Ns, local_wsqr;
-extern grid_local_moment_type local_moments;
+extern grid_Gnu_type             Gnu, local_Ns, local_wsqr;
+extern grid_local_moment_type    local_moments;
 extern grid_local_basis_idx_type local_b_osc;
-extern grid_local_count_type local_osc_count;
+extern grid_local_count_type     local_osc_count;
 #endif // #if RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+#if NEUTRINO_OSCILLATIONS_CFI
+typedef double grid_symm_double_type[N1 + 2 * NG][N2 + 2 * NG];
+typedef int grid_symm_int_type[N1 + 2 * NG][N2 + 2 * NG];
+typedef double grid_symm_radtype_type[N1 + 2 * NG][N2 + 2 * NG][RAD_NUM_TYPES];
+typedef double grid_CFI_Gamma_type[N1 + 2 * NG][N2 + 2 * NG][2];
+
+// number of neutrinos per flavor
+extern grid_symm_radtype_type nph_flavor;
+// individual distribution function-weighted opacity averages
+extern grid_symm_radtype_type kappa_avg;
+extern grid_CFI_Gamma_type cfi_Gamma;
+
+// Which CFI mode is active, if any
+extern grid_symm_int_type cfi_active_mode;
+// time scale for asymptotic state
+extern grid_symm_double_type cfi_tau_asymp;
+#endif // NEUTRINO_OSCILLATIONS_CFI
 
 #endif // RADIATION
 
@@ -582,11 +597,11 @@ struct of_photon {
   // radiation type. For neutrinos, flavor. Always active.
   // Not always important.
   // TODO: make sure to always set type when it's needed.
-  int               type;
-  int               nscatt;
-  int               origin[NDIM];
-  double            t0;
-  int               is_tracked;
+  int    type;
+  int    nscatt;
+  int    origin[NDIM];
+  double t0;
+  int    is_tracked;
   // Only relevant for neutrino oscillations
   int               osc_count;
   struct of_photon *next;
@@ -711,8 +726,8 @@ extern int global_stop[NDIM];
 #define JRADLOOP for (int n = 0; n < MAXNSCATT + 2; n++)
 #define NULOOP for (int inu = 0; inu < NU_BINS + 1; inu++)
 
-#define LOCALXLOOP                             \
-  for (int i = 0; i < LOCAL_ANGLES_NX1; ++i)   \
+#define LOCALXLOOP                           \
+  for (int i = 0; i < LOCAL_ANGLES_NX1; ++i) \
     for (int j = 0; j < LOCAL_ANGLES_NX2; ++j)
 #define LOCALMULOOP for (int imu = 0; imu < LOCAL_ANGLES_NMU; ++imu)
 #define LOCALXMULOOP LOCALXLOOP LOCALMULOOP
@@ -1033,27 +1048,35 @@ double alpha_nu_hdf(double nu, int type, const struct of_microphysics *m);
 
 // oscillations.c
 #if RADIATION == RADTYPE_NEUTRINOS && LOCAL_ANGULAR_DISTRIBUTIONS
-double get_dt_oscillations();
+// FFI
+double get_dt_ffi();
 void get_local_angle_bins(
-    struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
+  struct of_photon *ph, int *pi, int *pj, int *pmu1, int *pmu2);
 void accumulate_local_angles();
 #if RAD_NUM_TYPES >= 4
 void compute_local_gnu(grid_local_angles_type local_angles,
-    grid_Gnu_type local_Ns, grid_Gnu_type local_wsqr, grid_Gnu_type gnu);
+  grid_Gnu_type local_Ns, grid_Gnu_type local_wsqr, grid_Gnu_type gnu);
 void compute_local_moments(grid_Gnu_type gnu, grid_local_moment_type moments);
-void oscillate(grid_local_angles_type f,
-               grid_local_moment_type local_moments, grid_Gnu_type gnu);
+void oscillate_ffi(grid_local_angles_type f,
+                   grid_local_moment_type local_moments, grid_Gnu_type gnu);
 #endif // RAD_NUM_TYPES >= 4
 #endif // LOCAL_ANGULAR_DISTRIBUTIONS
+
+// CFI
+#if NEUTRINO_OSCILLATIONS_CFI
+void compute_cfi_symmetrized_avgs(grid_symm_radtype_type nph_flavor,
+                                  grid_symm_radtype_type kappa_avg,
+                                  grid_CFI_Gamma_type cfi_gamma);
+void compute_cfi_active_mode(grid_int_type cfi_active_mode);
+#endif // NEUTRINO_OSCILLATIONS_CFI
+
 #endif // RADIATION
 
 // passive.c
-//#if NVAR_PASSIVE > 0
 void fixup_passive(
     int i, int j, int k, double pv[NVAR], double pv_prefloor[NVAR]);
 void init_passives();
 void name_passives();
-//#endif
 
 // phys.c
 void   primtoflux(double *pr, struct of_state *q, int dir, int magnetic,
@@ -1130,6 +1153,7 @@ void record_lepton_flux(const struct of_photon *ph);
 void check_nu_type(const char *location);
 int  get_lepton_sign(const struct of_photon *ph);
 int  nu_is_heavy(const int radtype);
+int is_antiparticle(const struct of_photon *ph);
 #endif // NEUTRINOS
 #endif // RADIATION
 
@@ -1236,7 +1260,7 @@ double find_median(double *array, int size);
 double interp_1d(double x, const double xmin, const double xmax, const int imin,
     const int imax, const double *restrict tab_x, const double *restrict tab_y);
 int    find_index(double value, const double *array, int size);
-void * safe_malloc(size_t size);
+void  *safe_malloc(size_t size);
 void   safe_system(const char *command);
 void   safe_fscanf(FILE *stream, const char *format, ...);
 int    is_practically_nan(double v);
