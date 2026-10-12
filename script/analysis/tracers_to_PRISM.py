@@ -9,7 +9,7 @@ import units; cgs = units.get_cgs()
 import numpy as np
 import os, shutil, stat
 from itertools import chain
-from scipy import integrate,interpolate
+from scipy import integrate,interpolate,optimize
 from subprocess import Popen
 import hdf5_to_dict as io
 SMALL = 1e-20
@@ -267,28 +267,37 @@ def cleanup_trace(trace,
   # output trace
   trsm,trace_out = {},{}
   Tunit = cgs['MEV']/cgs['GK']
-  
   trsm['T'],trsm['rho'] = log_smooth(trace['T']),log_smooth(trace['rho'])
 
   # starting temperature
   #Tgk   = trace['T']*cgs['MEV']/cgs['GK']
   Tgk   = trsm['T']*cgs['MEV']/cgs['GK']
-  TgkT9 = value_crossing(Tgk, T9)
-  sidx = np.where(TgkT9)[0][-1] + 1
+  TgkT9 = value_crossing(Tgk, T9)  # this is where all the crossing points are
+  if TgkT9.any(): 
+    sidx = np.where(TgkT9)[0][-1] + 1 # if any crossing points exist, start the trajectory after the last crossing point
+  elif np.all(Tgk > T9):  # the tracer has not reached T9 by the end, increase T9 by {atol} GK until a suitable limit has been found
+      T9_new = np.copy(T9)
+      while not TgkT9.any():
+          T9_new += atol
+          print("WARNING: Tracer {} did not cool to original T9 = {} limit, trying T9 = {}".format(trace['id'][0], T9, T9_new))
+          TgkT9 = value_crossing(Tgk, T9_new)
+          if T9_new > 100: # add a stopping condition in case tracer is weird
+              raise Exception('FATAL: Could not find any crossing points below {} GK, re-examine tracer for validity.'.format(T9_new))
+      sidx = np.where(TgkT9)[0][-1] + 1
+      T9 = T9_new
+  elif np.all(Tgk < T9): sidx=np.argmax(Tgk) # if all temperatures below desired T9 value, use hottest value
   
   # Sometimes the temperature is not actually that close to T9=10,
   # so this will do a little interpolation to find a suitable
   # starting point. 
-  
-  if T9 > Tgk[sidx:][0] > T9-atol or Tgk[0] < T9:
+  if T9 > Tgk[sidx:][0] > T9-atol:
       if Tgk[0] < T9:
           print("WARNING: Tracer {} starting at temperature {} < T9 = {}".format(trace['id'][0], Tgk[0], T9))
-          sidx = 0
       for k in trace.keys() - ['T','rho']:
             trace_out[k] = trace[k][sidx:]
       trace_out['T'],trace_out['rho'] = trsm['T'][sidx:],trsm['rho'][sidx:]    
   else:
-      interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+1],Tgk[sidx-1:sidx+1])
+      interpsidx = interpolate.interp1d(trace['time'][sidx-1:sidx+2],Tgk[sidx-1:sidx+2])
       residual = lambda t: interpsidx(t) - T9
       root_results = optimize.root_scalar(residual, bracket=(trace['time'][sidx-1],trace['time'][sidx+1]))
       if not root_results.converged:
@@ -297,7 +306,6 @@ def cleanup_trace(trace,
       new_val = interpsidx(new_time)
       trace_out['T'] = np.insert(trsm['T'][sidx:],0,new_val/Tunit)
       trace_out['time'] = np.insert(trace['time'][sidx:],0,new_time)
-      trace_out['time'] = np.insert(trace['time'][sidx:],0,newx[ind])
       # Still need to get corresponding other key values
       for k in trace.keys() - ['time','T']:
           trace_in = trsm if k in trsm.keys() else trace
@@ -311,6 +319,7 @@ def cleanup_trace(trace,
 
   # smooth rho and T
   trace_out['Tgk'] = trace_out['T']*cgs['MEV']/cgs['GK']
+  print(f'Initial tracer temperature: {Tgk[0]:2.2f} | Tracer temperature at PRISM trajectory start: {trace_out["Tgk"][0]:2.2f}')
 
   # heavies don't matter
   nu_ab = (np.abs(trace_out['rate_absorbed'][:,0])
